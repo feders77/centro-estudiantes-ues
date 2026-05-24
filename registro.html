@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear cuenta · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{background:var(--paper)}
+  .auth-wrap{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:40px 20px;
+  }
+  .auth-card{
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:40px 44px;width:100%;max-width:480px;
+    box-shadow:0 4px 32px rgba(0,0,0,.06);
+  }
+  .auth-logo{
+    display:flex;align-items:center;gap:12px;
+    text-decoration:none;color:var(--ink);margin-bottom:32px;
+  }
+  .auth-logo img{width:40px;height:40px;object-fit:contain}
+  .auth-logo-text{font-family:'Fraunces',serif;font-size:15px;font-weight:600;line-height:1.2}
+  .auth-logo-text small{display:block;font-family:'Inter Tight',sans-serif;font-size:11px;font-weight:400;color:var(--ink-soft)}
+  .auth-title{font-family:'Fraunces',serif;font-size:28px;font-weight:600;margin-bottom:6px;letter-spacing:-.01em}
+  .auth-sub{font-size:14px;color:var(--ink-soft);margin-bottom:28px}
+  .auth-alert{
+    padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:18px;display:none;
+  }
+  .auth-alert.error{background:#fad6cd;color:#a73a1f;border:1px solid #f5b8a8}
+  .auth-alert.success{background:#d8ecdc;color:#2d6a3e;border:1px solid #b0d9b8}
+  .auth-alert.show{display:block}
+  .auth-foot{margin-top:20px;text-align:center;font-size:13px;color:var(--ink-soft)}
+  .auth-foot a{color:var(--burgundy);text-decoration:none;font-weight:600}
+  .pass-hint{font-size:11px;color:var(--ink-soft);margin-top:4px}
+  @media (max-width:480px){.auth-card{padding:28px 22px}}
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <a href="index.html" class="auth-logo">
+      <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+      <div class="auth-logo-text">
+        Centro de Estudiantes
+        <small>Sagrado Corazón Rosario</small>
+      </div>
+    </a>
+
+    <h1 class="auth-title">Crear cuenta</h1>
+    <p class="auth-sub">Una vez registrado, un administrador va a activar tu cuenta.</p>
+
+    <div id="alerta" class="auth-alert"></div>
+    <div id="exito" style="display:none">
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:16px">✉️</div>
+        <h3 style="font-family:'Fraunces',serif;font-size:22px;margin-bottom:8px">¡Revisá tu email!</h3>
+        <p style="color:var(--ink-soft);font-size:14px;margin-bottom:20px">
+          Te mandamos un link de confirmación. Hacé click en el link del email para activar tu cuenta.<br><br>
+          Después de confirmar el email, un administrador va a aprobar tu acceso.
+        </p>
+        <a href="login.html" class="btn btn-primary">Ir a iniciar sesión</a>
+      </div>
+    </div>
+
+    <form id="form-registro" onsubmit="registrar(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre <span style="color:var(--burgundy)">*</span></label>
+          <input type="text" id="nombre" required autocomplete="given-name" placeholder="María">
+        </div>
+        <div class="form-group">
+          <label>Apellido <span style="color:var(--burgundy)">*</span></label>
+          <input type="text" id="apellido" required autocomplete="family-name" placeholder="García">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Alias <span style="color:var(--ink-soft);font-weight:400">(opcional — cómo te va a ver el resto)</span></label>
+        <input type="text" id="alias" placeholder="Ej: Maru, Pepe...">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nivel <span style="color:var(--burgundy)">*</span></label>
+          <select id="nivel" required onchange="actualizarAnios()">
+            <option value="">— elegí —</option>
+            <option value="primaria">Primaria</option>
+            <option value="secundaria">Secundaria</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Año <span style="color:var(--burgundy)">*</span></label>
+          <select id="anio" required onchange="actualizarOrientacion()">
+            <option value="">— primero nivel —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" id="grupo-orientacion" style="display:none">
+        <label>Orientación <span style="color:var(--burgundy)">*</span></label>
+        <select id="orientacion">
+          <option value="humanidades">Humanidades</option>
+          <option value="naturales">Ciencias Naturales</option>
+          <option value="economia">Economía y Administración</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Email <span style="color:var(--burgundy)">*</span></label>
+        <input type="email" id="email" required autocomplete="email" placeholder="tu@email.com">
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña <span style="color:var(--burgundy)">*</span></label>
+        <input type="password" id="password" required autocomplete="new-password" placeholder="Mínimo 8 caracteres" minlength="8">
+        <div class="pass-hint">Mínimo 8 caracteres</div>
+      </div>
+
+      <div class="form-group">
+        <label>Repetir contraseña <span style="color:var(--burgundy)">*</span></label>
+        <input type="password" id="password2" required autocomplete="new-password" placeholder="••••••••">
+      </div>
+
+      <button type="submit" id="btn-registro" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;margin-top:4px">
+        Crear cuenta
+      </button>
+    </form>
+
+    <div class="auth-foot" style="margin-top:16px">
+      ¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script>
+  const ANIOS_PRIMARIA = ['1','2','3','4','5','6','7'];
+  const ANIOS_SECUNDARIA = ['1','2','3','4','5','6'];
+  const CON_ORIENTACION = ['4','5','6'];
+
+  function actualizarAnios() {
+    const nivel = document.getElementById('nivel').value;
+    const sel   = document.getElementById('anio');
+    sel.innerHTML = '<option value="">— elegí año —</option>';
+    const lista = nivel === 'primaria' ? ANIOS_PRIMARIA : nivel === 'secundaria' ? ANIOS_SECUNDARIA : [];
+    const label = nivel === 'primaria' ? 'grado' : 'año';
+    lista.forEach(a => {
+      const op = document.createElement('option');
+      op.value = a;
+      op.textContent = `${a}° ${label}`;
+      sel.appendChild(op);
+    });
+    actualizarOrientacion();
+  }
+
+  function actualizarOrientacion() {
+    const nivel = document.getElementById('nivel').value;
+    const anio  = document.getElementById('anio').value;
+    const grp   = document.getElementById('grupo-orientacion');
+    const sel   = document.getElementById('orientacion');
+    const mostrar = nivel === 'secundaria' && CON_ORIENTACION.includes(anio);
+    grp.style.display = mostrar ? '' : 'none';
+    if (mostrar) sel.required = true; else { sel.required = false; sel.value = 'humanidades'; }
+  }
+
+  function alerta(msg, tipo) {
+    const el = document.getElementById('alerta');
+    el.textContent = msg;
+    el.className = 'auth-alert show ' + tipo;
+  }
+
+  async function registrar(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-registro');
+
+    const nombre   = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const alias    = document.getElementById('alias').value.trim() || null;
+    const nivel    = document.getElementById('nivel').value;
+    const anio     = document.getElementById('anio').value;
+    const orientacion = document.getElementById('orientacion').value || null;
+    const email    = document.getElementById('email').value.trim();
+    const pass1    = document.getElementById('password').value;
+    const pass2    = document.getElementById('password2').value;
+
+    if (pass1 !== pass2) { alerta('Las contraseñas no coinciden.', 'error'); return; }
+    if (pass1.length < 8) { alerta('La contraseña necesita al menos 8 caracteres.', 'error'); return; }
+    if (!nivel || !anio)  { alerta('Elegí tu nivel y año.', 'error'); return; }
+
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+
+    const { error } = await Auth.register(email, pass1, {
+      nombre, apellido, alias, nivel, anio, orientacion
+    });
+
+    if (error) {
+      let msg = 'No se pudo crear la cuenta.';
+      if (error.message?.includes('already registered'))
+        msg = 'Ese email ya tiene una cuenta. ¿Querés iniciar sesión?';
+      else if (error.message?.includes('Password'))
+        msg = 'La contraseña es muy débil. Usá al menos 8 caracteres.';
+      alerta(msg, 'error');
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      return;
+    }
+
+    document.getElementById('form-registro').style.display = 'none';
+    document.getElementById('alerta').className = 'auth-alert';
+    document.getElementById('exito').style.display = '';
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Auth.init();
+  });
+</script>
+</body>
+</html>

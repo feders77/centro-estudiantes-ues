@@ -36,6 +36,7 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.querySelector(`[data-section-id="${section}"]`).classList.add('active');
     if (section === 'config') cargarConfig();
+    if (section === 'usuarios') openModal('modal-usuarios');
   });
 });
 
@@ -604,9 +605,98 @@ function renderTodo() {
   renderMarketplace();
 }
 
+/* ========================================================================
+   USUARIOS
+   ======================================================================== */
+
+let _tabUsuarios = 'pendientes';
+let _usuarios = [];
+
+async function cargarUsuarios() {
+  const { data, error } = await window._sb.from('profiles').select('*').order('created_at', { ascending: false });
+  if (error) { toast('Error al cargar usuarios: ' + error.message, 'error'); return; }
+  _usuarios = data || [];
+
+  const pendientes = _usuarios.filter(u => u.rol === 'pendiente').length;
+  document.getElementById('count-pendientes').textContent = pendientes || '0';
+  document.getElementById('badge-pend').textContent = pendientes;
+
+  verTab(_tabUsuarios);
+}
+
+function verTab(tab) {
+  _tabUsuarios = tab;
+  ['pendientes','alumnos','admins'].forEach(t => {
+    document.getElementById('tab-' + t).style.background = t === tab ? 'var(--burgundy)' : '';
+    document.getElementById('tab-' + t).style.color      = t === tab ? 'var(--cream)' : '';
+  });
+
+  const rolMap = { pendientes: 'pendiente', alumnos: 'alumno', admins: 'administrador' };
+  const lista = _usuarios.filter(u => u.rol === rolMap[tab]);
+  const cont  = document.getElementById('usuarios-lista');
+
+  if (!lista.length) {
+    cont.innerHTML = `<p style="text-align:center;padding:32px;color:var(--ink-soft);font-size:14px">Sin usuarios en esta categoría.</p>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(u => {
+    const display = u.alias || u.nombre;
+    const curso   = u.anio ? `${u.anio}° ${u.nivel === 'primaria' ? 'gr.' : ''}${u.orientacion ? ' ' + u.orientacion : ''}` : '—';
+    const initials = ((u.nombre?.[0]||'') + (u.apellido?.[0]||'')).toUpperCase();
+    let acciones = '';
+    if (u.rol === 'pendiente') {
+      acciones = `
+        <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="cambiarRol('${u.id}','alumno')">✓ Aprobar</button>
+        <button class="btn btn-ghost"   style="font-size:12px;padding:6px 12px;color:#a73a1f" onclick="eliminarUsuario('${u.id}')">✗ Rechazar</button>`;
+    } else if (u.rol === 'alumno') {
+      acciones = `
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="cambiarRol('${u.id}','administrador')">⬆ Hacer admin</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;color:#a73a1f" onclick="cambiarRol('${u.id}','pendiente')">Suspender</button>`;
+    } else if (u.rol === 'administrador') {
+      acciones = `
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="cambiarRol('${u.id}','alumno')">⬇ Quitar admin</button>`;
+    }
+    return `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--burgundy);color:var(--cream);
+             display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">
+          ${initials}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px">${escapeHtml(display)} <span style="font-weight:400;color:var(--ink-soft)">${escapeHtml(u.apellido || '')}</span></div>
+          <div style="font-size:12px;color:var(--ink-soft)">${curso} · ${escapeHtml(u.nombre || '')} · <span style="font-style:italic">registrado ${formatFechaRelativa(u.created_at)}</span></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">${acciones}</div>
+      </div>`;
+  }).join('');
+}
+
+async function cambiarRol(id, nuevoRol) {
+  const { error } = await window._sb.from('profiles').update({ rol: nuevoRol }).eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast(nuevoRol === 'alumno' ? '✓ Usuario aprobado' : nuevoRol === 'administrador' ? '✓ Rol actualizado a admin' : '✓ Rol actualizado', 'success');
+  await cargarUsuarios();
+}
+
+async function eliminarUsuario(id) {
+  if (!confirm('¿Rechazar y eliminar este usuario? Esta acción no se puede deshacer.')) return;
+  // Eliminar el perfil (auth.users en cascada si está configurado)
+  const { error } = await window._sb.from('profiles').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Usuario eliminado', 'success');
+  await cargarUsuarios();
+}
+
+/* ========================================================================
+   INIT
+   ======================================================================== */
+
 document.addEventListener('DOMContentLoaded', async () => {
+  await Auth.init();
   await Store.init();
   await loadAll();
   renderTodo();
   cargarConfig();
+  await cargarUsuarios();
 });

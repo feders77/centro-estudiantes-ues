@@ -268,7 +268,9 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="auth.js"></script>
 <script src="store.js"></script>
 <script>
   let _config = {};
@@ -387,6 +389,10 @@
     mostrarLoader();
 
     try {
+      const session = await Auth.init();
+      const profile = session ? await Auth.getProfile() : null;
+      Auth.updateChip(profile);
+
       const [novedades, eventos, votaciones, config] = await Promise.all([
         Store.list('novedades', true),
         Store.list('eventos'),

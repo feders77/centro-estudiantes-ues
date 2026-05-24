@@ -12,9 +12,11 @@ const _KEY  = window.SUPABASE_ANON_KEY;
 const _BASE = _URL + '/rest/v1';
 
 function _headers(extra = {}) {
+  // Usa el JWT de sesión si hay usuario logueado; si no, la anon key (lectura pública)
+  const token = window._authToken || _KEY;
   return {
     'apikey':        _KEY,
-    'Authorization': 'Bearer ' + _KEY,
+    'Authorization': 'Bearer ' + token,
     'Content-Type':  'application/json',
     'Accept':        'application/json',
     ...extra

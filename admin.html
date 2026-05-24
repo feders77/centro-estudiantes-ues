@@ -53,6 +53,10 @@
       <li><a href="#" data-section="config"><span class="icon">⚙️</span> General</a></li>
       <li><a href="#" data-section="datos"><span class="icon">💾</span> Datos</a></li>
     </ul>
+    <h4>Usuarios</h4>
+    <ul class="admin-nav">
+      <li><a href="#" data-section="usuarios"><span class="icon">👥</span> Gestión de usuarios <span class="count" id="count-pendientes" style="background:#fad6cd;color:#a73a1f">0</span></a></li>
+    </ul>
   </aside>
 
   <main class="admin-main">
@@ -365,9 +369,25 @@
   </div>
 </div>
 
+<!-- ============ USUARIOS ============ -->
+<div class="modal-overlay" id="modal-usuarios" style="z-index:200">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-close" onclick="closeModal('modal-usuarios')">×</button>
+    <h2>Gestión de usuarios</h2>
+    <div style="display:flex;gap:8px;margin:16px 0">
+      <button class="btn btn-ghost" id="tab-pendientes" onclick="verTab('pendientes')" style="font-size:13px">⏳ Pendientes <span id="badge-pend" style="background:#fad6cd;color:#a73a1f;padding:2px 8px;border-radius:999px;margin-left:4px;font-size:11px">0</span></button>
+      <button class="btn btn-ghost" id="tab-alumnos"    onclick="verTab('alumnos')"    style="font-size:13px">👤 Alumnos</button>
+      <button class="btn btn-ghost" id="tab-admins"     onclick="verTab('admins')"     style="font-size:13px">🛠 Admins</button>
+    </div>
+    <div id="usuarios-lista" style="max-height:420px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="auth.js"></script>
 <script src="store.js"></script>
 <script src="admin.js"></script>
 </body>

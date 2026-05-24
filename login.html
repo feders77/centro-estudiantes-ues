@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{background:var(--paper)}
+  .auth-wrap{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:40px 20px;
+  }
+  .auth-card{
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:40px 44px;width:100%;max-width:420px;
+    box-shadow:0 4px 32px rgba(0,0,0,.06);
+  }
+  .auth-logo{
+    display:flex;align-items:center;gap:12px;
+    text-decoration:none;color:var(--ink);margin-bottom:32px;
+  }
+  .auth-logo img{width:40px;height:40px;object-fit:contain}
+  .auth-logo-text{font-family:'Fraunces',serif;font-size:15px;font-weight:600;line-height:1.2}
+  .auth-logo-text small{display:block;font-family:'Inter Tight',sans-serif;font-size:11px;font-weight:400;color:var(--ink-soft)}
+  .auth-title{font-family:'Fraunces',serif;font-size:28px;font-weight:600;margin-bottom:6px;letter-spacing:-.01em}
+  .auth-sub{font-size:14px;color:var(--ink-soft);margin-bottom:28px}
+
+  .auth-alert{
+    padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:18px;
+    display:none;
+  }
+  .auth-alert.error{background:#fad6cd;color:#a73a1f;border:1px solid #f5b8a8}
+  .auth-alert.success{background:#d8ecdc;color:#2d6a3e;border:1px solid #b0d9b8}
+  .auth-alert.warning{background:#fef3d6;color:#7a5a00;border:1px solid #f5dfa0}
+  .auth-alert.show{display:block}
+
+  .auth-foot{margin-top:20px;text-align:center;font-size:13px;color:var(--ink-soft)}
+  .auth-foot a{color:var(--burgundy);text-decoration:none;font-weight:600}
+  .divider{border:none;border-top:1px solid var(--line);margin:20px 0}
+
+  @media (max-width:480px){.auth-card{padding:28px 22px}}
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <a href="index.html" class="auth-logo">
+      <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+      <div class="auth-logo-text">
+        Centro de Estudiantes
+        <small>Sagrado Corazón Rosario</small>
+      </div>
+    </a>
+
+    <h1 class="auth-title">Bienvenido</h1>
+    <p class="auth-sub">Ingresá con tu cuenta del centro</p>
+
+    <div id="alerta" class="auth-alert"></div>
+
+    <form id="form-login" onsubmit="login(event)">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" required autocomplete="email" placeholder="tu@email.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button type="submit" id="btn-login" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;margin-top:4px">
+        Ingresar
+      </button>
+    </form>
+
+    <div style="text-align:right;margin-top:10px">
+      <a href="#" onclick="olvidé(event)" style="font-size:12px;color:var(--ink-soft)">Olvidé mi contraseña</a>
+    </div>
+
+    <hr class="divider">
+
+    <div class="auth-foot">
+      ¿Primera vez? <a href="registro.html">Crear cuenta</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script>
+  function alerta(msg, tipo) {
+    const el = document.getElementById('alerta');
+    el.textContent = msg;
+    el.className = 'auth-alert show ' + tipo;
+  }
+
+  async function login(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await Auth.login(email, password);
+
+    if (error) {
+      let msg = 'Error al ingresar. Verificá tus datos.';
+      if (error.message?.includes('Email not confirmed'))
+        msg = 'Confirmá tu email primero. Revisá tu casilla de correo.';
+      else if (error.message?.includes('Invalid login'))
+        msg = 'Email o contraseña incorrectos.';
+      alerta(msg, 'error');
+      btn.disabled = false; btn.textContent = 'Ingresar';
+      return;
+    }
+
+    // Obtener perfil para verificar rol
+    window._authToken = data.session.access_token;
+    const profile = await Auth.getProfile();
+
+    if (!profile || profile.rol === 'pendiente') {
+      alerta('Tu cuenta está pendiente de aprobación por el administrador. Te avisamos cuando esté lista.', 'warning');
+      await Auth._sb?.auth.signOut();
+      window._authToken = null;
+      btn.disabled = false; btn.textContent = 'Ingresar';
+      return;
+    }
+
+    // Redirigir según rol
+    const destino = new URLSearchParams(location.search).get('next') || 'index.html';
+    window.location.href = destino;
+  }
+
+  async function olvidé(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    if (!email) { alerta('Escribí tu email arriba primero.', 'error'); return; }
+    const { error } = await Auth.resetPassword(email);
+    if (error) { alerta('No se pudo enviar el correo. Verificá el email.', 'error'); return; }
+    alerta('Te mandamos un email para restablecer tu contraseña.', 'success');
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const session = await Auth.init();
+
+    // Llegó desde el link de confirmación de email
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    if (hash.get('type') === 'signup') {
+      alerta('✓ Email confirmado. Ya podés ingresar con tu cuenta.', 'success');
+      return;
+    }
+
+    // Si ya tiene sesión activa con rol válido, redirigir
+    if (session) {
+      const profile = await Auth.getProfile();
+      if (profile && profile.rol !== 'pendiente') {
+        window.location.href = 'index.html';
+      }
+    }
+  });
+</script>
+</body>
+</html>

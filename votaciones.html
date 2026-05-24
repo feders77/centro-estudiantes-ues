@@ -177,19 +177,16 @@
     }
     const opNueva = v.opciones.find(o => o.id === opcionId);
     if (opNueva) opNueva.votos += 1;
-    if (!votoPrevio) v.participantes = (v.participantes || 0) + 1;
 
-    await Store.update('votaciones', votacionId, {
-      opciones: v.opciones,
-      participantes: v.participantes
-    });
+    await Store.update('votaciones', votacionId, { opciones: v.opciones });
     setMiVoto(votacionId, opcionId);
     toast(votoPrevio ? '✓ Voto cambiado' : '✓ Voto registrado', 'success');
     render(_todasVotaciones);
   }
 
   function renderVotacion(v) {
-    const total = (v.opciones || []).reduce((s,o) => s + (o.votos||0), 0) || 1;
+    const totalVotos = (v.opciones || []).reduce((s,o) => s + (o.votos||0), 0);
+    const total = totalVotos || 1;
     const ganadora = (v.opciones || []).reduce((a,b) => (a.votos||0) > (b.votos||0) ? a : b, v.opciones[0]);
     const misVotos = getMisVotos();
     const miVoto = misVotos[v.id];
@@ -224,7 +221,7 @@
         <p class="vote-desc">${escapeHtml(v.descripcion || '')}</p>
         <div class="vote-options">${opciones}</div>
         <div class="vote-foot">
-          <span>👥 ${v.participantes || 0} votos · ${Math.round((v.participantes || 0) / (v.totalElegibles || 580) * 100)}% del cole</span>
+          <span>👥 ${totalVotos} votos · ${Math.round(totalVotos / (v.totalElegibles || 580) * 100)}% del cole</span>
           ${miVoto ? '<span class="voted-tag">Ya votaste</span>' : (v.estado === 'abierta' ? '<span style="color:var(--burgundy);font-weight:600">Toca una opción para votar →</span>' : '')}
         </div>
       </div>`;

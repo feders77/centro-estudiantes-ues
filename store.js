@@ -83,10 +83,11 @@ function fromApi(obj) {
 function toApi(obj) {
   if (!obj || typeof obj !== 'object') return obj;
   const out = {};
+  // campos que no existen en ninguna tabla de Supabase
+  const omitir = ['createdAt', 'participantes'];
   for (const [k, v] of Object.entries(obj)) {
+    if (omitir.includes(k)) continue;
     const key = _MAP_TO[k] || k;
-    // nunca mandamos campos que no existen en la tabla
-    if (['createdAt'].includes(k)) continue;
     out[key] = v;
   }
   return out;
@@ -118,9 +119,12 @@ const Store = {
     const tabla = _tabla(coleccion);
     let path = `/${tabla}?order=fecha.desc`;
 
-    // tablas sin columna 'fecha' usan created_at
+    // tablas sin columna 'fecha' usan created_at (o no tienen orden relevante)
     if (['votos', 'config', 'estructura_academica'].includes(tabla)) {
       path = `/${tabla}`;
+    }
+    if (tabla === 'votaciones') {
+      path = `/${tabla}?order=created_at.desc`;
     }
 
     if (soloActivos) {

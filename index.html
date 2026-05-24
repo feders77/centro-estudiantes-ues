@@ -350,8 +350,9 @@
       return;
     }
     const v = abiertas.find(x => x.vinculante) || abiertas[0];
-    const total = v.opciones.reduce((s,o) => s + (o.votos||0), 0) || 1;
-    const opciones = [...v.opciones].sort((a,b) => b.votos - a.votos).slice(0,4);
+    const totalVotos = (v.opciones || []).reduce((s,o) => s + (o.votos||0), 0);
+    const total = totalVotos || 1;
+    const opciones = [...(v.opciones || [])].sort((a,b) => (b.votos||0) - (a.votos||0)).slice(0,4);
     cont.innerHTML = `
       <p style="font-size:13px;margin-bottom:14px;color:var(--ink-soft)">${escapeHtml(v.titulo)}</p>
       ${opciones.map(o => {

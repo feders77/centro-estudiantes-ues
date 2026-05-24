@@ -222,6 +222,7 @@
   });
 
   async function enviarMensaje() {
+    if (!window._authToken) { window.location.href = 'login.html?next=buzon.html'; return; }
     const categoria = document.querySelector('.buzon-form select').value;
     const mensaje   = document.querySelector('.buzon-form textarea').value.trim();
     const btn       = document.getElementById('btn-enviar');

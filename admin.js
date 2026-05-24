@@ -693,7 +693,22 @@ async function eliminarUsuario(id) {
    ======================================================================== */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await Auth.init();
+  const session = await Auth.init();
+
+  if (!session) {
+    window.location.href = 'login.html?next=admin.html';
+    return;
+  }
+  const profile = await Auth.getProfile();
+  if (!profile || profile.rol !== 'administrador') {
+    alert('Esta sección es solo para administradores.');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  // Mostrar nombre del admin en el header
+  Auth.updateChip(profile);
+
   await Store.init();
   await loadAll();
   renderTodo();

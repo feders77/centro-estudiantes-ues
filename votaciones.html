@@ -166,6 +166,7 @@
   }
 
   async function votar(votacionId, opcionId) {
+    if (!window._authToken) { window.location.href = 'login.html?next=votaciones.html'; return; }
     const v = _todasVotaciones.find(x => x.id === votacionId);
     if (!v || v.estado !== 'abierta') return;
 

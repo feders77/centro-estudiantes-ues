@@ -415,6 +415,7 @@
 
   async function subirApunte(e) {
     e.preventDefault();
+    if (!window._authToken) { window.location.href = 'login.html?next=apuntes.html'; return; }
     const data = {
       anio:        document.getElementById('sub-anio').value,
       orientacion: document.getElementById('sub-orientacion').value || null,

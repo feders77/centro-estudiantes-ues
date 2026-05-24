@@ -317,6 +317,7 @@
 
   async function publicar(e) {
     e.preventDefault();
+    if (!window._authToken) { closeModal('modal-publicar'); window.location.href = 'login.html?next=marketplace.html'; return; }
     const tipo = document.getElementById('p-tipo').value;
     const precioRaw = document.getElementById('p-precio').value.trim();
     const precio = tipo === 'busca' ? null : (precioRaw !== '' ? parseInt(precioRaw) : null);

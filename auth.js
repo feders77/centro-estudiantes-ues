@@ -69,23 +69,28 @@ const Auth = {
 
     if (!profile) {
       chip.outerHTML = `<a href="login.html" class="btn btn-ghost" style="font-size:13px;padding:8px 16px">Iniciar sesión</a>`;
+      // Ocultar link de admin si no está logueado
+      const adminLink = document.querySelector('.topbar a[href="admin.html"]');
+      if (adminLink) adminLink.style.display = 'none';
       return;
     }
 
     const display = profile.alias || profile.nombre;
     const initials = ((profile.nombre?.[0] || '') + (profile.apellido?.[0] || '')).toUpperCase() || '??';
-    const curso = profile.anio
-      ? `${profile.anio}° ${profile.nivel === 'primaria' ? 'gr.' : ''}`
-      : '';
+    const curso = profile.anio ? `${profile.anio}°` : '';
 
     chip.innerHTML = `
       <div class="avatar">${initials}</div>
       <span>${escapeHtml(display)}${curso ? ' · ' + curso : ''}</span>`;
-
+    chip.title = 'Clic para cerrar sesión';
     chip.style.cursor = 'pointer';
     chip.onclick = () => {
-      if (confirm('¿Cerrar sesión?')) Auth.logout();
+      if (confirm(`¿Cerrar sesión, ${escapeHtml(display)}?`)) Auth.logout();
     };
+
+    // Mostrar/ocultar link admin según rol
+    const adminLink = document.querySelector('.topbar a[href="admin.html"]');
+    if (adminLink) adminLink.style.display = profile.rol === 'administrador' ? '' : 'none';
   },
 
   /* Redirige a login.html si no hay sesión o el rol no está en la lista */

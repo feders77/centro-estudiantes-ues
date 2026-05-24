@@ -233,9 +233,11 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="supabase-config.js"></script>
 <script src="store.js"></script>
 <script>
   let filtroTipo = 'todos';
+  let _marketplace = [];
 
   function toast(msg, tipo='') {
     const t = document.getElementById('toast');
@@ -262,7 +264,7 @@
   }
 
   function render() {
-    let lista = Store.list('marketplace', true);
+    let lista = _marketplace.filter(p => p.activo !== false);
     if (filtroTipo !== 'todos') lista = lista.filter(p => p.tipo === filtroTipo);
 
     const q = document.getElementById('buscar').value.toLowerCase().trim();
@@ -274,12 +276,12 @@
     if (cat) lista = lista.filter(p => p.categoria === cat);
 
     const orden = document.getElementById('orden').value;
-    if (orden === 'precio-asc') lista.sort((a,b) => (a.precio ?? 999999999) - (b.precio ?? 999999999));
+    if (orden === 'precio-asc')   lista.sort((a,b) => (a.precio ?? 999999999) - (b.precio ?? 999999999));
     else if (orden === 'precio-desc') lista.sort((a,b) => (b.precio ?? 0) - (a.precio ?? 0));
     else lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
     const cont = document.getElementById('mp-grid');
-    if (lista.length === 0) {
+    if (!lista.length) {
       cont.innerHTML = `<div class="no-products">
         <h3>Sin publicaciones</h3>
         <p>${filtroTipo === 'busca' ? 'Nadie pidió nada por ahora. ¿Necesitás algo? ¡Publicalo!' : 'Sé el primero en publicar.'}</p>
@@ -302,8 +304,7 @@
             <span>📅 ${formatFechaRelativa(p.fecha)}</span>
           </div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
   function openPublicar() {
@@ -312,32 +313,37 @@
     openModal('modal-publicar');
   }
 
-  function publicar(e) {
+  async function publicar(e) {
     e.preventDefault();
     const tipo = document.getElementById('p-tipo').value;
-    let precioRaw = document.getElementById('p-precio').value.trim();
-    let precio = null;
-    if (precioRaw !== '') precio = parseInt(precioRaw);
-    if (tipo === 'busca') precio = null; // BUSCO siempre sin precio
+    const precioRaw = document.getElementById('p-precio').value.trim();
+    const precio = tipo === 'busca' ? null : (precioRaw !== '' ? parseInt(precioRaw) : null);
 
     const data = {
       tipo,
-      categoria: document.getElementById('p-categoria').value,
-      titulo: document.getElementById('p-titulo').value.trim(),
+      categoria:   document.getElementById('p-categoria').value,
+      titulo:      document.getElementById('p-titulo').value.trim(),
       precio,
       descripcion: document.getElementById('p-descripcion').value.trim(),
-      vendedor: document.getElementById('p-vendedor').value.trim(),
-      curso: document.getElementById('p-curso').value.trim(),
-      fecha: new Date().toISOString(),
-      activo: true
+      vendedor:    document.getElementById('p-vendedor').value.trim(),
+      curso:       document.getElementById('p-curso').value.trim(),
+      fecha:       new Date().toISOString(),
+      activo:      true
     };
-    Store.add('marketplace', data);
+    const nuevo = await Store.add('marketplace', data);
+    _marketplace.unshift(nuevo);
     closeModal('modal-publicar');
     toast('✓ Publicación creada', 'success');
     render();
   }
 
-  document.addEventListener('DOMContentLoaded', render);
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Store.init();
+    document.getElementById('mp-grid').innerHTML =
+      `<div class="no-products"><p style="color:var(--ink-soft)">Cargando...</p></div>`;
+    _marketplace = await Store.list('marketplace', true);
+    render();
+  });
 </script>
 </body>
 </html>

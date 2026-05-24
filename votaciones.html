@@ -139,9 +139,10 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="supabase-config.js"></script>
 <script src="store.js"></script>
 <script>
-  /* registramos los votos del usuario actual en localStorage aparte */
+  /* votos propios guardados en localStorage (solo IDs, no datos sensibles) */
   const VOTOS_KEY = 'ce_votos_usuario';
   function getMisVotos() {
     try { return JSON.parse(localStorage.getItem(VOTOS_KEY) || '{}'); }
@@ -153,42 +154,38 @@
     localStorage.setItem(VOTOS_KEY, JSON.stringify(v));
   }
 
+  /* cache en memoria para votar sin hacer un GET extra */
+  let _todasVotaciones = [];
+
   function toast(msg, tipo='') {
     const t = document.getElementById('toast');
     t.textContent = msg; t.className = 'toast show ' + tipo;
     setTimeout(() => t.classList.remove('show'), 2400);
   }
 
-  function votar(votacionId, opcionId) {
-    const v = Store.get('votaciones', votacionId);
+  async function votar(votacionId, opcionId) {
+    const v = _todasVotaciones.find(x => x.id === votacionId);
     if (!v || v.estado !== 'abierta') return;
 
     const misVotos = getMisVotos();
     const votoPrevio = misVotos[votacionId];
-    if (votoPrevio === opcionId) {
-      toast('Ya votaste esa opción');
-      return;
-    }
+    if (votoPrevio === opcionId) { toast('Ya votaste esa opción'); return; }
 
-    // si ya había votado, restamos de la opción anterior
     if (votoPrevio) {
       const opPrev = v.opciones.find(o => o.id === votoPrevio);
       if (opPrev && opPrev.votos > 0) opPrev.votos -= 1;
     }
-    // sumamos a la nueva
     const opNueva = v.opciones.find(o => o.id === opcionId);
     if (opNueva) opNueva.votos += 1;
-
-    // si es voto nuevo (no cambio), sube participantes
     if (!votoPrevio) v.participantes = (v.participantes || 0) + 1;
 
-    Store.update('votaciones', votacionId, {
+    await Store.update('votaciones', votacionId, {
       opciones: v.opciones,
       participantes: v.participantes
     });
     setMiVoto(votacionId, opcionId);
     toast(votoPrevio ? '✓ Voto cambiado' : '✓ Voto registrado', 'success');
-    render();
+    render(_todasVotaciones);
   }
 
   function renderVotacion(v) {
@@ -196,7 +193,6 @@
     const ganadora = (v.opciones || []).reduce((a,b) => (a.votos||0) > (b.votos||0) ? a : b, v.opciones[0]);
     const misVotos = getMisVotos();
     const miVoto = misVotos[v.id];
-
     const cierre = new Date(v.cierre);
     const cierreStr = cierre.toLocaleDateString('es-AR') + ' · ' +
       cierre.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
@@ -212,8 +208,7 @@
           <div class="bar" style="width:${pct}%"></div>
           <span class="opt-text">${esMia ? '✓ ' : ''}${escapeHtml(o.texto)}${esGanadora && disabled ? ' ✓' : ''}</span>
           <span class="pct">${pct}%</span>
-        </div>
-      `;
+        </div>`;
     }).join('');
 
     return `
@@ -232,30 +227,30 @@
           <span>👥 ${v.participantes || 0} votos · ${Math.round((v.participantes || 0) / (v.totalElegibles || 580) * 100)}% del cole</span>
           ${miVoto ? '<span class="voted-tag">Ya votaste</span>' : (v.estado === 'abierta' ? '<span style="color:var(--burgundy);font-weight:600">Toca una opción para votar →</span>' : '')}
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
-  function render() {
-    const todas = Store.list('votaciones');
+  function render(todas) {
     const abiertas = todas.filter(v => v.estado === 'abierta');
     const cerradas = todas.filter(v => v.estado !== 'abierta');
-
     document.getElementById('contadores').innerHTML = `
       <span style="background:#d8ecdc;color:#2d6a3e;padding:8px 16px;font-size:13px;border-radius:999px;font-weight:600">● ${abiertas.length} ${abiertas.length === 1 ? 'abierta' : 'abiertas'}</span>
-      <span style="background:var(--cream);color:var(--ink-soft);padding:8px 16px;font-size:13px;border-radius:999px;font-weight:600">${cerradas.length} cerradas</span>
-    `;
-
+      <span style="background:var(--cream);color:var(--ink-soft);padding:8px 16px;font-size:13px;border-radius:999px;font-weight:600">${cerradas.length} cerradas</span>`;
     document.getElementById('abiertas').innerHTML = abiertas.length === 0
       ? '<div class="no-votes"><h3>No hay votaciones abiertas</h3><p>Cuando el centro publique alguna, va a aparecer acá.</p></div>'
       : abiertas.map(renderVotacion).join('');
-
     document.getElementById('cerradas').innerHTML = cerradas.length === 0
       ? '<div class="no-votes"><p>Sin votaciones cerradas todavía.</p></div>'
       : cerradas.map(renderVotacion).join('');
   }
 
-  document.addEventListener('DOMContentLoaded', render);
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Store.init();
+    document.getElementById('abiertas').innerHTML =
+      '<div class="no-votes"><p style="color:var(--ink-soft)">Cargando...</p></div>';
+    _todasVotaciones = await Store.list('votaciones');
+    render(_todasVotaciones);
+  });
 </script>
 </body>
 </html>

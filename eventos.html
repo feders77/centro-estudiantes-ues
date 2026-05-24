@@ -149,15 +149,15 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="supabase-config.js"></script>
 <script src="store.js"></script>
 <script>
   const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
-  function render() {
-    const eventos = Store.list('eventos').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  function render(eventos) {
     const cont = document.getElementById('timeline');
 
-    if (eventos.length === 0) {
+    if (!eventos.length) {
       cont.innerHTML = `<div class="empty-evs">
         <h3>Sin eventos cargados</h3>
         <p>Cuando el centro agregue eventos, vas a verlos acá.</p>
@@ -165,10 +165,9 @@
       return;
     }
 
-    // agrupar por mes/año
     const grupos = {};
     const ahora = new Date();
-    eventos.forEach(e => {
+    [...eventos].sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).forEach(e => {
       const d = new Date(e.fecha);
       const key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
       const label = MESES[d.getMonth()] + ' ' + d.getFullYear();
@@ -182,14 +181,14 @@
         <div class="month-group">
           <div class="month-header">${g.label}</div>
           ${g.items.map(e => {
-            const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+            const mesesCortos = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
             const hora = e._date.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
             const dia = e._date.getDate();
             return `
               <div class="event-card ${e.destacado ? 'dest' : ''} ${e._past ? 'past' : ''}">
                 <div class="ev-date ${e.destacado ? 'dest' : ''}">
                   <div class="ev-day">${dia}</div>
-                  <div class="ev-month">${meses[e._date.getMonth()]}</div>
+                  <div class="ev-month">${mesesCortos[e._date.getMonth()]}</div>
                   <div class="ev-time">${hora}</div>
                 </div>
                 <div class="ev-info">
@@ -202,15 +201,19 @@
                 <div>
                   <span class="ev-tag ${e.categoria || 'centro'}">${escapeHtml(e.categoria || 'centro')}</span>
                 </div>
-              </div>
-            `;
+              </div>`;
           }).join('')}
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
-  document.addEventListener('DOMContentLoaded', render);
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Store.init();
+    document.getElementById('timeline').innerHTML =
+      `<div class="empty-evs"><p style="color:var(--ink-soft)">Cargando...</p></div>`;
+    const eventos = await Store.list('eventos');
+    render(eventos);
+  });
 </script>
 </body>
 </html>

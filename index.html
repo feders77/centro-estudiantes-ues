@@ -268,11 +268,14 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="supabase-config.js"></script>
 <script src="store.js"></script>
 <script>
-  /* COUNTDOWN dinámico desde config */
+  let _config = {};
+
+  /* COUNTDOWN — usa datos ya cargados en _config */
   function tickCountdown() {
-    const c = Store.getConfig();
+    const c = _config;
     document.getElementById('hero-destino').textContent = (c.viajeDestino || '—') + ' · Salida';
     document.getElementById('hero-nota').textContent = c.viajeNota ? '⚠ ' + c.viajeNota : '';
     document.getElementById('hero-confirmados').innerHTML =
@@ -283,10 +286,7 @@
     const now = new Date();
     const diff = target - now;
     if (diff <= 0) {
-      document.getElementById('cd-d').textContent = '0';
-      document.getElementById('cd-h').textContent = '0';
-      document.getElementById('cd-m').textContent = '0';
-      document.getElementById('cd-s').textContent = '0';
+      ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '0');
       return;
     }
     document.getElementById('cd-d').textContent = Math.floor(diff/86400000);
@@ -295,11 +295,9 @@
     document.getElementById('cd-s').textContent = Math.floor((diff%60000)/1000);
   }
 
-  /* FEED de novedades */
-  function renderFeed() {
-    const novedades = Store.list('novedades', true);
+  function renderFeed(novedades) {
     const cont = document.getElementById('feed-novedades');
-    if (novedades.length === 0) {
+    if (!novedades.length) {
       cont.innerHTML = `<div class="feed-item"><p style="text-align:center;color:var(--ink-soft)">No hay novedades por ahora.</p></div>`;
       return;
     }
@@ -319,19 +317,18 @@
     `).join('');
   }
 
-  /* PRÓXIMOS EVENTOS */
-  function renderEventos() {
+  function renderEventos(eventos) {
     const hoy = new Date();
-    const eventos = Store.list('eventos')
+    const proximos = eventos
       .filter(e => new Date(e.fecha) >= hoy)
       .sort((a,b) => new Date(a.fecha) - new Date(b.fecha))
       .slice(0,5);
     const cont = document.getElementById('side-eventos');
-    if (eventos.length === 0) {
+    if (!proximos.length) {
       cont.innerHTML = `<p style="font-size:13px;color:var(--ink-soft)">Sin eventos próximos.</p>`;
       return;
     }
-    cont.innerHTML = eventos.map(e => {
+    cont.innerHTML = proximos.map(e => {
       const f = formatFechaCorta(e.fecha);
       const hora = new Date(e.fecha).toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
       return `
@@ -341,20 +338,17 @@
             <h5>${escapeHtml(e.titulo)}</h5>
             <p>${hora}${e.lugar ? ' · ' + escapeHtml(e.lugar) : ''}</p>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
-  /* VOTACIÓN DESTACADA */
-  function renderVotacionDestacada() {
-    const abiertas = Store.list('votaciones').filter(v => v.estado === 'abierta');
+  function renderVotacionDestacada(votaciones) {
+    const abiertas = votaciones.filter(v => v.estado === 'abierta');
     const cont = document.getElementById('side-votacion');
-    if (abiertas.length === 0) {
+    if (!abiertas.length) {
       cont.innerHTML = `<p style="font-size:13px;color:var(--ink-soft)">No hay votaciones abiertas.</p>`;
       return;
     }
-    // priorizar vinculante, sino la primera
     const v = abiertas.find(x => x.vinculante) || abiertas[0];
     const total = v.opciones.reduce((s,o) => s + (o.votos||0), 0) || 1;
     const opciones = [...v.opciones].sort((a,b) => b.votos - a.votos).slice(0,4);
@@ -362,32 +356,49 @@
       <p style="font-size:13px;margin-bottom:14px;color:var(--ink-soft)">${escapeHtml(v.titulo)}</p>
       ${opciones.map(o => {
         const pct = Math.round((o.votos / total) * 100);
-        return `
-          <div class="poll-option">
-            <div class="poll-fill" style="width:${pct}%"></div>
-            <span class="poll-label">${escapeHtml(o.texto)}</span>
-            <span class="poll-pct">${pct}%</span>
-          </div>`;
+        return `<div class="poll-option">
+          <div class="poll-fill" style="width:${pct}%"></div>
+          <span class="poll-label">${escapeHtml(o.texto)}</span>
+          <span class="poll-pct">${pct}%</span>
+        </div>`;
       }).join('')}
-      <a href="votaciones.html" style="display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--burgundy);text-decoration:none;font-weight:600">Ver todas →</a>
-    `;
+      <a href="votaciones.html" style="display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--burgundy);text-decoration:none;font-weight:600">Ver todas →</a>`;
   }
 
-  /* Quick access subtítulo dinámico */
-  function renderQuickSub() {
-    const ab = Store.list('votaciones').filter(v => v.estado === 'abierta').length;
+  function renderQuickSub(votaciones) {
+    const ab = votaciones.filter(v => v.estado === 'abierta').length;
     document.getElementById('qc-votaciones-sub').textContent =
       ab === 0 ? 'Sin votaciones abiertas' : `${ab} ${ab === 1 ? 'abierta' : 'abiertas'}`;
   }
 
-  /* Init */
-  document.addEventListener('DOMContentLoaded', () => {
+  /* loader sutil mientras llega Supabase */
+  function mostrarLoader() {
+    document.getElementById('feed-novedades').innerHTML =
+      `<div class="feed-item"><p style="text-align:center;color:var(--ink-soft)">Cargando novedades...</p></div>`;
+    document.getElementById('side-eventos').innerHTML =
+      `<p style="font-size:13px;color:var(--ink-soft)">Cargando...</p>`;
+    document.getElementById('side-votacion').innerHTML =
+      `<p style="font-size:13px;color:var(--ink-soft)">Cargando...</p>`;
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Store.init();
+    mostrarLoader();
+
+    const [novedades, eventos, votaciones, config] = await Promise.all([
+      Store.list('novedades', true),
+      Store.list('eventos'),
+      Store.list('votaciones'),
+      Store.getConfig()
+    ]);
+
+    _config = config;
     tickCountdown();
     setInterval(tickCountdown, 1000);
-    renderFeed();
-    renderEventos();
-    renderVotacionDestacada();
-    renderQuickSub();
+    renderFeed(novedades);
+    renderEventos(eventos);
+    renderVotacionDestacada(votaciones);
+    renderQuickSub(votaciones);
   });
 </script>
 

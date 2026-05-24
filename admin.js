@@ -1,6 +1,30 @@
 /* =========================================================================
-   ADMIN — Lógica del panel de administración
+   ADMIN — Lógica del panel de administración (versión Supabase async)
    ========================================================================= */
+
+/* ---------- cache en memoria para no hacer fetch en cada render ---------- */
+let _cache = {
+  novedades:  [],
+  eventos:    [],
+  votaciones: [],
+  apuntes:    [],
+  marketplace: []
+};
+
+async function loadAll() {
+  const [novedades, eventos, votaciones, apuntes, marketplace] = await Promise.all([
+    Store.list('novedades'),
+    Store.list('eventos'),
+    Store.list('votaciones'),
+    Store.list('apuntes'),
+    Store.list('marketplace')
+  ]);
+  _cache = { novedades, eventos, votaciones, apuntes, marketplace };
+}
+
+async function recargar(coleccion) {
+  _cache[coleccion] = await Store.list(coleccion);
+}
 
 /* ---------- NAVEGACIÓN ENTRE SECCIONES ---------- */
 document.querySelectorAll('.admin-nav a').forEach(link => {
@@ -24,7 +48,7 @@ function toast(msg, tipo = '') {
 }
 
 /* ---------- MODALES ---------- */
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
@@ -38,9 +62,9 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
    ======================================================================== */
 
 function renderNovedades() {
-  const lista = Store.list('novedades');
+  const lista = _cache.novedades;
   const cont = document.getElementById('tabla-novedades');
-  if (lista.length === 0) {
+  if (!lista.length) {
     cont.innerHTML = `<div class="empty-state">
       <h3>Sin novedades cargadas</h3>
       <p>Creá la primera con el botón "+ Nueva novedad"</p>
@@ -81,7 +105,7 @@ function openNovedadModal() {
 }
 
 function editarNovedad(id) {
-  const n = Store.get('novedades', id);
+  const n = _cache.novedades.find(x => x.id === id);
   if (!n) return;
   document.getElementById('modal-novedad-title').textContent = 'Editar novedad';
   document.getElementById('nov-id').value = n.id;
@@ -94,38 +118,42 @@ function editarNovedad(id) {
   openModal('modal-novedad');
 }
 
-function guardarNovedad(e) {
+async function guardarNovedad(e) {
   e.preventDefault();
   const id = document.getElementById('nov-id').value;
   const data = {
-    titulo: document.getElementById('nov-titulo').value.trim(),
-    texto: document.getElementById('nov-texto').value.trim(),
-    tag: document.getElementById('nov-tag').value.trim(),
+    titulo:  document.getElementById('nov-titulo').value.trim(),
+    texto:   document.getElementById('nov-texto').value.trim(),
+    tag:     document.getElementById('nov-tag').value.trim(),
     tagTipo: document.getElementById('nov-tagTipo').value,
-    autor: document.getElementById('nov-autor').value.trim(),
-    activa: document.getElementById('nov-activa').checked
+    autor:   document.getElementById('nov-autor').value.trim(),
+    activa:  document.getElementById('nov-activa').checked
   };
   if (id) {
-    Store.update('novedades', id, data);
+    await Store.update('novedades', id, data);
     toast('✓ Novedad actualizada', 'success');
   } else {
-    Store.add('novedades', { ...data, fecha: new Date().toISOString(), likes: 0, comentarios: 0 });
+    await Store.add('novedades', { ...data, fecha: new Date().toISOString(), likes: 0, comentarios: 0 });
     toast('✓ Novedad creada', 'success');
   }
   closeModal('modal-novedad');
+  await recargar('novedades');
   renderTodo();
 }
 
-function toggleNovedad(id) {
-  const n = Store.get('novedades', id);
-  Store.update('novedades', id, { activa: !n.activa });
-  renderTodo();
+async function toggleNovedad(id) {
+  const n = _cache.novedades.find(x => x.id === id);
+  if (!n) return;
+  await Store.update('novedades', id, { activa: !n.activa });
   toast(n.activa ? 'Novedad oculta' : 'Novedad visible', 'success');
+  await recargar('novedades');
+  renderTodo();
 }
 
-function borrarNovedad(id) {
+async function borrarNovedad(id) {
   if (!confirm('¿Borrar esta novedad? No se puede deshacer.')) return;
-  Store.remove('novedades', id);
+  await Store.remove('novedades', id);
+  await recargar('novedades');
   renderTodo();
   toast('Novedad eliminada', 'success');
 }
@@ -135,9 +163,9 @@ function borrarNovedad(id) {
    ======================================================================== */
 
 function renderEventos() {
-  const lista = Store.list('eventos').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  const lista = [..._cache.eventos].sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
   const cont = document.getElementById('tabla-eventos');
-  if (lista.length === 0) {
+  if (!lista.length) {
     cont.innerHTML = `<div class="empty-state">
       <h3>Sin eventos cargados</h3>
       <p>Creá el primero con el botón "+ Nuevo evento"</p>
@@ -179,7 +207,7 @@ function openEventoModal() {
 }
 
 function editarEvento(id) {
-  const e = Store.get('eventos', id);
+  const e = _cache.eventos.find(x => x.id === id);
   if (!e) return;
   document.getElementById('modal-evento-title').textContent = 'Editar evento';
   document.getElementById('ev-id').value = e.id;
@@ -192,31 +220,33 @@ function editarEvento(id) {
   openModal('modal-evento');
 }
 
-function guardarEvento(e) {
+async function guardarEvento(e) {
   e.preventDefault();
   const id = document.getElementById('ev-id').value;
   const data = {
-    titulo: document.getElementById('ev-titulo').value.trim(),
+    titulo:      document.getElementById('ev-titulo').value.trim(),
     descripcion: document.getElementById('ev-descripcion').value.trim(),
-    fecha: document.getElementById('ev-fecha').value + ':00',
-    lugar: document.getElementById('ev-lugar').value.trim(),
-    categoria: document.getElementById('ev-categoria').value,
-    destacado: document.getElementById('ev-destacado').checked
+    fecha:       document.getElementById('ev-fecha').value + ':00',
+    lugar:       document.getElementById('ev-lugar').value.trim(),
+    categoria:   document.getElementById('ev-categoria').value,
+    destacado:   document.getElementById('ev-destacado').checked
   };
   if (id) {
-    Store.update('eventos', id, data);
+    await Store.update('eventos', id, data);
     toast('✓ Evento actualizado', 'success');
   } else {
-    Store.add('eventos', data);
+    await Store.add('eventos', data);
     toast('✓ Evento creado', 'success');
   }
   closeModal('modal-evento');
+  await recargar('eventos');
   renderTodo();
 }
 
-function borrarEvento(id) {
+async function borrarEvento(id) {
   if (!confirm('¿Borrar este evento?')) return;
-  Store.remove('eventos', id);
+  await Store.remove('eventos', id);
+  await recargar('eventos');
   renderTodo();
   toast('Evento eliminado', 'success');
 }
@@ -226,9 +256,9 @@ function borrarEvento(id) {
    ======================================================================== */
 
 function renderVotaciones() {
-  const lista = Store.list('votaciones');
+  const lista = _cache.votaciones;
   const cont = document.getElementById('tabla-votaciones');
-  if (lista.length === 0) {
+  if (!lista.length) {
     cont.innerHTML = `<div class="empty-state">
       <h3>Sin votaciones</h3>
       <p>Creá una con el botón "+ Nueva votación"</p>
@@ -272,7 +302,7 @@ function openVotacionModal() {
 }
 
 function editarVotacion(id) {
-  const v = Store.get('votaciones', id);
+  const v = _cache.votaciones.find(x => x.id === id);
   if (!v) return;
   document.getElementById('modal-votacion-title').textContent = 'Editar votación';
   document.getElementById('vt-id').value = v.id;
@@ -285,7 +315,7 @@ function editarVotacion(id) {
   openModal('modal-votacion');
 }
 
-function guardarVotacion(e) {
+async function guardarVotacion(e) {
   e.preventDefault();
   const id = document.getElementById('vt-id').value;
   const textoOpciones = document.getElementById('vt-opciones').value
@@ -298,8 +328,7 @@ function guardarVotacion(e) {
 
   let opciones;
   if (id) {
-    // Mantener los votos existentes si la opción ya existía
-    const v = Store.get('votaciones', id);
+    const v = _cache.votaciones.find(x => x.id === id);
     opciones = textoOpciones.map((t, i) => {
       const existente = (v.opciones || []).find(o => o.texto === t);
       return { id: 'o' + (i+1), texto: t, votos: existente ? existente.votos : 0 };
@@ -309,38 +338,42 @@ function guardarVotacion(e) {
   }
 
   const data = {
-    titulo: document.getElementById('vt-titulo').value.trim(),
-    descripcion: document.getElementById('vt-descripcion').value.trim(),
-    cierre: document.getElementById('vt-cierre').value + ':00',
-    estado: document.getElementById('vt-estado').value,
-    vinculante: document.getElementById('vt-vinculante').checked,
+    titulo:         document.getElementById('vt-titulo').value.trim(),
+    descripcion:    document.getElementById('vt-descripcion').value.trim(),
+    cierre:         document.getElementById('vt-cierre').value + ':00',
+    estado:         document.getElementById('vt-estado').value,
+    vinculante:     document.getElementById('vt-vinculante').checked,
     opciones,
-    participantes: opciones.reduce((s,o) => s + o.votos, 0),
+    participantes:  opciones.reduce((s,o) => s + o.votos, 0),
     totalElegibles: 580
   };
 
   if (id) {
-    Store.update('votaciones', id, data);
+    await Store.update('votaciones', id, data);
     toast('✓ Votación actualizada', 'success');
   } else {
-    Store.add('votaciones', data);
+    await Store.add('votaciones', data);
     toast('✓ Votación creada', 'success');
   }
   closeModal('modal-votacion');
+  await recargar('votaciones');
   renderTodo();
 }
 
-function toggleVotacion(id) {
-  const v = Store.get('votaciones', id);
+async function toggleVotacion(id) {
+  const v = _cache.votaciones.find(x => x.id === id);
+  if (!v) return;
   const nuevoEstado = v.estado === 'abierta' ? 'cerrada' : 'abierta';
-  Store.update('votaciones', id, { estado: nuevoEstado });
+  await Store.update('votaciones', id, { estado: nuevoEstado });
+  await recargar('votaciones');
   renderTodo();
   toast('Votación ' + nuevoEstado, 'success');
 }
 
-function borrarVotacion(id) {
+async function borrarVotacion(id) {
   if (!confirm('¿Borrar esta votación? Se pierden todos los votos.')) return;
-  Store.remove('votaciones', id);
+  await Store.remove('votaciones', id);
+  await recargar('votaciones');
   renderTodo();
   toast('Votación eliminada', 'success');
 }
@@ -350,9 +383,9 @@ function borrarVotacion(id) {
    ======================================================================== */
 
 function renderApuntes() {
-  const lista = Store.list('apuntes');
+  const lista = _cache.apuntes;
   const cont = document.getElementById('tabla-apuntes');
-  if (lista.length === 0) {
+  if (!lista.length) {
     cont.innerHTML = `<div class="empty-state">
       <h3>Sin apuntes</h3>
       <p>Cuando los alumnos suban apuntes desde el sitio, vas a poder moderarlos acá.</p>
@@ -366,7 +399,7 @@ function renderApuntes() {
       <div class="data-info">
         <h5 class="data-title">${escapeHtml(ap.titulo)}</h5>
         <div class="data-meta">
-          <span class="tag">${escapeHtml(ap.tipo)}</span>
+          <span class="tag">${escapeHtml(ap.tipo || '')}</span>
           <span>📘 ${escapeHtml(ap.materia)}</span>
           <span>🎓 ${escapeHtml(curso)}</span>
           <span>👤 ${escapeHtml(ap.autorNombre)}</span>
@@ -383,16 +416,19 @@ function renderApuntes() {
   }).join('');
 }
 
-function toggleApunte(id) {
-  const a = Store.get('apuntes', id);
-  Store.update('apuntes', id, { activo: a.activo === false ? true : false });
+async function toggleApunte(id) {
+  const a = _cache.apuntes.find(x => x.id === id);
+  if (!a) return;
+  await Store.update('apuntes', id, { activo: a.activo === false ? true : false });
+  await recargar('apuntes');
   renderTodo();
   toast('Apunte actualizado', 'success');
 }
 
-function borrarApunte(id) {
+async function borrarApunte(id) {
   if (!confirm('¿Borrar este apunte?')) return;
-  Store.remove('apuntes', id);
+  await Store.remove('apuntes', id);
+  await recargar('apuntes');
   renderTodo();
   toast('Apunte eliminado', 'success');
 }
@@ -402,9 +438,9 @@ function borrarApunte(id) {
    ======================================================================== */
 
 function renderMarketplace() {
-  const lista = Store.list('marketplace');
+  const lista = _cache.marketplace;
   const cont = document.getElementById('tabla-marketplace');
-  if (lista.length === 0) {
+  if (!lista.length) {
     cont.innerHTML = `<div class="empty-state">
       <h3>Sin publicaciones</h3>
       <p>Los alumnos van a publicar desde el sitio público.</p>
@@ -432,15 +468,18 @@ function renderMarketplace() {
   `).join('');
 }
 
-function toggleMP(id) {
-  const p = Store.get('marketplace', id);
-  Store.update('marketplace', id, { activo: p.activo === false ? true : false });
+async function toggleMP(id) {
+  const p = _cache.marketplace.find(x => x.id === id);
+  if (!p) return;
+  await Store.update('marketplace', id, { activo: p.activo === false ? true : false });
+  await recargar('marketplace');
   renderTodo();
 }
 
-function borrarMP(id) {
+async function borrarMP(id) {
   if (!confirm('¿Borrar esta publicación?')) return;
-  Store.remove('marketplace', id);
+  await Store.remove('marketplace', id);
+  await recargar('marketplace');
   renderTodo();
   toast('Publicación eliminada', 'success');
 }
@@ -449,8 +488,8 @@ function borrarMP(id) {
    CONFIG
    ======================================================================== */
 
-function cargarConfig() {
-  const c = Store.getConfig();
+async function cargarConfig() {
+  const c = await Store.getConfig();
   document.getElementById('cfg-destino').value = c.viajeDestino || '';
   document.getElementById('cfg-fecha').value = (c.viajeFecha || '').slice(0,16);
   document.getElementById('cfg-confirmados').value = c.viajeConfirmados || 0;
@@ -458,13 +497,13 @@ function cargarConfig() {
   document.getElementById('cfg-nota').value = c.viajeNota || '';
 }
 
-function guardarConfig() {
-  Store.setConfig({
-    viajeDestino: document.getElementById('cfg-destino').value.trim(),
-    viajeFecha: document.getElementById('cfg-fecha').value + ':00',
+async function guardarConfig() {
+  await Store.setConfig({
+    viajeDestino:     document.getElementById('cfg-destino').value.trim(),
+    viajeFecha:       document.getElementById('cfg-fecha').value + ':00',
     viajeConfirmados: parseInt(document.getElementById('cfg-confirmados').value || 0),
-    viajeTotal: parseInt(document.getElementById('cfg-total').value || 0),
-    viajeNota: document.getElementById('cfg-nota').value.trim()
+    viajeTotal:       parseInt(document.getElementById('cfg-total').value || 0),
+    viajeNota:        document.getElementById('cfg-nota').value.trim()
   });
   toast('✓ Configuración guardada', 'success');
 }
@@ -473,11 +512,11 @@ function guardarConfig() {
    EXPORT / IMPORT
    ======================================================================== */
 
-function exportarDatos() {
-  const json = Store.exportAll();
+async function exportarDatos() {
+  const json = await Store.exportAll();
   const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   a.href = url;
   a.download = `centro-estudiantes-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
@@ -485,13 +524,14 @@ function exportarDatos() {
   toast('✓ Archivo descargado', 'success');
 }
 
-function importarDatos() {
+async function importarDatos() {
   const file = document.getElementById('import-file').files[0];
   if (!file) { toast('Elegí un archivo primero', 'error'); return; }
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     try {
-      Store.importAll(e.target.result);
+      await Store.importAll(e.target.result);
+      await loadAll();
       renderTodo();
       toast('✓ Datos importados correctamente', 'success');
     } catch (err) {
@@ -501,11 +541,10 @@ function importarDatos() {
   reader.readAsText(file);
 }
 
-function resetTodo() {
-  if (!confirm('¿Seguro? Esto borra TODO el contenido cargado y vuelve a los datos de ejemplo.')) return;
-  Store.reset();
+async function resetTodo() {
+  await Store.reset(); // Store.reset ya pide confirm internamente
+  await loadAll();
   renderTodo();
-  toast('✓ Todo reiniciado', 'success');
 }
 
 /* ========================================================================
@@ -513,33 +552,29 @@ function resetTodo() {
    ======================================================================== */
 
 function renderResumen() {
-  const novedadesActivas = Store.list('novedades').filter(n => n.activa).length;
-  const eventosFuturos = Store.list('eventos').filter(e => new Date(e.fecha) > new Date()).length;
-  const votacionesAbiertas = Store.list('votaciones').filter(v => v.estado === 'abierta').length;
-  const apuntesPublicados = Store.list('apuntes').filter(a => a.activo !== false).length;
+  const { novedades, eventos, votaciones, apuntes, marketplace } = _cache;
+  const ahora = new Date();
 
-  document.getElementById('stat-novedades').textContent = novedadesActivas;
-  document.getElementById('stat-eventos').textContent = eventosFuturos;
-  document.getElementById('stat-votaciones').textContent = votacionesAbiertas;
-  document.getElementById('stat-apuntes').textContent = apuntesPublicados;
+  document.getElementById('stat-novedades').textContent  = novedades.filter(n => n.activa).length;
+  document.getElementById('stat-eventos').textContent    = eventos.filter(e => new Date(e.fecha) > ahora).length;
+  document.getElementById('stat-votaciones').textContent = votaciones.filter(v => v.estado === 'abierta').length;
+  document.getElementById('stat-apuntes').textContent    = apuntes.filter(a => a.activo !== false).length;
 
-  // contadores en sidebar
-  document.getElementById('count-novedades').textContent = Store.list('novedades').length;
-  document.getElementById('count-eventos').textContent = Store.list('eventos').length;
-  document.getElementById('count-votaciones').textContent = Store.list('votaciones').length;
-  document.getElementById('count-apuntes').textContent = Store.list('apuntes').length;
-  document.getElementById('count-marketplace').textContent = Store.list('marketplace').length;
+  document.getElementById('count-novedades').textContent  = novedades.length;
+  document.getElementById('count-eventos').textContent    = eventos.length;
+  document.getElementById('count-votaciones').textContent = votaciones.length;
+  document.getElementById('count-apuntes').textContent    = apuntes.length;
+  document.getElementById('count-marketplace').textContent = marketplace.length;
 
-  // actividad reciente: últimas 5 cosas creadas
   const items = [];
-  Store.list('novedades').forEach(n => items.push({ tipo:'Novedad', titulo:n.titulo, fecha:n.fecha, icono:'📢' }));
-  Store.list('apuntes').forEach(a => items.push({ tipo:'Apunte', titulo:a.titulo, fecha:a.fecha, icono:'📚' }));
-  Store.list('marketplace').forEach(m => items.push({ tipo:'Marketplace', titulo:m.titulo, fecha:m.fecha, icono:'🔁' }));
+  novedades.forEach(n  => items.push({ tipo:'Novedad',      titulo:n.titulo, fecha:n.fecha, icono:'📢' }));
+  apuntes.forEach(a    => items.push({ tipo:'Apunte',       titulo:a.titulo, fecha:a.fecha, icono:'📚' }));
+  marketplace.forEach(m => items.push({ tipo:'Marketplace', titulo:m.titulo, fecha:m.fecha, icono:'🔁' }));
   items.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
   const recientes = items.slice(0,6);
 
   const cont = document.getElementById('actividad-reciente');
-  if (recientes.length === 0) {
+  if (!recientes.length) {
     cont.innerHTML = `<div class="empty-state"><p>Sin actividad por ahora.</p></div>`;
   } else {
     cont.innerHTML = recientes.map(r => `
@@ -569,6 +604,9 @@ function renderTodo() {
   renderMarketplace();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await Store.init();
+  await loadAll();
   renderTodo();
+  cargarConfig();
 });

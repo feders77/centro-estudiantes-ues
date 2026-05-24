@@ -264,11 +264,14 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="supabase-config.js"></script>
 <script src="store.js"></script>
 <script>
   const ANIOS = ['1','2','3','4','5'];
-  let anioActivo = '4'; // arrancamos en 4° porque es donde hay datos cargados
-  let subActivo = null; // 'A'/'B'/'C' o 'Humanidades'/'Naturales'/'Economía'
+  let anioActivo = '4';
+  let subActivo = null;
+  let _estructura = {};
+  let _apuntes = [];
 
   function toast(msg, tipo='') {
     const t = document.getElementById('toast');
@@ -278,66 +281,50 @@
   function openModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-  /* Tabs de año */
   function renderTabsAnio() {
-    const cont = document.getElementById('tabs-anio');
-    cont.innerHTML = ANIOS.map(a => `
-      <button class="tab-anio ${a === anioActivo ? 'active' : ''}" onclick="cambiarAnio('${a}')">${a}° año</button>
-    `).join('');
+    document.getElementById('tabs-anio').innerHTML = ANIOS.map(a =>
+      `<button class="tab-anio ${a === anioActivo ? 'active' : ''}" onclick="cambiarAnio('${a}')">${a}° año</button>`
+    ).join('');
   }
 
-  function cambiarAnio(a) {
+  async function cambiarAnio(a) {
     anioActivo = a;
-    const est = Store.getEstructura()[a];
+    const est = _estructura[a];
     if (!est) { subActivo = null; renderAll(); return; }
-    if (est.divisiones) {
-      subActivo = est.divisiones[0];
-    } else if (est.orientaciones) {
-      subActivo = Object.keys(est.orientaciones)[0];
-    } else {
-      subActivo = null;
-    }
+    if (est.divisiones)        subActivo = est.divisiones[0];
+    else if (est.orientaciones) subActivo = Object.keys(est.orientaciones)[0];
+    else                        subActivo = null;
     renderAll();
   }
 
-  /* Subtabs (división u orientación) */
   function renderSubTabs() {
-    const est = Store.getEstructura()[anioActivo];
+    const est = _estructura[anioActivo];
     const cont = document.getElementById('tabs-sub');
     if (!est) { cont.innerHTML = ''; return; }
     let labels = [];
-    if (est.divisiones) labels = est.divisiones.map(d => ({val:d, label:'División ' + d}));
+    if (est.divisiones)        labels = est.divisiones.map(d => ({val:d, label:'División ' + d}));
     else if (est.orientaciones) labels = Object.keys(est.orientaciones).map(o => ({val:o, label:o}));
-    cont.innerHTML = labels.map(l => `
-      <button class="sub-tab ${l.val === subActivo ? 'active' : ''}" onclick="cambiarSub('${l.val}')">${l.label}</button>
-    `).join('');
+    cont.innerHTML = labels.map(l =>
+      `<button class="sub-tab ${l.val === subActivo ? 'active' : ''}" onclick="cambiarSub('${l.val}')">${l.label}</button>`
+    ).join('');
   }
 
-  function cambiarSub(val) {
-    subActivo = val;
-    renderMaterias();
-  }
+  function cambiarSub(val) { subActivo = val; renderMaterias(); }
 
-  /* Materias del año/sub actual */
   function getMateriasActuales() {
-    const est = Store.getEstructura()[anioActivo];
+    const est = _estructura[anioActivo];
     if (!est) return [];
-    if (est.materias) return est.materias; // 1° y 2°: todas las divisiones comparten
-    if (est.orientaciones && subActivo) return est.orientaciones[subActivo] || [];
+    if (est.materias)                       return est.materias;
+    if (est.orientaciones && subActivo)     return est.orientaciones[subActivo] || [];
     return [];
   }
 
   function getApuntesPara(materia) {
-    return Store.list('apuntes', true).filter(a =>
+    return _apuntes.filter(a =>
       a.activo !== false &&
       a.anio === anioActivo &&
       a.materia === materia &&
-      (
-        // Si es 1° o 2°, no filtramos por división (se ve igual en A/B/C)
-        (anioActivo === '1' || anioActivo === '2') ||
-        // Si es 3°-5°, filtrar por orientación
-        a.orientacion === subActivo
-      )
+      ((anioActivo === '1' || anioActivo === '2') || a.orientacion === subActivo)
     );
   }
 
@@ -345,8 +332,7 @@
     renderSubTabs();
     const materias = getMateriasActuales();
     const grid = document.getElementById('subject-grid');
-
-    if (materias.length === 0) {
+    if (!materias.length) {
       grid.innerHTML = `
         <div class="no-data" style="grid-column:span 2">
           <h3>Materias pendientes de carga</h3>
@@ -355,7 +341,6 @@
         </div>`;
       return;
     }
-
     grid.innerHTML = materias.map(m => {
       const apuntes = getApuntesPara(m);
       const inicial = m.charAt(0).toUpperCase();
@@ -363,10 +348,7 @@
         <div class="subject-card">
           <div class="subject-head">
             <div class="subject-icon">${inicial}</div>
-            <div>
-              <h3>${escapeHtml(m)}</h3>
-              <p>${anioActivo}° ${subActivo ? escapeHtml(subActivo) : ''}</p>
-            </div>
+            <div><h3>${escapeHtml(m)}</h3><p>${anioActivo}° ${subActivo ? escapeHtml(subActivo) : ''}</p></div>
             <span class="badge">${apuntes.length} ${apuntes.length === 1 ? 'apunte' : 'apuntes'}</span>
           </div>
           <div class="file-list">
@@ -375,27 +357,21 @@
               : apuntes.slice(0,4).map(ap => `
                 <div class="file-item">
                   <div class="file-info">
-                    <span class="file-type">${escapeHtml(ap.tipo).toUpperCase().slice(0,5)}</span>
+                    <span class="file-type">${escapeHtml(ap.tipo||'').toUpperCase().slice(0,5)}</span>
                     <div>
                       <h5>${escapeHtml(ap.titulo)}</h5>
                       <p>Por ${escapeHtml(ap.autorNombre)} · ${formatFechaRelativa(ap.fecha)}</p>
                     </div>
                   </div>
-                </div>
-              `).join('')
+                </div>`).join('')
             }
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
-  function renderAll() {
-    renderTabsAnio();
-    renderMaterias();
-  }
+  function renderAll() { renderTabsAnio(); renderMaterias(); }
 
-  /* Subir apunte */
   function openSubir() {
     document.getElementById('sub-anio').value = anioActivo;
     actualizarSubirOrientacion();
@@ -407,18 +383,15 @@
     const grpO = document.getElementById('sub-grupo-orientacion');
     const grpD = document.getElementById('sub-grupo-division');
     if (a === '1' || a === '2') {
-      grpO.style.display = 'none';
-      grpD.style.display = 'block';
+      grpO.style.display = 'none'; grpD.style.display = 'block';
       document.getElementById('sub-orientacion').required = false;
       document.getElementById('sub-division').required = true;
     } else if (a) {
-      grpO.style.display = 'block';
-      grpD.style.display = 'none';
+      grpO.style.display = 'block'; grpD.style.display = 'none';
       document.getElementById('sub-orientacion').required = true;
       document.getElementById('sub-division').required = false;
     } else {
-      grpO.style.display = 'none';
-      grpD.style.display = 'none';
+      grpO.style.display = 'none'; grpD.style.display = 'none';
     }
     actualizarSubirMaterias();
   }
@@ -427,47 +400,51 @@
     const a = document.getElementById('sub-anio').value;
     const o = document.getElementById('sub-orientacion').value;
     const sel = document.getElementById('sub-materia');
-    const est = Store.getEstructura()[a];
+    const est = _estructura[a];
     let materias = [];
     if (!est) { sel.innerHTML = '<option value="">Sin materias cargadas</option>'; return; }
     if (est.materias && est.materias.length > 0) materias = est.materias;
     else if (est.orientaciones && o) materias = est.orientaciones[o] || [];
-    if (materias.length === 0) {
-      sel.innerHTML = '<option value="">Sin materias cargadas para este año</option>';
-    } else {
-      sel.innerHTML = '<option value="">Elegí materia</option>' +
+    sel.innerHTML = materias.length === 0
+      ? '<option value="">Sin materias cargadas para este año</option>'
+      : '<option value="">Elegí materia</option>' +
         materias.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
-    }
   }
 
-  function subirApunte(e) {
+  async function subirApunte(e) {
     e.preventDefault();
-    const anio = document.getElementById('sub-anio').value;
-    const orientacion = document.getElementById('sub-orientacion').value || null;
-    const division = document.getElementById('sub-division').value || null;
     const data = {
-      anio, orientacion, division,
-      materia: document.getElementById('sub-materia').value,
-      tipo: document.getElementById('sub-tipo').value,
-      titulo: document.getElementById('sub-titulo').value.trim(),
+      anio:        document.getElementById('sub-anio').value,
+      orientacion: document.getElementById('sub-orientacion').value || null,
+      division:    document.getElementById('sub-division').value || null,
+      materia:     document.getElementById('sub-materia').value,
+      tipo:        document.getElementById('sub-tipo').value,
+      titulo:      document.getElementById('sub-titulo').value.trim(),
       descripcion: document.getElementById('sub-descripcion').value.trim(),
       autorNombre: document.getElementById('sub-nombre').value.trim(),
-      autorCurso: document.getElementById('sub-curso').value.trim(),
-      fecha: new Date().toISOString(),
-      activo: true,
-      descargas: 0,
-      rating: 0
+      autorCurso:  document.getElementById('sub-curso').value.trim(),
+      fecha:       new Date().toISOString(),
+      activo:      true,
+      descargas:   0,
+      rating:      0
     };
-    Store.add('apuntes', data);
+    const nuevo = await Store.add('apuntes', data);
+    _apuntes.unshift(nuevo);
     closeModal('modal-subir');
     toast('✓ Apunte subido. Gracias por sumar al banco 🙏', 'success');
-    // limpiar form
     document.querySelector('#modal-subir form').reset();
     renderMaterias();
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    cambiarAnio('4'); // arranca en 4° donde hay datos cargados
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Store.init();
+    document.getElementById('subject-grid').innerHTML =
+      `<div class="no-data" style="grid-column:span 2"><p style="color:var(--ink-soft)">Cargando...</p></div>`;
+    [_estructura, _apuntes] = await Promise.all([
+      Store.getEstructura(),
+      Store.list('apuntes', true)
+    ]);
+    cambiarAnio('4');
   });
 </script>
 </body>

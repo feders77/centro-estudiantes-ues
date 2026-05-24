@@ -99,9 +99,10 @@
         </select>
       </div>
 
-      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px">
+      <button id="btn-enviar" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" onclick="enviarMensaje()">
         Enviar mensaje
       </button>
+      <div id="buzon-feedback" style="display:none;margin-top:14px;padding:14px;border-radius:10px;text-align:center;font-size:14px"></div>
 
       <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--ink-soft)">
         ⚠️ Si es una emergencia real, llamá al <strong>135</strong> (línea de prevención del suicidio).<br>
@@ -211,5 +212,56 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<script src="supabase-config.js"></script>
+<script>
+  async function enviarMensaje() {
+    const categoria = document.querySelector('.buzon-form select').value;
+    const mensaje   = document.querySelector('.buzon-form textarea').value.trim();
+    const btn       = document.getElementById('btn-enviar');
+    const feedback  = document.getElementById('buzon-feedback');
+
+    if (!mensaje) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fad6cd';
+      feedback.style.color = '#a73a1f';
+      feedback.textContent = 'Escribí algo antes de enviar.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    try {
+      const r = await fetch(window.SUPABASE_URL + '/rest/v1/buzon_mensajes', {
+        method:  'POST',
+        headers: {
+          'apikey':        window.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY,
+          'Content-Type':  'application/json',
+          'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify({ categoria, mensaje })
+      });
+
+      if (!r.ok) throw new Error('Error al enviar');
+
+      // éxito
+      document.querySelector('.buzon-form textarea').value = '';
+      feedback.style.display = 'block';
+      feedback.style.background = '#d8ecdc';
+      feedback.style.color = '#2d6a3e';
+      feedback.textContent = '✓ Mensaje enviado. El centro lo recibe de forma anónima y va a responder.';
+      btn.textContent = 'Mensaje enviado';
+
+    } catch {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fad6cd';
+      feedback.style.color = '#a73a1f';
+      feedback.textContent = 'Hubo un error al enviar. Intentá de nuevo en un momento.';
+      btn.disabled = false;
+      btn.textContent = 'Enviar mensaje';
+    }
+  }
+</script>
 </body>
 </html>

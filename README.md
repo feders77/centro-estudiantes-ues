@@ -1,63 +1,66 @@
-# Intranet Centro de Estudiantes · v2
+# Intranet Centro de Estudiantes · Sagrado Corazón Rosario
 
-Prototipo funcional con **admin** y persistencia en `localStorage`.
+Prototipo funcional del Centro de Estudiantes del Colegio Sagrado Corazón de Rosario.
 
-## Cómo abrirlo
+**Demo en vivo:** https://feders77.github.io/centro-estudiantes-ues/
 
-Doble click en `index.html`. Listo. Todo corre en el navegador, sin servidor ni dependencias.
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| Frontend | HTML + CSS + JS vanilla (sin frameworks) |
+| Backend / DB | [Supabase](https://supabase.com) — proyecto `qllcdhxisawvitlavtog` |
+| Hosting | GitHub Pages |
+
+## Correr en local
+
+```
+python -m http.server 8000
+```
+
+Abrí `http://localhost:8000`. Requiere conexión a internet (consulta Supabase).
 
 ## Páginas
 
 | Página | Qué hace |
 |---|---|
-| `index.html` | Home pública con countdown, novedades, eventos próximos y votación destacada |
+| `index.html` | Home con countdown, novedades, eventos próximos y votación destacada |
 | `apuntes.html` | Apuntes con jerarquía Año → Orientación/División, publicación abierta a alumnos |
 | `eventos.html` | Agenda agrupada por mes |
 | `votaciones.html` | Votar (no crear). Permite cambiar el voto |
-| `marketplace.html` | Compra/venta/regalo + sección **BUSCO** |
-| `buzon.html` | Buzón anónimo (sin tocar) |
-| `admin.html` | **Panel de administración** — CRUD completo |
+| `marketplace.html` | Compra/venta/regalo + sección BUSCO |
+| `buzon.html` | Buzón anónimo — los mensajes se leen desde el dashboard de Supabase |
+| `admin.html` | Panel de administración — CRUD completo |
 
-## Cómo funciona la persistencia
+## Cómo agregar contenido
 
-- Todo se guarda en `localStorage` del navegador (clave `ce_intranet_v1`)
-- **No se sincroniza entre dispositivos**: si cargás algo desde tu compu y abrís en el celu, no lo vas a ver
-- Para pasar el contenido a otra máquina: Admin → **Datos** → Exportar JSON, después en la otra máquina, Importar
-- La primera vez carga datos de ejemplo (para que se vea con vida)
+Abrí `admin.html` (o la URL de GitHub Pages + `/admin.html`) y usá el panel. Los cambios quedan guardados en Supabase y son visibles para todos en tiempo real.
 
-## Admin
+## Base de datos (Supabase)
 
-`admin.html` tiene 8 secciones:
+Dashboard: https://supabase.com/dashboard/project/qllcdhxisawvitlavtog
 
-1. **Resumen** — stats y actividad reciente
-2. **Novedades** — crear, editar, borrar, activar/desactivar
-3. **Eventos** — CRUD + marcar como destacado
-4. **Votaciones** — crear, editar opciones (mantiene votos existentes), cerrar/reabrir, borrar
-5. **Apuntes** — moderar lo que suben los alumnos (ocultar/borrar)
-6. **Marketplace** — moderar publicaciones
-7. **Config** — fecha del viaje a Bariloche, nota, confirmados
-8. **Datos** — exportar JSON, importar JSON, reset completo
+Tablas:
 
-## Estructura académica
+| Tabla | Uso |
+|---|---|
+| `config` | Configuración global (viaje a Bariloche, etc.) |
+| `novedades` | Posts de novedades |
+| `eventos` | Eventos de la agenda |
+| `votaciones` | Votaciones con opciones y conteo de votos |
+| `estructura_academica` | Jerarquía de años, orientaciones y materias |
+| `apuntes` | Apuntes subidos por alumnos |
+| `marketplace` | Publicaciones de compra/venta/regalo |
+| `buzon_mensajes` | Mensajes del buzón anónimo |
 
-Cargada en `store.js` (línea ~110, sección `estructura`):
+RLS habilitado en todas las tablas. La `anon key` (pública) permite lectura y escritura de contenido. Los mensajes del buzón solo se leen desde el dashboard con la `service_role key`.
 
-- **1° y 2°**: divisiones A/B/C, materias **pendientes de cargar**
-- **3°**: Humanidades (cargada), Naturales y Economía pendientes
-- **4°**: Humanidades (cargada), Naturales y Economía pendientes
-- **5°**: las tres orientaciones pendientes
+## Seguridad
 
-Cuando me pases las materias faltantes, edito directo `store.js`. Después podés "Resetear a datos de ejemplo" en el admin para recargar la nueva estructura.
+- `supabase-config.js` contiene la `anon key` — es pública por diseño (Supabase RLS controla el acceso)
+- `.env.local` y `.claude/settings.local.json` están en `.gitignore` y nunca se commitean
+- La `service_role key` no aparece en ningún archivo del repo
 
-> **Pendiente futuro:** sub-niveles de inglés (básico/intermedio/avanzado).
+---
 
-## Próximos pasos
-
-Si esto se prende y el centro quiere usarlo posta:
-
-1. **Backend real** (Supabase, gratis) → así todos los alumnos ven los mismos datos en tiempo real
-2. **Login** → para que cada alumno publique con su identidad
-3. **Subida de archivos real** → hoy es solo metadata; los PDFs habría que guardarlos en algún lado
-4. **Notificaciones** → push/email cuando hay votación nueva o evento próximo
-
-Pero por ahora, con esto tu hija puede verlo y mostrar la idea al resto.
+Prototipo · No oficial · Sagrado Corazón Rosario · 2026

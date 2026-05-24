@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eventos · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main{max-width:1280px;margin:0 auto;padding:40px 32px 80px}
+
+  .timeline{
+    background:#fff;border:1px solid var(--line);
+    border-radius:18px;padding:32px;
+  }
+  .month-group{margin-bottom:36px}
+  .month-group:last-child{margin-bottom:0}
+  .month-header{
+    font-family:'Fraunces',serif;font-size:22px;font-weight:600;
+    color:var(--burgundy);margin-bottom:16px;
+    padding-bottom:10px;border-bottom:2px solid var(--accent);
+    text-transform:capitalize;letter-spacing:-.01em;
+  }
+
+  .event-card{
+    display:grid;grid-template-columns:90px 1fr auto;gap:24px;
+    padding:18px;border-radius:12px;
+    transition:background .15s;align-items:center;
+    border:1px solid transparent;
+  }
+  .event-card:hover{background:var(--paper);border-color:var(--line)}
+  .event-card.dest{
+    background:linear-gradient(90deg,var(--cream),transparent);
+    border-color:var(--accent);
+  }
+  .event-card.past{opacity:.55}
+
+  .ev-date{
+    text-align:center;background:var(--cream);
+    border-radius:12px;padding:14px 8px;border:1px solid var(--line);
+  }
+  .ev-date.dest{background:var(--accent);border-color:var(--accent)}
+  .ev-day{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:var(--burgundy);line-height:1}
+  .ev-date.dest .ev-day{color:var(--ink)}
+  .ev-month{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--ink-soft);margin-top:4px;font-weight:600}
+  .ev-time{font-size:11px;color:var(--ink-soft);margin-top:4px;font-weight:500}
+
+  .ev-info h3{
+    font-family:'Fraunces',serif;font-size:18px;font-weight:600;
+    margin-bottom:4px;letter-spacing:-.01em;
+  }
+  .ev-info .ev-meta{
+    font-size:13px;color:var(--ink-soft);
+    display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;
+  }
+  .ev-info p{font-size:13px;color:var(--ink-soft);margin-top:6px}
+
+  .ev-tag{font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+  .ev-tag.centro{background:#fde8c8;color:#b56700}
+  .ev-tag.parcial{background:#fad6cd;color:#a73a1f}
+  .ev-tag.deportes{background:#d8ecdc;color:#2d6a3e}
+  .ev-tag.institucional{background:#e8d7e5;color:#6b2b62}
+
+  .legend{
+    display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;
+    background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:14px 18px;
+  }
+  .legend span{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+
+  .empty-evs{
+    background:#fff;border:1px dashed var(--line);
+    border-radius:14px;padding:60px 20px;text-align:center;color:var(--ink-soft);
+  }
+  .empty-evs h3{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);margin-bottom:6px}
+
+  @media (max-width:560px){
+    .event-card{grid-template-columns:70px 1fr;gap:14px}
+    .event-card > :last-child{grid-column:span 2}
+    .ev-day{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html" class="active">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <a href="#" class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Cata · 5° A</span>
+  </a>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <div>
+      <div class="hero-eyebrow" style="color:var(--burgundy)">Agenda del cole</div>
+      <h1 class="page-title">Eventos & calendario</h1>
+      <p class="page-sub">Asambleas, parciales, partidos, festivales. Todo lo que viene, ordenado por mes.</p>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="ev-tag centro">Centro</span></span>
+    <span><span class="ev-tag parcial">Parcial</span></span>
+    <span><span class="ev-tag deportes">Deportes</span></span>
+    <span><span class="ev-tag institucional">Institucional</span></span>
+    <span style="margin-left:auto">⭐ = destacado</span>
+  </div>
+
+  <div class="timeline" id="timeline"></div>
+
+</main>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="store.js"></script>
+<script>
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  function render() {
+    const eventos = Store.list('eventos').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+    const cont = document.getElementById('timeline');
+
+    if (eventos.length === 0) {
+      cont.innerHTML = `<div class="empty-evs">
+        <h3>Sin eventos cargados</h3>
+        <p>Cuando el centro agregue eventos, vas a verlos acá.</p>
+      </div>`;
+      return;
+    }
+
+    // agrupar por mes/año
+    const grupos = {};
+    const ahora = new Date();
+    eventos.forEach(e => {
+      const d = new Date(e.fecha);
+      const key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
+      const label = MESES[d.getMonth()] + ' ' + d.getFullYear();
+      if (!grupos[key]) grupos[key] = { label, items: [] };
+      grupos[key].items.push({ ...e, _date: d, _past: d < ahora });
+    });
+
+    cont.innerHTML = Object.keys(grupos).sort().map(k => {
+      const g = grupos[k];
+      return `
+        <div class="month-group">
+          <div class="month-header">${g.label}</div>
+          ${g.items.map(e => {
+            const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+            const hora = e._date.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+            const dia = e._date.getDate();
+            return `
+              <div class="event-card ${e.destacado ? 'dest' : ''} ${e._past ? 'past' : ''}">
+                <div class="ev-date ${e.destacado ? 'dest' : ''}">
+                  <div class="ev-day">${dia}</div>
+                  <div class="ev-month">${meses[e._date.getMonth()]}</div>
+                  <div class="ev-time">${hora}</div>
+                </div>
+                <div class="ev-info">
+                  <h3>${e.destacado ? '⭐ ' : ''}${escapeHtml(e.titulo)}</h3>
+                  <div class="ev-meta">
+                    ${e.lugar ? `<span>📍 ${escapeHtml(e.lugar)}</span>` : ''}
+                  </div>
+                  ${e.descripcion ? `<p>${escapeHtml(e.descripcion)}</p>` : ''}
+                </div>
+                <div>
+                  <span class="ev-tag ${e.categoria || 'centro'}">${escapeHtml(e.categoria || 'centro')}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

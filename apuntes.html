@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apuntes · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main{max-width:1280px;margin:0 auto;padding:40px 32px 80px}
+
+  .jerarquia-tabs{
+    display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;
+    background:#fff;border:1px solid var(--line);
+    padding:8px;border-radius:12px;
+  }
+  .tab-anio{
+    padding:10px 18px;border-radius:8px;background:transparent;
+    border:none;font-family:inherit;font-size:14px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;transition:all .15s;
+  }
+  .tab-anio:hover{background:var(--cream);color:var(--burgundy)}
+  .tab-anio.active{background:var(--burgundy);color:var(--cream)}
+
+  .sub-tabs{
+    display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;
+  }
+  .sub-tab{
+    padding:8px 14px;border-radius:999px;
+    background:#fff;border:1px solid var(--line);
+    font-family:inherit;font-size:12px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;transition:all .15s;
+  }
+  .sub-tab:hover{border-color:var(--burgundy);color:var(--burgundy)}
+  .sub-tab.active{background:var(--burgundy);color:var(--cream);border-color:var(--burgundy)}
+
+  .subject-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .subject-card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:24px;transition:border-color .2s;
+  }
+  .subject-card:hover{border-color:var(--burgundy)}
+  .subject-head{
+    display:flex;align-items:center;gap:14px;
+    padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:14px;
+  }
+  .subject-icon{
+    width:46px;height:46px;border-radius:12px;
+    background:var(--cream);color:var(--burgundy);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;font-weight:700;flex-shrink:0;
+  }
+  .subject-head h3{font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+  .subject-head p{font-size:12px;color:var(--ink-soft)}
+  .badge{
+    margin-left:auto;background:var(--cream);
+    font-size:11px;font-weight:600;padding:4px 10px;
+    border-radius:999px;color:var(--burgundy);
+  }
+  .file-list{display:flex;flex-direction:column;gap:8px}
+  .file-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px;border-radius:10px;transition:background .15s;
+  }
+  .file-item:hover{background:var(--paper)}
+  .file-type{
+    font-size:10px;font-weight:700;letter-spacing:.05em;
+    padding:5px 8px;border-radius:6px;background:#fad6cd;color:#a73a1f;
+  }
+  .file-info{display:flex;gap:12px;align-items:center;flex:1}
+  .file-info h5{font-size:13px;font-weight:600}
+  .file-info p{font-size:11px;color:var(--ink-soft);margin-top:2px}
+  .empty-subject{
+    padding:20px;text-align:center;
+    font-size:13px;color:var(--ink-soft);font-style:italic;
+  }
+
+  .upload-cta{
+    margin-top:32px;background:var(--burgundy);color:var(--cream);
+    border-radius:18px;padding:28px 36px;
+    display:flex;justify-content:space-between;align-items:center;gap:20px;
+  }
+  .upload-cta h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px}
+  .upload-cta p{opacity:.85;font-size:14px}
+  .upload-cta .btn-accent{background:var(--accent);color:var(--ink)}
+
+  .no-data{
+    background:#fff;border:1px dashed var(--line);
+    border-radius:14px;padding:40px 20px;text-align:center;
+    color:var(--ink-soft);
+  }
+  .no-data h3{font-family:'Fraunces',serif;color:var(--ink);font-size:18px;margin-bottom:6px}
+  .no-data p{font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html" class="active">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <a href="#" class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Cata · 5° A</span>
+  </a>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <div>
+      <div class="hero-eyebrow" style="color:var(--burgundy)">Repositorio compartido</div>
+      <h1 class="page-title">Apuntes & parciales</h1>
+      <p class="page-sub">Resúmenes, parciales viejos, TPs resueltos. Cualquier alumno puede subir lo suyo y sumar al banco.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openSubir()">+ Subir apunte</button>
+  </div>
+
+  <!-- Año -->
+  <div class="jerarquia-tabs" id="tabs-anio">
+    <!-- años inyectados por JS -->
+  </div>
+
+  <!-- Orientación o división (depende del año) -->
+  <div class="sub-tabs" id="tabs-sub">
+    <!-- subtabs inyectadas por JS -->
+  </div>
+
+  <!-- Materias -->
+  <div class="subject-grid" id="subject-grid">
+    <!-- inyectado por JS -->
+  </div>
+
+  <div class="upload-cta">
+    <div>
+      <h3>¿Tenés algo que sumar?</h3>
+      <p>Cada apunte que subís le ahorra horas al resto. Subilo en PDF, Word, foto, o pegá el link.</p>
+    </div>
+    <button class="btn btn-accent" onclick="openSubir()">+ Subir un apunte</button>
+  </div>
+
+</main>
+
+<!-- Modal subir -->
+<div class="modal-overlay" id="modal-subir">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-subir')">×</button>
+    <h2>Subir apunte</h2>
+    <p class="modal-sub">Tu apunte va a estar disponible para todo el cole una vez que lo revise el centro.</p>
+    <form onsubmit="subirApunte(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Año</label>
+          <select id="sub-anio" onchange="actualizarSubirOrientacion()" required>
+            <option value="">Elegí año</option>
+            <option value="1">1°</option>
+            <option value="2">2°</option>
+            <option value="3">3°</option>
+            <option value="4">4°</option>
+            <option value="5">5°</option>
+          </select>
+        </div>
+        <div class="form-group" id="sub-grupo-orientacion" style="display:none">
+          <label>Orientación</label>
+          <select id="sub-orientacion" onchange="actualizarSubirMaterias()" required>
+            <option value="">Elegí</option>
+            <option value="Humanidades">Humanidades</option>
+            <option value="Naturales">Naturales</option>
+            <option value="Economía">Economía</option>
+          </select>
+        </div>
+        <div class="form-group" id="sub-grupo-division" style="display:none">
+          <label>División</label>
+          <select id="sub-division" required>
+            <option value="">Elegí</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Materia</label>
+          <select id="sub-materia" required>
+            <option value="">Elegí año/orientación primero</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="sub-tipo">
+            <option>Resumen</option>
+            <option>Parcial viejo</option>
+            <option>TP resuelto</option>
+            <option>Apunte de clase</option>
+            <option>Posible evaluación</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Título del apunte</label>
+        <input type="text" id="sub-titulo" placeholder="Ej: Resumen Trigonometría completa" required>
+      </div>
+
+      <div class="form-group">
+        <label>Descripción breve</label>
+        <textarea id="sub-descripcion" rows="2" placeholder="Contale al resto qué hay adentro..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tu nombre</label>
+          <input type="text" id="sub-nombre" placeholder="Ej: Juan P." required>
+        </div>
+        <div class="form-group">
+          <label>Tu curso (para mostrar)</label>
+          <input type="text" id="sub-curso" placeholder="Ej: 4° Humanidades" required>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-subir')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Subir apunte</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="store.js"></script>
+<script>
+  const ANIOS = ['1','2','3','4','5'];
+  let anioActivo = '4'; // arrancamos en 4° porque es donde hay datos cargados
+  let subActivo = null; // 'A'/'B'/'C' o 'Humanidades'/'Naturales'/'Economía'
+
+  function toast(msg, tipo='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show ' + tipo;
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  /* Tabs de año */
+  function renderTabsAnio() {
+    const cont = document.getElementById('tabs-anio');
+    cont.innerHTML = ANIOS.map(a => `
+      <button class="tab-anio ${a === anioActivo ? 'active' : ''}" onclick="cambiarAnio('${a}')">${a}° año</button>
+    `).join('');
+  }
+
+  function cambiarAnio(a) {
+    anioActivo = a;
+    const est = Store.getEstructura()[a];
+    if (!est) { subActivo = null; renderAll(); return; }
+    if (est.divisiones) {
+      subActivo = est.divisiones[0];
+    } else if (est.orientaciones) {
+      subActivo = Object.keys(est.orientaciones)[0];
+    } else {
+      subActivo = null;
+    }
+    renderAll();
+  }
+
+  /* Subtabs (división u orientación) */
+  function renderSubTabs() {
+    const est = Store.getEstructura()[anioActivo];
+    const cont = document.getElementById('tabs-sub');
+    if (!est) { cont.innerHTML = ''; return; }
+    let labels = [];
+    if (est.divisiones) labels = est.divisiones.map(d => ({val:d, label:'División ' + d}));
+    else if (est.orientaciones) labels = Object.keys(est.orientaciones).map(o => ({val:o, label:o}));
+    cont.innerHTML = labels.map(l => `
+      <button class="sub-tab ${l.val === subActivo ? 'active' : ''}" onclick="cambiarSub('${l.val}')">${l.label}</button>
+    `).join('');
+  }
+
+  function cambiarSub(val) {
+    subActivo = val;
+    renderMaterias();
+  }
+
+  /* Materias del año/sub actual */
+  function getMateriasActuales() {
+    const est = Store.getEstructura()[anioActivo];
+    if (!est) return [];
+    if (est.materias) return est.materias; // 1° y 2°: todas las divisiones comparten
+    if (est.orientaciones && subActivo) return est.orientaciones[subActivo] || [];
+    return [];
+  }
+
+  function getApuntesPara(materia) {
+    return Store.list('apuntes', true).filter(a =>
+      a.activo !== false &&
+      a.anio === anioActivo &&
+      a.materia === materia &&
+      (
+        // Si es 1° o 2°, no filtramos por división (se ve igual en A/B/C)
+        (anioActivo === '1' || anioActivo === '2') ||
+        // Si es 3°-5°, filtrar por orientación
+        a.orientacion === subActivo
+      )
+    );
+  }
+
+  function renderMaterias() {
+    renderSubTabs();
+    const materias = getMateriasActuales();
+    const grid = document.getElementById('subject-grid');
+
+    if (materias.length === 0) {
+      grid.innerHTML = `
+        <div class="no-data" style="grid-column:span 2">
+          <h3>Materias pendientes de carga</h3>
+          <p>Las materias de ${anioActivo}° ${subActivo || ''} todavía no están cargadas en la estructura académica.</p>
+          <a href="admin.html" class="btn btn-ghost btn-sm">Cargar desde admin</a>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = materias.map(m => {
+      const apuntes = getApuntesPara(m);
+      const inicial = m.charAt(0).toUpperCase();
+      return `
+        <div class="subject-card">
+          <div class="subject-head">
+            <div class="subject-icon">${inicial}</div>
+            <div>
+              <h3>${escapeHtml(m)}</h3>
+              <p>${anioActivo}° ${subActivo ? escapeHtml(subActivo) : ''}</p>
+            </div>
+            <span class="badge">${apuntes.length} ${apuntes.length === 1 ? 'apunte' : 'apuntes'}</span>
+          </div>
+          <div class="file-list">
+            ${apuntes.length === 0
+              ? '<div class="empty-subject">Sin apuntes todavía. Animate a ser el primero.</div>'
+              : apuntes.slice(0,4).map(ap => `
+                <div class="file-item">
+                  <div class="file-info">
+                    <span class="file-type">${escapeHtml(ap.tipo).toUpperCase().slice(0,5)}</span>
+                    <div>
+                      <h5>${escapeHtml(ap.titulo)}</h5>
+                      <p>Por ${escapeHtml(ap.autorNombre)} · ${formatFechaRelativa(ap.fecha)}</p>
+                    </div>
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderAll() {
+    renderTabsAnio();
+    renderMaterias();
+  }
+
+  /* Subir apunte */
+  function openSubir() {
+    document.getElementById('sub-anio').value = anioActivo;
+    actualizarSubirOrientacion();
+    openModal('modal-subir');
+  }
+
+  function actualizarSubirOrientacion() {
+    const a = document.getElementById('sub-anio').value;
+    const grpO = document.getElementById('sub-grupo-orientacion');
+    const grpD = document.getElementById('sub-grupo-division');
+    if (a === '1' || a === '2') {
+      grpO.style.display = 'none';
+      grpD.style.display = 'block';
+      document.getElementById('sub-orientacion').required = false;
+      document.getElementById('sub-division').required = true;
+    } else if (a) {
+      grpO.style.display = 'block';
+      grpD.style.display = 'none';
+      document.getElementById('sub-orientacion').required = true;
+      document.getElementById('sub-division').required = false;
+    } else {
+      grpO.style.display = 'none';
+      grpD.style.display = 'none';
+    }
+    actualizarSubirMaterias();
+  }
+
+  function actualizarSubirMaterias() {
+    const a = document.getElementById('sub-anio').value;
+    const o = document.getElementById('sub-orientacion').value;
+    const sel = document.getElementById('sub-materia');
+    const est = Store.getEstructura()[a];
+    let materias = [];
+    if (!est) { sel.innerHTML = '<option value="">Sin materias cargadas</option>'; return; }
+    if (est.materias && est.materias.length > 0) materias = est.materias;
+    else if (est.orientaciones && o) materias = est.orientaciones[o] || [];
+    if (materias.length === 0) {
+      sel.innerHTML = '<option value="">Sin materias cargadas para este año</option>';
+    } else {
+      sel.innerHTML = '<option value="">Elegí materia</option>' +
+        materias.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+    }
+  }
+
+  function subirApunte(e) {
+    e.preventDefault();
+    const anio = document.getElementById('sub-anio').value;
+    const orientacion = document.getElementById('sub-orientacion').value || null;
+    const division = document.getElementById('sub-division').value || null;
+    const data = {
+      anio, orientacion, division,
+      materia: document.getElementById('sub-materia').value,
+      tipo: document.getElementById('sub-tipo').value,
+      titulo: document.getElementById('sub-titulo').value.trim(),
+      descripcion: document.getElementById('sub-descripcion').value.trim(),
+      autorNombre: document.getElementById('sub-nombre').value.trim(),
+      autorCurso: document.getElementById('sub-curso').value.trim(),
+      fecha: new Date().toISOString(),
+      activo: true,
+      descargas: 0,
+      rating: 0
+    };
+    Store.add('apuntes', data);
+    closeModal('modal-subir');
+    toast('✓ Apunte subido. Gracias por sumar al banco 🙏', 'success');
+    // limpiar form
+    document.querySelector('#modal-subir form').reset();
+    renderMaterias();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cambiarAnio('4'); // arranca en 4° donde hay datos cargados
+  });
+</script>
+</body>
+</html>

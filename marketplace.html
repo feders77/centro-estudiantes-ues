@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main{max-width:1280px;margin:0 auto;padding:40px 32px 80px}
+
+  .tipo-tabs{
+    display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;
+    background:#fff;border:1px solid var(--line);
+    padding:8px;border-radius:12px;
+  }
+  .tipo-tab{
+    padding:10px 18px;border-radius:8px;background:transparent;
+    border:none;font-family:inherit;font-size:14px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;transition:all .15s;
+  }
+  .tipo-tab:hover{background:var(--cream);color:var(--burgundy)}
+  .tipo-tab.active{background:var(--burgundy);color:var(--cream)}
+
+  .mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .product{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;transition:all .2s;
+  }
+  .product:hover{transform:translateY(-3px);border-color:var(--burgundy);box-shadow:var(--shadow)}
+  .product.busca{border-style:dashed;border-color:var(--coral)}
+  .product-img{
+    height:170px;background:var(--cream);
+    display:flex;align-items:center;justify-content:center;
+    font-size:64px;color:var(--burgundy);opacity:.6;
+    position:relative;
+  }
+  .product.busca .product-img{background:#fad6cd}
+  .product.regala .product-img{background:#d8ecdc}
+  .product-cat{
+    position:absolute;top:12px;left:12px;
+    background:rgba(250,246,239,.95);
+    padding:4px 10px;border-radius:999px;font-size:10px;
+    font-weight:600;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--burgundy);
+  }
+  .product.busca .product-cat{color:#a73a1f}
+  .product-body{padding:16px}
+  .product h4{font-size:15px;font-weight:600;margin-bottom:4px;font-family:'Fraunces',serif}
+  .product-price{
+    font-family:'Fraunces',serif;font-size:20px;font-weight:600;
+    color:var(--burgundy);margin:6px 0;
+  }
+  .product.regala .product-price{color:#2d6a3e}
+  .product.busca .product-price{color:var(--ink-soft);font-size:14px}
+  .product p.desc{font-size:12px;color:var(--ink-soft);min-height:30px}
+  .product-seller{
+    font-size:11px;color:var(--ink-soft);
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:10px;border-top:1px solid var(--line);margin-top:10px;
+  }
+
+  .no-products{
+    background:#fff;border:1px dashed var(--line);border-radius:14px;
+    padding:60px 20px;text-align:center;color:var(--ink-soft);
+    grid-column:span 3;
+  }
+  .no-products h3{font-family:'Fraunces',serif;color:var(--ink);font-size:18px;margin-bottom:6px}
+
+  .rules-card{
+    background:#fff;border:1px solid var(--mint);
+    border-radius:14px;padding:18px 22px;margin-bottom:20px;
+    border-left:4px solid var(--mint);
+  }
+  .rules-card h4{font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin-bottom:6px}
+  .rules-card p{font-size:13px;color:var(--ink-soft)}
+
+  @media (max-width:980px){.mp-grid{grid-template-columns:repeat(2,1fr)}.no-products{grid-column:span 2}}
+  @media (max-width:560px){.mp-grid{grid-template-columns:1fr}.no-products{grid-column:span 1}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html" class="active">Marketplace</a></li>
+    </ul>
+  </nav>
+  <a href="#" class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Cata · 5° A</span>
+  </a>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <div>
+      <div class="hero-eyebrow" style="color:var(--burgundy)">Compra · Venta · Intercambio · Busco</div>
+      <h1 class="page-title">Marketplace del cole</h1>
+      <p class="page-sub">Libros de lectura, materiales de trabajo, calculadoras, útiles. La plata pasa entre ustedes, nosotros solo conectamos.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openPublicar()">+ Publicar</button>
+  </div>
+
+  <div class="rules-card">
+    <h4>📋 Reglas simples</h4>
+    <p>Solo libros de lectura, materiales de trabajo, calculadoras y útiles. <strong>No se admiten uniformes.</strong> Si tu publicación no cumple, el centro la da de baja.</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="tipo-tabs" id="tipo-tabs">
+    <button class="tipo-tab active" onclick="filtrar('todos')">Todos</button>
+    <button class="tipo-tab" onclick="filtrar('vende')">🏷 En venta</button>
+    <button class="tipo-tab" onclick="filtrar('regala')">🎁 Regalo</button>
+    <button class="tipo-tab" onclick="filtrar('busca')">🔎 BUSCO</button>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="buscar" placeholder="🔍 Buscar producto..." oninput="render()">
+    <select id="categoria" onchange="render()">
+      <option value="">Todas las categorías</option>
+      <option value="libro">Libros</option>
+      <option value="utiles">Útiles</option>
+      <option value="calculadora">Calculadoras</option>
+      <option value="arte">Materiales de arte</option>
+      <option value="materiales">Materiales de trabajo</option>
+    </select>
+    <select id="orden" onchange="render()">
+      <option value="reciente">Más reciente</option>
+      <option value="precio-asc">Menor precio</option>
+      <option value="precio-desc">Mayor precio</option>
+    </select>
+  </div>
+
+  <div class="mp-grid" id="mp-grid"></div>
+
+</main>
+
+<!-- Modal publicar -->
+<div class="modal-overlay" id="modal-publicar">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-publicar')">×</button>
+    <h2>Publicar en Marketplace</h2>
+    <p class="modal-sub">Tu publicación queda visible para todo el cole. Si necesitás algo, usá la opción "Busco".</p>
+    <form onsubmit="publicar(event)">
+      <div class="form-group">
+        <label>Tipo de publicación</label>
+        <select id="p-tipo" required>
+          <option value="vende">🏷 Vendo</option>
+          <option value="regala">🎁 Regalo</option>
+          <option value="busca">🔎 Busco (no lo tengo, lo necesito)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="p-categoria" required>
+          <option value="libro">Libros de lectura</option>
+          <option value="materiales">Materiales de trabajo</option>
+          <option value="calculadora">Calculadora</option>
+          <option value="utiles">Útiles</option>
+          <option value="arte">Materiales de arte</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Título</label>
+        <input type="text" id="p-titulo" placeholder="Ej: Casio fx-991 / 'Pedro Páramo' / Set geométrico" required>
+      </div>
+
+      <div class="form-group" id="grupo-precio">
+        <label>Precio en pesos (poné 0 si es regalo, dejá vacío si "a combinar")</label>
+        <input type="number" id="p-precio" min="0" placeholder="Ej: 8500">
+      </div>
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="p-descripcion" rows="3" placeholder="Estado, detalles, observaciones..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tu nombre</label>
+          <input type="text" id="p-vendedor" required>
+        </div>
+        <div class="form-group">
+          <label>Tu curso</label>
+          <input type="text" id="p-curso" placeholder="Ej: 4° Humanidades / 2° A" required>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-publicar')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Publicar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="store.js"></script>
+<script>
+  let filtroTipo = 'todos';
+
+  function toast(msg, tipo='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show ' + tipo;
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function iconoCategoria(cat) {
+    const map = { libro:'📚', utiles:'📐', calculadora:'🧮', arte:'🎨', materiales:'🧰' };
+    return map[cat] || '📦';
+  }
+  function labelCategoria(cat) {
+    const map = { libro:'Libro', utiles:'Útiles', calculadora:'Calc.', arte:'Arte', materiales:'Materiales' };
+    return map[cat] || cat;
+  }
+
+  function filtrar(tipo) {
+    filtroTipo = tipo;
+    document.querySelectorAll('.tipo-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    render();
+  }
+
+  function render() {
+    let lista = Store.list('marketplace', true);
+    if (filtroTipo !== 'todos') lista = lista.filter(p => p.tipo === filtroTipo);
+
+    const q = document.getElementById('buscar').value.toLowerCase().trim();
+    if (q) lista = lista.filter(p =>
+      (p.titulo + ' ' + (p.descripcion||'')).toLowerCase().includes(q)
+    );
+
+    const cat = document.getElementById('categoria').value;
+    if (cat) lista = lista.filter(p => p.categoria === cat);
+
+    const orden = document.getElementById('orden').value;
+    if (orden === 'precio-asc') lista.sort((a,b) => (a.precio ?? 999999999) - (b.precio ?? 999999999));
+    else if (orden === 'precio-desc') lista.sort((a,b) => (b.precio ?? 0) - (a.precio ?? 0));
+    else lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+    const cont = document.getElementById('mp-grid');
+    if (lista.length === 0) {
+      cont.innerHTML = `<div class="no-products">
+        <h3>Sin publicaciones</h3>
+        <p>${filtroTipo === 'busca' ? 'Nadie pidió nada por ahora. ¿Necesitás algo? ¡Publicalo!' : 'Sé el primero en publicar.'}</p>
+      </div>`;
+      return;
+    }
+
+    cont.innerHTML = lista.map(p => `
+      <div class="product ${p.tipo}">
+        <div class="product-img">
+          ${iconoCategoria(p.categoria)}
+          <span class="product-cat">${p.tipo === 'busca' ? 'BUSCO' : labelCategoria(p.categoria)}</span>
+        </div>
+        <div class="product-body">
+          <h4>${escapeHtml(p.titulo)}</h4>
+          <div class="product-price">${formatPrecio(p.precio)}</div>
+          <p class="desc">${escapeHtml(p.descripcion || '')}</p>
+          <div class="product-seller">
+            <span>👤 ${escapeHtml(p.vendedor)} · ${escapeHtml(p.curso)}</span>
+            <span>📅 ${formatFechaRelativa(p.fecha)}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openPublicar() {
+    document.querySelector('#modal-publicar form').reset();
+    document.getElementById('p-tipo').value = 'vende';
+    openModal('modal-publicar');
+  }
+
+  function publicar(e) {
+    e.preventDefault();
+    const tipo = document.getElementById('p-tipo').value;
+    let precioRaw = document.getElementById('p-precio').value.trim();
+    let precio = null;
+    if (precioRaw !== '') precio = parseInt(precioRaw);
+    if (tipo === 'busca') precio = null; // BUSCO siempre sin precio
+
+    const data = {
+      tipo,
+      categoria: document.getElementById('p-categoria').value,
+      titulo: document.getElementById('p-titulo').value.trim(),
+      precio,
+      descripcion: document.getElementById('p-descripcion').value.trim(),
+      vendedor: document.getElementById('p-vendedor').value.trim(),
+      curso: document.getElementById('p-curso').value.trim(),
+      fecha: new Date().toISOString(),
+      activo: true
+    };
+    Store.add('marketplace', data);
+    closeModal('modal-publicar');
+    toast('✓ Publicación creada', 'success');
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

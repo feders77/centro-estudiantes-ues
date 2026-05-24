@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centro de Estudiantes · Sagrado Corazón Rosario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* Hero */
+  .hero{margin:32px auto;max-width:1280px;padding:0 32px}
+  .hero-card{
+    background:var(--burgundy);color:var(--cream);
+    border-radius:24px;padding:48px 56px;
+    position:relative;overflow:hidden;
+    display:grid;grid-template-columns:1.4fr 1fr;gap:40px;align-items:center;
+  }
+  .hero-card::before{
+    content:"";position:absolute;right:-80px;top:-80px;
+    width:360px;height:360px;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,169,58,.25) 0%,transparent 70%);
+  }
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:42px;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;
+  }
+  .hero h1 em{font-style:italic;color:var(--accent);font-weight:400}
+  .hero p{font-size:16px;opacity:.85;max-width:480px;margin-bottom:28px}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero-cta .btn-primary{background:var(--accent);color:var(--ink)}
+  .hero-cta .btn-primary:hover{background:#f5b84a}
+  .hero-cta .btn-ghost{color:var(--cream);border:1px solid rgba(245,239,230,.3)}
+  .hero-cta .btn-ghost:hover{background:rgba(245,239,230,.1);color:var(--cream)}
+
+  .hero-stats{
+    background:rgba(245,239,230,.08);border:1px solid rgba(245,239,230,.15);
+    border-radius:16px;padding:24px;position:relative;z-index:1;
+  }
+  .hero-stats h3{
+    font-size:11px;text-transform:uppercase;letter-spacing:.2em;
+    color:var(--accent);margin-bottom:6px;font-weight:600;
+  }
+  .hero-stats .nota{font-size:10px;opacity:.6;font-style:italic;margin-bottom:14px}
+  .countdown-title{font-size:13px;opacity:.9}
+  .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 12px}
+  .countdown-item{text-align:center;background:rgba(0,0,0,.15);padding:10px 4px;border-radius:8px}
+  .countdown-num{font-family:'Fraunces',serif;font-size:28px;font-weight:600;line-height:1;color:var(--cream)}
+  .countdown-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-top:4px}
+
+  main{max-width:1280px;margin:0 auto;padding:0 32px 80px}
+  .section-title{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin:48px 0 20px;
+  }
+  .section-title h2{
+    font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:-.01em;
+  }
+  .section-title a{color:var(--burgundy);text-decoration:none;font-size:13px;font-weight:500}
+
+  /* Quick access */
+  .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .quick-card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:22px;text-decoration:none;color:var(--ink);
+    transition:all .2s;display:block;
+  }
+  .quick-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--burgundy)}
+  .quick-icon{
+    width:42px;height:42px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:14px;font-size:20px;
+  }
+  .qc-1 .quick-icon{background:#fde8c8;color:#b56700}
+  .qc-2 .quick-icon{background:#d8ecdc;color:#2d6a3e}
+  .qc-3 .quick-icon{background:#fad6cd;color:#a73a1f}
+  .qc-4 .quick-icon{background:#e8d7e5;color:#6b2b62}
+  .quick-card h4{font-size:15px;font-weight:600;margin-bottom:4px}
+  .quick-card p{font-size:12px;color:var(--ink-soft)}
+
+  /* Feed + side */
+  .feed-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:8px}
+  .feed-item{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:24px 26px;margin-bottom:16px;transition:border-color .2s;
+  }
+  .feed-item:hover{border-color:var(--burgundy)}
+  .feed-meta{
+    display:flex;align-items:center;gap:10px;
+    font-size:12px;color:var(--ink-soft);margin-bottom:10px;flex-wrap:wrap;
+  }
+  .tag{
+    background:var(--cream);color:var(--burgundy);
+    padding:3px 10px;border-radius:999px;
+    font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  }
+  .tag.urgent{background:#fad6cd;color:#a73a1f}
+  .tag.vote{background:#d8ecdc;color:#2d6a3e}
+  .feed-item h3{
+    font-family:'Fraunces',serif;font-weight:600;font-size:20px;
+    margin-bottom:6px;letter-spacing:-.01em;
+  }
+  .feed-item p{font-size:14px;color:var(--ink-soft);margin-bottom:14px}
+  .feed-actions{display:flex;gap:18px;font-size:12px;color:var(--ink-soft)}
+
+  /* Sidebar */
+  .side-card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:22px;margin-bottom:16px;
+  }
+  .side-card h4{
+    font-family:'Fraunces',serif;font-size:16px;font-weight:600;
+    margin-bottom:14px;display:flex;align-items:center;gap:8px;
+  }
+  .side-card h4::before{content:"";width:4px;height:16px;background:var(--burgundy);border-radius:2px}
+  .event{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .event:last-child{border-bottom:none}
+  .event-date{
+    flex-shrink:0;width:46px;text-align:center;
+    background:var(--cream);border-radius:8px;padding:6px 4px;border:1px solid var(--line);
+  }
+  .event-day{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--burgundy);line-height:1}
+  .event-month{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-top:2px}
+  .event-info h5{font-size:13px;font-weight:600;margin-bottom:2px}
+  .event-info p{font-size:11px;color:var(--ink-soft)}
+
+  .poll-option{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px;background:var(--cream);border-radius:8px;
+    margin-bottom:6px;position:relative;overflow:hidden;
+  }
+  .poll-fill{position:absolute;left:0;top:0;bottom:0;background:rgba(232,169,58,.18);z-index:0}
+  .poll-label,.poll-pct{position:relative;z-index:1;font-size:13px;font-weight:500}
+  .poll-pct{font-weight:600;color:var(--burgundy)}
+
+  @media (max-width:980px){
+    .hero-card{grid-template-columns:1fr;padding:32px 28px}
+    .hero h1{font-size:32px}
+    .feed-grid{grid-template-columns:1fr}
+    .quick-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:560px){
+    .hero,main{padding-left:18px;padding-right:18px}
+    .hero-card{padding:28px 22px}
+    .quick-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a> · <a href="#">Cerrar sesión</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="Sagrado Corazón Rosario" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html" class="active">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <a href="#" class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Cata · 5° A</span>
+  </a>
+</header>
+
+<section class="hero">
+  <div class="hero-card">
+    <div>
+      <div class="hero-eyebrow" style="color:var(--accent)">Centro de Estudiantes · 2026</div>
+      <h1>Acá no se decide <em>por nosotros</em>.<br>Se decide <em>con nosotros</em>.</h1>
+      <p>Apuntes, votaciones, eventos y un buzón anónimo. Todo lo que pasa en el cole, en un solo lugar.</p>
+      <div class="hero-cta">
+        <a href="votaciones.html" class="btn btn-primary">→ Ver votaciones</a>
+        <a href="buzon.html" class="btn btn-ghost">Buzón anónimo</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <h3>⏱ Viaje de Egresados</h3>
+      <div id="hero-nota" class="nota"></div>
+      <div id="hero-destino" class="countdown-title">Bariloche · Salida</div>
+      <div class="countdown">
+        <div class="countdown-item"><div class="countdown-num" id="cd-d">0</div><div class="countdown-label">días</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-h">0</div><div class="countdown-label">hs</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-m">0</div><div class="countdown-label">min</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-s">0</div><div class="countdown-label">seg</div></div>
+      </div>
+      <div id="hero-confirmados" style="font-size:11px;opacity:.7;margin-top:6px"></div>
+    </div>
+  </div>
+</section>
+
+<main>
+
+  <div class="section-title">
+    <h2>Accesos rápidos</h2>
+  </div>
+  <div class="quick-grid">
+    <a href="apuntes.html" class="quick-card qc-1">
+      <div class="quick-icon">📚</div>
+      <h4>Apuntes y parciales</h4>
+      <p>Por año, orientación y materia</p>
+    </a>
+    <a href="votaciones.html" class="quick-card qc-2">
+      <div class="quick-icon">🗳️</div>
+      <h4>Votaciones</h4>
+      <p id="qc-votaciones-sub">— abiertas</p>
+    </a>
+    <a href="buzon.html" class="quick-card qc-3">
+      <div class="quick-icon">📨</div>
+      <h4>Buzón anónimo</h4>
+      <p>Reclamos, ideas, denuncias</p>
+    </a>
+    <a href="marketplace.html" class="quick-card qc-4">
+      <div class="quick-icon">🔁</div>
+      <h4>Marketplace</h4>
+      <p>Libros, materiales, útiles</p>
+    </a>
+  </div>
+
+  <div class="section-title">
+    <h2>Novedades del centro</h2>
+    <a href="#" id="link-todas">Ver todas →</a>
+  </div>
+
+  <div class="feed-grid">
+    <div id="feed-novedades"></div>
+
+    <aside>
+      <div class="side-card">
+        <h4>Próximos eventos</h4>
+        <div id="side-eventos"></div>
+      </div>
+
+      <div class="side-card">
+        <h4>Votación destacada</h4>
+        <div id="side-votacion"></div>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li><li><a href="#">Actas</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li><li><a href="#">Contacto</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="store.js"></script>
+<script>
+  /* COUNTDOWN dinámico desde config */
+  function tickCountdown() {
+    const c = Store.getConfig();
+    document.getElementById('hero-destino').textContent = (c.viajeDestino || '—') + ' · Salida';
+    document.getElementById('hero-nota').textContent = c.viajeNota ? '⚠ ' + c.viajeNota : '';
+    document.getElementById('hero-confirmados').innerHTML =
+      `${c.viajeConfirmados || 0} de ${c.viajeTotal || 0} confirmados`;
+
+    if (!c.viajeFecha) return;
+    const target = new Date(c.viajeFecha);
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      document.getElementById('cd-d').textContent = '0';
+      document.getElementById('cd-h').textContent = '0';
+      document.getElementById('cd-m').textContent = '0';
+      document.getElementById('cd-s').textContent = '0';
+      return;
+    }
+    document.getElementById('cd-d').textContent = Math.floor(diff/86400000);
+    document.getElementById('cd-h').textContent = Math.floor((diff%86400000)/3600000);
+    document.getElementById('cd-m').textContent = Math.floor((diff%3600000)/60000);
+    document.getElementById('cd-s').textContent = Math.floor((diff%60000)/1000);
+  }
+
+  /* FEED de novedades */
+  function renderFeed() {
+    const novedades = Store.list('novedades', true);
+    const cont = document.getElementById('feed-novedades');
+    if (novedades.length === 0) {
+      cont.innerHTML = `<div class="feed-item"><p style="text-align:center;color:var(--ink-soft)">No hay novedades por ahora.</p></div>`;
+      return;
+    }
+    cont.innerHTML = novedades.map(n => `
+      <article class="feed-item">
+        <div class="feed-meta">
+          ${n.tag ? `<span class="tag ${n.tagTipo || ''}">${escapeHtml(n.tag)}</span>` : ''}
+          <span>Por ${escapeHtml(n.autor)} · ${formatFechaRelativa(n.fecha)}</span>
+        </div>
+        <h3>${escapeHtml(n.titulo)}</h3>
+        <p>${escapeHtml(n.texto)}</p>
+        <div class="feed-actions">
+          <span>❤️ ${n.likes || 0}</span>
+          <span>💬 ${n.comentarios || 0} comentarios</span>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  /* PRÓXIMOS EVENTOS */
+  function renderEventos() {
+    const hoy = new Date();
+    const eventos = Store.list('eventos')
+      .filter(e => new Date(e.fecha) >= hoy)
+      .sort((a,b) => new Date(a.fecha) - new Date(b.fecha))
+      .slice(0,5);
+    const cont = document.getElementById('side-eventos');
+    if (eventos.length === 0) {
+      cont.innerHTML = `<p style="font-size:13px;color:var(--ink-soft)">Sin eventos próximos.</p>`;
+      return;
+    }
+    cont.innerHTML = eventos.map(e => {
+      const f = formatFechaCorta(e.fecha);
+      const hora = new Date(e.fecha).toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+      return `
+        <div class="event">
+          <div class="event-date"><div class="event-day">${f.dia}</div><div class="event-month">${f.mes}</div></div>
+          <div class="event-info">
+            <h5>${escapeHtml(e.titulo)}</h5>
+            <p>${hora}${e.lugar ? ' · ' + escapeHtml(e.lugar) : ''}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /* VOTACIÓN DESTACADA */
+  function renderVotacionDestacada() {
+    const abiertas = Store.list('votaciones').filter(v => v.estado === 'abierta');
+    const cont = document.getElementById('side-votacion');
+    if (abiertas.length === 0) {
+      cont.innerHTML = `<p style="font-size:13px;color:var(--ink-soft)">No hay votaciones abiertas.</p>`;
+      return;
+    }
+    // priorizar vinculante, sino la primera
+    const v = abiertas.find(x => x.vinculante) || abiertas[0];
+    const total = v.opciones.reduce((s,o) => s + (o.votos||0), 0) || 1;
+    const opciones = [...v.opciones].sort((a,b) => b.votos - a.votos).slice(0,4);
+    cont.innerHTML = `
+      <p style="font-size:13px;margin-bottom:14px;color:var(--ink-soft)">${escapeHtml(v.titulo)}</p>
+      ${opciones.map(o => {
+        const pct = Math.round((o.votos / total) * 100);
+        return `
+          <div class="poll-option">
+            <div class="poll-fill" style="width:${pct}%"></div>
+            <span class="poll-label">${escapeHtml(o.texto)}</span>
+            <span class="poll-pct">${pct}%</span>
+          </div>`;
+      }).join('')}
+      <a href="votaciones.html" style="display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--burgundy);text-decoration:none;font-weight:600">Ver todas →</a>
+    `;
+  }
+
+  /* Quick access subtítulo dinámico */
+  function renderQuickSub() {
+    const ab = Store.list('votaciones').filter(v => v.estado === 'abierta').length;
+    document.getElementById('qc-votaciones-sub').textContent =
+      ab === 0 ? 'Sin votaciones abiertas' : `${ab} ${ab === 1 ? 'abierta' : 'abiertas'}`;
+  }
+
+  /* Init */
+  document.addEventListener('DOMContentLoaded', () => {
+    tickCountdown();
+    setInterval(tickCountdown, 1000);
+    renderFeed();
+    renderEventos();
+    renderVotacionDestacada();
+    renderQuickSub();
+  });
+</script>
+
+</body>
+</html>

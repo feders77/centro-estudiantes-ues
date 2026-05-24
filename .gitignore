@@ -1,0 +1,23 @@
+# Credenciales y entorno — NUNCA subir a Git
+.env
+.env.local
+.env.*.local
+
+# Claude Code — configuración local con tokens
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencias (por si se agrega build tool en el futuro)
+node_modules/
+
+# Backups
+*.bak
+*.orig

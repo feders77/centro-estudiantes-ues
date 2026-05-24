@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votaciones · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main{max-width:1280px;margin:0 auto;padding:40px 32px 80px}
+  .vote-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .vote-card{
+    background:#fff;border:1px solid var(--line);
+    border-radius:18px;padding:28px;display:flex;flex-direction:column;
+  }
+  .vote-card.open{border-color:var(--accent);border-width:2px}
+  .vote-meta{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;font-size:11px;flex-wrap:wrap;gap:8px;
+  }
+  .vote-status{
+    text-transform:uppercase;letter-spacing:.1em;font-weight:700;
+    padding:4px 10px;border-radius:999px;font-size:11px;
+  }
+  .vote-status.open{background:#d8ecdc;color:#2d6a3e}
+  .vote-status.closed{background:#e0d6c5;color:var(--ink-soft)}
+  .vote-status.vinc{background:#fad6cd;color:#a73a1f}
+  .vote-card h3{
+    font-family:'Fraunces',serif;font-size:22px;font-weight:600;
+    margin-bottom:6px;letter-spacing:-.01em;
+  }
+  .vote-card .vote-desc{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+  .vote-options{flex:1}
+  .vote-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 14px;background:var(--paper);border-radius:10px;
+    margin-bottom:6px;position:relative;overflow:hidden;
+    cursor:pointer;border:1px solid transparent;transition:all .15s;
+  }
+  .vote-row:hover{border-color:var(--burgundy)}
+  .vote-row.disabled{cursor:default;opacity:.85}
+  .vote-row.disabled:hover{border-color:transparent}
+  .vote-row.winner{border-color:var(--accent)}
+  .vote-row.voted{border-color:var(--burgundy);background:rgba(122,31,43,.05)}
+  .vote-row .bar{
+    position:absolute;left:0;top:0;bottom:0;
+    background:linear-gradient(90deg,rgba(232,169,58,.22),rgba(232,169,58,.08));
+    z-index:0;transition:width .4s;
+  }
+  .vote-row.winner .bar{background:linear-gradient(90deg,rgba(232,169,58,.45),rgba(232,169,58,.15))}
+  .vote-row > * {position:relative;z-index:1}
+  .vote-row .opt-text{font-size:13px;font-weight:500;flex:1}
+  .vote-row .pct{font-weight:700;color:var(--burgundy);font-size:13px}
+  .vote-foot{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--ink-soft);
+  }
+  .vote-foot .voted-tag{
+    background:var(--mint);color:#1f4d2c;
+    padding:4px 10px;border-radius:999px;font-weight:600;font-size:11px;
+  }
+
+  .no-votes{
+    background:#fff;border:1px dashed var(--line);
+    border-radius:14px;padding:60px 20px;text-align:center;
+    color:var(--ink-soft);grid-column:span 2;
+  }
+  .no-votes h3{font-family:'Fraunces',serif;color:var(--ink);font-size:18px;margin-bottom:6px}
+  .no-votes p{font-size:13px}
+
+  @media (max-width:980px){.vote-grid{grid-template-columns:1fr}.no-votes{grid-column:span 1}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html" class="active">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <a href="#" class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Cata · 5° A</span>
+  </a>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <div>
+      <div class="hero-eyebrow" style="color:var(--burgundy)">Democracia escolar</div>
+      <h1 class="page-title">Votaciones</h1>
+      <p class="page-sub">Tu voto define qué pasa. Solo el centro crea las votaciones — vos las votás.</p>
+    </div>
+    <div id="contadores" style="display:flex;gap:10px"></div>
+  </div>
+
+  <h2 style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:16px;letter-spacing:-.01em">Abiertas ahora</h2>
+  <div class="vote-grid" id="abiertas"></div>
+
+  <h2 style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin:48px 0 16px;letter-spacing:-.01em">Cerradas recientes</h2>
+  <div class="vote-grid" id="cerradas"></div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="store.js"></script>
+<script>
+  /* registramos los votos del usuario actual en localStorage aparte */
+  const VOTOS_KEY = 'ce_votos_usuario';
+  function getMisVotos() {
+    try { return JSON.parse(localStorage.getItem(VOTOS_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function setMiVoto(votacionId, opcionId) {
+    const v = getMisVotos();
+    v[votacionId] = opcionId;
+    localStorage.setItem(VOTOS_KEY, JSON.stringify(v));
+  }
+
+  function toast(msg, tipo='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show ' + tipo;
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  function votar(votacionId, opcionId) {
+    const v = Store.get('votaciones', votacionId);
+    if (!v || v.estado !== 'abierta') return;
+
+    const misVotos = getMisVotos();
+    const votoPrevio = misVotos[votacionId];
+    if (votoPrevio === opcionId) {
+      toast('Ya votaste esa opción');
+      return;
+    }
+
+    // si ya había votado, restamos de la opción anterior
+    if (votoPrevio) {
+      const opPrev = v.opciones.find(o => o.id === votoPrevio);
+      if (opPrev && opPrev.votos > 0) opPrev.votos -= 1;
+    }
+    // sumamos a la nueva
+    const opNueva = v.opciones.find(o => o.id === opcionId);
+    if (opNueva) opNueva.votos += 1;
+
+    // si es voto nuevo (no cambio), sube participantes
+    if (!votoPrevio) v.participantes = (v.participantes || 0) + 1;
+
+    Store.update('votaciones', votacionId, {
+      opciones: v.opciones,
+      participantes: v.participantes
+    });
+    setMiVoto(votacionId, opcionId);
+    toast(votoPrevio ? '✓ Voto cambiado' : '✓ Voto registrado', 'success');
+    render();
+  }
+
+  function renderVotacion(v) {
+    const total = (v.opciones || []).reduce((s,o) => s + (o.votos||0), 0) || 1;
+    const ganadora = (v.opciones || []).reduce((a,b) => (a.votos||0) > (b.votos||0) ? a : b, v.opciones[0]);
+    const misVotos = getMisVotos();
+    const miVoto = misVotos[v.id];
+
+    const cierre = new Date(v.cierre);
+    const cierreStr = cierre.toLocaleDateString('es-AR') + ' · ' +
+      cierre.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+
+    const opciones = (v.opciones || []).map(o => {
+      const pct = Math.round(((o.votos||0) / total) * 100);
+      const esGanadora = o.id === ganadora.id && ganadora.votos > 0;
+      const esMia = miVoto === o.id;
+      const disabled = v.estado !== 'abierta';
+      return `
+        <div class="vote-row ${esGanadora ? 'winner' : ''} ${esMia ? 'voted' : ''} ${disabled ? 'disabled' : ''}"
+             ${disabled ? '' : `onclick="votar('${v.id}','${o.id}')"`}>
+          <div class="bar" style="width:${pct}%"></div>
+          <span class="opt-text">${esMia ? '✓ ' : ''}${escapeHtml(o.texto)}${esGanadora && disabled ? ' ✓' : ''}</span>
+          <span class="pct">${pct}%</span>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="vote-card ${v.estado === 'abierta' ? 'open' : ''}" ${v.estado === 'abierta' && v.opciones.length > 2 ? 'style="grid-column:span 2"' : ''}>
+        <div class="vote-meta">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="vote-status ${v.estado === 'abierta' ? 'open' : 'closed'}">${v.estado === 'abierta' ? '● Abierta' : 'Cerrada'}</span>
+            ${v.vinculante ? '<span class="vote-status vinc">🔗 Vinculante</span>' : ''}
+          </div>
+          <span style="color:var(--ink-soft)">${v.estado === 'abierta' ? 'Cierra: ' : 'Cerró: '}${cierreStr}</span>
+        </div>
+        <h3>${escapeHtml(v.titulo)}</h3>
+        <p class="vote-desc">${escapeHtml(v.descripcion || '')}</p>
+        <div class="vote-options">${opciones}</div>
+        <div class="vote-foot">
+          <span>👥 ${v.participantes || 0} votos · ${Math.round((v.participantes || 0) / (v.totalElegibles || 580) * 100)}% del cole</span>
+          ${miVoto ? '<span class="voted-tag">Ya votaste</span>' : (v.estado === 'abierta' ? '<span style="color:var(--burgundy);font-weight:600">Toca una opción para votar →</span>' : '')}
+        </div>
+      </div>
+    `;
+  }
+
+  function render() {
+    const todas = Store.list('votaciones');
+    const abiertas = todas.filter(v => v.estado === 'abierta');
+    const cerradas = todas.filter(v => v.estado !== 'abierta');
+
+    document.getElementById('contadores').innerHTML = `
+      <span style="background:#d8ecdc;color:#2d6a3e;padding:8px 16px;font-size:13px;border-radius:999px;font-weight:600">● ${abiertas.length} ${abiertas.length === 1 ? 'abierta' : 'abiertas'}</span>
+      <span style="background:var(--cream);color:var(--ink-soft);padding:8px 16px;font-size:13px;border-radius:999px;font-weight:600">${cerradas.length} cerradas</span>
+    `;
+
+    document.getElementById('abiertas').innerHTML = abiertas.length === 0
+      ? '<div class="no-votes"><h3>No hay votaciones abiertas</h3><p>Cuando el centro publique alguna, va a aparecer acá.</p></div>'
+      : abiertas.map(renderVotacion).join('');
+
+    document.getElementById('cerradas').innerHTML = cerradas.length === 0
+      ? '<div class="no-votes"><p>Sin votaciones cerradas todavía.</p></div>'
+      : cerradas.map(renderVotacion).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

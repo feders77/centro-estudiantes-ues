@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a1f2b"/>
+      <stop offset="100%" stop-color="#5a0f1b"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#bg)" stroke="#e8a93a" stroke-width="2"/>
+  <path d="M60 38 C 50 38, 42 46, 42 56 C 42 70, 60 84, 60 84 C 60 84, 78 70, 78 56 C 78 46, 70 38, 60 38 Z" fill="#e8a93a" opacity="0.95"/>
+  <text x="60" y="100" font-family="Georgia, serif" font-size="11" fill="#f5efe6" text-anchor="middle" font-weight="600" letter-spacing="1">SC · ROSARIO</text>
+</svg>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div>🛠 Panel de administración · Centro de Estudiantes</div>
+  <div><a href="index.html">← Volver al sitio público</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="Sagrado Corazón Rosario" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Admin · Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Sitio público</a></li>
+      <li><a href="admin.html" class="active">🛠 Admin</a></li>
+    </ul>
+  </nav>
+  <div class="user-chip">
+    <div class="avatar" style="background:linear-gradient(135deg,#7a1f2b,#e8a93a)">FA</div>
+    <span>Admin</span>
+  </div>
+</header>
+
+<div class="admin-shell">
+
+  <aside class="admin-side">
+    <h4>Contenido</h4>
+    <ul class="admin-nav">
+      <li><a href="#" data-section="resumen" class="active"><span class="icon">📊</span> Resumen</a></li>
+      <li><a href="#" data-section="novedades"><span class="icon">📢</span> Novedades <span class="count" id="count-novedades">0</span></a></li>
+      <li><a href="#" data-section="eventos"><span class="icon">📅</span> Eventos <span class="count" id="count-eventos">0</span></a></li>
+      <li><a href="#" data-section="votaciones"><span class="icon">🗳️</span> Votaciones <span class="count" id="count-votaciones">0</span></a></li>
+      <li><a href="#" data-section="apuntes"><span class="icon">📚</span> Apuntes <span class="count" id="count-apuntes">0</span></a></li>
+      <li><a href="#" data-section="marketplace"><span class="icon">🔁</span> Marketplace <span class="count" id="count-marketplace">0</span></a></li>
+    </ul>
+    <h4>Configuración</h4>
+    <ul class="admin-nav">
+      <li><a href="#" data-section="config"><span class="icon">⚙️</span> General</a></li>
+      <li><a href="#" data-section="datos"><span class="icon">💾</span> Datos</a></li>
+    </ul>
+  </aside>
+
+  <main class="admin-main">
+
+    <!-- ============ RESUMEN ============ -->
+    <section class="admin-section active" data-section-id="resumen">
+      <div class="admin-section-head">
+        <div>
+          <h2>Bienvenido al panel</h2>
+          <p>Desde acá podés gestionar todo el contenido que ven los alumnos en el sitio público.</p>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">📢 Novedades activas</div>
+          <div class="stat-value" id="stat-novedades">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📅 Eventos próximos</div>
+          <div class="stat-value" id="stat-eventos">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">🗳️ Votaciones abiertas</div>
+          <div class="stat-value" id="stat-votaciones">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📚 Apuntes publicados</div>
+          <div class="stat-value" id="stat-apuntes">0</div>
+        </div>
+      </div>
+
+      <div class="data-table">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line)">
+          <h3 style="font-family:Fraunces,serif;font-size:18px;font-weight:600">Actividad reciente</h3>
+        </div>
+        <div id="actividad-reciente"></div>
+      </div>
+    </section>
+
+    <!-- ============ NOVEDADES ============ -->
+    <section class="admin-section" data-section-id="novedades">
+      <div class="admin-section-head">
+        <div>
+          <h2>Novedades</h2>
+          <p>Lo que aparece en el feed de la home. Podés activar/desactivar sin borrar.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNovedadModal()">+ Nueva novedad</button>
+      </div>
+      <div class="data-table" id="tabla-novedades"></div>
+    </section>
+
+    <!-- ============ EVENTOS ============ -->
+    <section class="admin-section" data-section-id="eventos">
+      <div class="admin-section-head">
+        <div>
+          <h2>Eventos</h2>
+          <p>Asambleas, parciales, deportes, festivales. Aparecen en la agenda y la home.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openEventoModal()">+ Nuevo evento</button>
+      </div>
+      <div class="data-table" id="tabla-eventos"></div>
+    </section>
+
+    <!-- ============ VOTACIONES ============ -->
+    <section class="admin-section" data-section-id="votaciones">
+      <div class="admin-section-head">
+        <div>
+          <h2>Votaciones</h2>
+          <p>Solo el admin crea votaciones. Los alumnos votan desde el sitio público.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openVotacionModal()">+ Nueva votación</button>
+      </div>
+      <div class="data-table" id="tabla-votaciones"></div>
+    </section>
+
+    <!-- ============ APUNTES ============ -->
+    <section class="admin-section" data-section-id="apuntes">
+      <div class="admin-section-head">
+        <div>
+          <h2>Apuntes</h2>
+          <p>Los alumnos publican desde el sitio. Acá podés moderar, ocultar o borrar.</p>
+        </div>
+      </div>
+      <div class="data-table" id="tabla-apuntes"></div>
+    </section>
+
+    <!-- ============ MARKETPLACE ============ -->
+    <section class="admin-section" data-section-id="marketplace">
+      <div class="admin-section-head">
+        <div>
+          <h2>Marketplace</h2>
+          <p>Publicaciones de los alumnos. No se admiten uniformes — solo libros, materiales y útiles.</p>
+        </div>
+      </div>
+      <div class="data-table" id="tabla-marketplace"></div>
+    </section>
+
+    <!-- ============ CONFIG ============ -->
+    <section class="admin-section" data-section-id="config">
+      <div class="admin-section-head">
+        <div>
+          <h2>Configuración general</h2>
+          <p>Parámetros que afectan al sitio público.</p>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;max-width:640px">
+        <h3 style="font-family:Fraunces,serif;font-size:18px;font-weight:600;margin-bottom:18px">Viaje de egresados</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Destino</label>
+            <input type="text" id="cfg-destino" />
+          </div>
+          <div class="form-group">
+            <label>Fecha de salida</label>
+            <input type="datetime-local" id="cfg-fecha" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Confirmados</label>
+            <input type="number" id="cfg-confirmados" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Total</label>
+            <input type="number" id="cfg-total" min="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nota / aclaración (ej: fecha tentativa)</label>
+          <input type="text" id="cfg-nota" />
+        </div>
+
+        <button class="btn btn-primary" onclick="guardarConfig()">Guardar cambios</button>
+      </div>
+    </section>
+
+    <!-- ============ DATOS ============ -->
+    <section class="admin-section" data-section-id="datos">
+      <div class="admin-section-head">
+        <div>
+          <h2>Datos</h2>
+          <p>Exportá todo el contenido como JSON, importalo en otro navegador, o reseteá todo a cero.</p>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;max-width:640px;margin-bottom:16px">
+        <h3 style="font-family:Fraunces,serif;font-size:18px;font-weight:600;margin-bottom:6px">📤 Exportar todo</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Descargá un archivo JSON con todo el contenido del sitio. Útil para backup o para pasarle el contenido a otra computadora.</p>
+        <button class="btn btn-primary" onclick="exportarDatos()">📥 Descargar JSON</button>
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;max-width:640px;margin-bottom:16px">
+        <h3 style="font-family:Fraunces,serif;font-size:18px;font-weight:600;margin-bottom:6px">📥 Importar</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Cargá un JSON previamente exportado. <strong>Reemplaza todo el contenido actual.</strong></p>
+        <input type="file" id="import-file" accept=".json" style="margin-bottom:12px;font-family:inherit">
+        <br>
+        <button class="btn btn-primary" onclick="importarDatos()">Importar archivo</button>
+      </div>
+
+      <div style="background:#fff;border:1px solid #fad6cd;border-radius:14px;padding:28px;max-width:640px">
+        <h3 style="font-family:Fraunces,serif;font-size:18px;font-weight:600;margin-bottom:6px;color:#a73a1f">⚠️ Reset completo</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Borra todo y vuelve a los datos de ejemplo. Sirve si querés empezar de cero.</p>
+        <button class="btn btn-danger" onclick="resetTodo()">Resetear a datos de ejemplo</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ MODALES ============ -->
+
+<!-- Modal novedad -->
+<div class="modal-overlay" id="modal-novedad">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-novedad')">×</button>
+    <h2 id="modal-novedad-title">Nueva novedad</h2>
+    <p class="modal-sub">Aparece en el feed de la home del sitio público.</p>
+    <form onsubmit="guardarNovedad(event)">
+      <input type="hidden" id="nov-id" />
+      <div class="form-group">
+        <label>Título</label>
+        <input type="text" id="nov-titulo" required>
+      </div>
+      <div class="form-group">
+        <label>Texto / descripción</label>
+        <textarea id="nov-texto" rows="4" required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tag / categoría</label>
+          <input type="text" id="nov-tag" placeholder="Ej: Urgente, Deportes, Logística">
+        </div>
+        <div class="form-group">
+          <label>Tipo de tag</label>
+          <select id="nov-tagTipo">
+            <option value="">Normal (bordó claro)</option>
+            <option value="urgent">Urgente (rojo)</option>
+            <option value="vote">Votación (verde)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Autor / firma</label>
+        <input type="text" id="nov-autor" placeholder="Ej: Centro de Estudiantes" required>
+      </div>
+      <div class="toggle-switch">
+        <input type="checkbox" id="nov-activa" checked>
+        <label for="nov-activa">✅ Activa (visible en el sitio)</label>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-novedad')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal evento -->
+<div class="modal-overlay" id="modal-evento">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-evento')">×</button>
+    <h2 id="modal-evento-title">Nuevo evento</h2>
+    <p class="modal-sub">Aparece en el calendario y en la lista de próximos eventos.</p>
+    <form onsubmit="guardarEvento(event)">
+      <input type="hidden" id="ev-id" />
+      <div class="form-group">
+        <label>Título</label>
+        <input type="text" id="ev-titulo" required>
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="ev-descripcion" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha y hora</label>
+          <input type="datetime-local" id="ev-fecha" required>
+        </div>
+        <div class="form-group">
+          <label>Lugar</label>
+          <input type="text" id="ev-lugar" placeholder="Ej: Salón de actos">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="ev-categoria">
+          <option value="centro">Centro de estudiantes</option>
+          <option value="parcial">Parcial / académico</option>
+          <option value="deportes">Deportes</option>
+          <option value="institucional">Institucional</option>
+        </select>
+      </div>
+      <div class="toggle-switch">
+        <input type="checkbox" id="ev-destacado">
+        <label for="ev-destacado">⭐ Destacar (aparece arriba en la home)</label>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-evento')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal votación -->
+<div class="modal-overlay" id="modal-votacion">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-votacion')">×</button>
+    <h2 id="modal-votacion-title">Nueva votación</h2>
+    <p class="modal-sub">Los alumnos van a poder votar desde el sitio público.</p>
+    <form onsubmit="guardarVotacion(event)">
+      <input type="hidden" id="vt-id" />
+      <div class="form-group">
+        <label>Pregunta / título</label>
+        <input type="text" id="vt-titulo" required>
+      </div>
+      <div class="form-group">
+        <label>Descripción / contexto</label>
+        <textarea id="vt-descripcion" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cierre</label>
+          <input type="datetime-local" id="vt-cierre" required>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="vt-estado">
+            <option value="abierta">Abierta</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Opciones (una por línea)</label>
+        <textarea id="vt-opciones" rows="5" placeholder="Opción 1&#10;Opción 2&#10;Opción 3" required></textarea>
+      </div>
+      <div class="toggle-switch">
+        <input type="checkbox" id="vt-vinculante">
+        <label for="vt-vinculante">🔗 Vinculante con dirección</label>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-votacion')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="store.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buzón anónimo · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand" style="text-decoration:none;color:inherit">
+    <img src="logo-fallback.svg" alt="Sagrado Corazón Rosario" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html" class="active">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <div class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Cata · 5° A</span>
+  </div>
+</header>
+
+<main style="max-width:1280px;margin:0 auto;padding:40px 32px 80px">
+
+  <div class="page-header">
+    <div>
+      <div class="hero-eyebrow" style="color:var(--burgundy)">Escucha activa</div>
+      <h1 class="page-title">Buzón anónimo</h1>
+      <p class="page-sub">Reclamos, ideas, denuncias o pedidos. El centro lo recibe, te responde y publica el estado sin exponerte.</p>
+    </div>
+  </div>
+
+  <div class="buzon-grid">
+
+    <div class="buzon-form">
+      <h3>Enviar mensaje</h3>
+      <p>Si elegís el modo anónimo, ni siquiera el centro va a saber quién lo mandó.</p>
+
+      <div class="anon-toggle">
+        <input type="checkbox" id="anon" checked>
+        <label for="anon">🕶️ Enviar de forma totalmente anónima</label>
+      </div>
+
+      <div class="privacy-note">
+        <strong>Cómo funciona:</strong> los mensajes se cifran del lado del cliente. El centro solo ve el contenido. Si marcás "anónimo", no se guarda ningún dato que te identifique (ni usuario, ni IP, ni hora exacta).
+      </div>
+
+      <div class="form-group">
+        <label>Categoría</label>
+        <select>
+          <option>Convivencia entre alumnos</option>
+          <option>Situación con un docente</option>
+          <option>Bullying o discriminación</option>
+          <option>Salud mental / bienestar</option>
+          <option>Sugerencia / idea</option>
+          <option>Edilicio (baños, aulas, etc)</option>
+          <option>Comedor / cantina</option>
+          <option>Otro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Curso / año (opcional)</label>
+        <input type="text" placeholder="Ej: 4° B, 6° A, etc.">
+      </div>
+
+      <div class="form-group">
+        <label>Tu mensaje</label>
+        <textarea rows="6" placeholder="Contanos lo que pasa, lo que sentís o la idea que tenés. Sin filtro. Lo lee solo el centro."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>¿Cómo querés que avancemos?</label>
+        <select>
+          <option>Que el centro lo gestione internamente</option>
+          <option>Que lo eleven a dirección/preceptoría</option>
+          <option>Solo quería que lo sepan, no hagan nada</option>
+          <option>Necesito que alguien me contacte (no anónimo)</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px">
+        Enviar mensaje
+      </button>
+
+      <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--ink-soft)">
+        ⚠️ Si es una emergencia real, llamá al <strong>135</strong> (línea de prevención del suicidio).<br>
+        Para situaciones graves de violencia o abuso, el gabinete está en <strong>secretaría, 7:30 a 12:30</strong>.
+      </div>
+    </div>
+
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-family:'Fraunces',serif;font-size:22px;font-weight:600">Casos públicos</h3>
+        <select style="padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">
+          <option>Todos</option>
+          <option>Recibidos</option>
+          <option>En gestión</option>
+          <option>Resueltos</option>
+        </select>
+      </div>
+
+      <p style="font-size:12px;color:var(--ink-soft);margin-bottom:18px">
+        Para que se vea qué se está haciendo. Sin exponer a nadie: solo se publica si el autor lo autorizó.
+      </p>
+
+      <div class="tickets-list">
+
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-id">#2026-087</span>
+            <span class="ticket-status resuelto">✓ Resuelto</span>
+          </div>
+          <h5>Los baños del 2° piso no tenían papel hace 3 semanas</h5>
+          <p>Hablamos con maestranza y con administración. Se asignó un responsable de reposición diaria y se sumó un stock buffer.</p>
+          <div class="ticket-meta">
+            <span>📁 Edilicio · 11 días en gestión</span>
+            <span>👏 23 personas agradecieron</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-id">#2026-094</span>
+            <span class="ticket-status gestion">⚙ En gestión</span>
+          </div>
+          <h5>Los precios de la cantina subieron mucho</h5>
+          <p>Llevamos el reclamo a la reunión con dirección del martes pasado. Quedamos en pedir el detalle de la última actualización de precios y traer alternativas.</p>
+          <div class="ticket-meta">
+            <span>📁 Cantina · 6 días en gestión</span>
+            <span>👏 47 personas se sumaron al reclamo</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-id">#2026-101</span>
+            <span class="ticket-status gestion">⚙ En gestión</span>
+          </div>
+          <h5>Más bancos en el patio para los recreos</h5>
+          <p>Sugerencia que vino de 3° año. Estamos cotizando con el área de mantenimiento. Si nos aprueban el presupuesto se instalan 4 bancos antes de las vacaciones.</p>
+          <div class="ticket-meta">
+            <span>📁 Edilicio · 3 días en gestión</span>
+            <span>👏 89 personas la apoyaron</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-id">#2026-104</span>
+            <span class="ticket-status recibido">● Recibido</span>
+          </div>
+          <h5>Repensar la consigna del simulacro de examen final</h5>
+          <p>Llegó hoy. La leemos en la reunión del jueves y vemos cómo encararlo con el área pedagógica.</p>
+          <div class="ticket-meta">
+            <span>📁 Académico · Hace 4 horas</span>
+            <span>👏 12 personas se sumaron</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-id">#2026-076</span>
+            <span class="ticket-status resuelto">✓ Resuelto</span>
+          </div>
+          <h5>Taller de orientación vocacional para 5° y 6°</h5>
+          <p>¡Salió! Coordinamos con el gabinete una serie de 4 talleres en julio. Inscripción abierta en la sección de eventos.</p>
+          <div class="ticket-meta">
+            <span>📁 Bienestar · 21 días en gestión</span>
+            <span>👏 134 personas agradecieron</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li><li><a href="#">Actas</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#">Bienestar</a></li><li><a href="#">Gabinete</a></li><li><a href="#">Contacto</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+</body>
+</html>

@@ -23,7 +23,10 @@ function _headers(extra = {}) {
 
 async function _get(path) {
   const r = await fetch(_BASE + path, { headers: _headers() });
-  if (!r.ok) throw new Error(await r.text());
+  if (!r.ok) {
+    const msg = await r.text();
+    throw new Error(`GET ${path} → ${r.status}: ${msg}`);
+  }
   return r.json();
 }
 

@@ -386,20 +386,29 @@
     await Store.init();
     mostrarLoader();
 
-    const [novedades, eventos, votaciones, config] = await Promise.all([
-      Store.list('novedades', true),
-      Store.list('eventos'),
-      Store.list('votaciones'),
-      Store.getConfig()
-    ]);
+    try {
+      const [novedades, eventos, votaciones, config] = await Promise.all([
+        Store.list('novedades', true),
+        Store.list('eventos'),
+        Store.list('votaciones'),
+        Store.getConfig()
+      ]);
 
-    _config = config;
-    tickCountdown();
-    setInterval(tickCountdown, 1000);
-    renderFeed(novedades);
-    renderEventos(eventos);
-    renderVotacionDestacada(votaciones);
-    renderQuickSub(votaciones);
+      _config = config;
+      tickCountdown();
+      setInterval(tickCountdown, 1000);
+      renderFeed(novedades);
+      renderEventos(eventos);
+      renderVotacionDestacada(votaciones);
+      renderQuickSub(votaciones);
+    } catch (err) {
+      console.error('Error cargando datos:', err);
+      document.getElementById('feed-novedades').innerHTML =
+        `<div class="feed-item" style="border-color:#e8a93a">
+          <p style="color:#a73a1f;font-weight:600">⚠ Error al cargar datos</p>
+          <p style="font-size:12px;color:var(--ink-soft)">${err.message}</p>
+        </div>`;
+    }
   });
 </script>
 

@@ -243,6 +243,17 @@
           <textarea id="cfg-hero-descripcion" rows="2" style="resize:vertical"
             placeholder="Apuntes, votaciones, eventos y un buzón anónimo. Todo lo que pasa en el cole, en un solo lugar."></textarea>
         </div>
+        <div style="border-top:1px solid var(--line);margin:18px 0 18px"></div>
+        <div class="form-group">
+          <label>Logo del colegio (header)</label>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px">
+            <img id="cfg-logo-preview" src="" alt="preview" style="height:54px;width:auto;display:none;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff">
+            <input type="file" id="cfg-logo-file" accept="image/*" style="display:none" onchange="subirLogoAdmin(this)">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('cfg-logo-file').click()">Subir imagen</button>
+            <button type="button" class="btn btn-danger btn-sm" id="cfg-logo-remove" style="display:none" onclick="quitarLogo()">Quitar logo</button>
+          </div>
+          <span style="font-size:11px;color:var(--ink-soft);margin-top:6px;display:block">Altura recomendada: 54px. Formatos: PNG, SVG, WebP. Deja vacío para usar el logo por defecto.</span>
+        </div>
         <button class="btn btn-primary" onclick="guardarHeroConfig()">Guardar portada</button>
       </div>
     </section>

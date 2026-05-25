@@ -114,8 +114,18 @@ const Store = {
 
   /* ---- init ---- */
   async init() {
-    // no-op: con Supabase cada operación va directo a la API.
-    // Existe para que las páginas puedan hacer `await Store.init()` sin romper.
+    try {
+      const rows = await _get('/config?key=eq.hero&select=value');
+      if (rows.length) {
+        const val = rows[0].value || {};
+        if (val.logo_url) {
+          document.querySelectorAll('header .brand img').forEach(img => {
+            img.src = val.logo_url;
+            img.onerror = null;
+          });
+        }
+      }
+    } catch {}
     return true;
   },
 
@@ -320,9 +330,8 @@ function aplicarEstadoSecciones(secciones) {
   Object.entries(MAPA).forEach(([clave, href]) => {
     if (secciones[clave] === false) {
       document.querySelectorAll(`a[href="${href}"]`).forEach(a => {
-        a.style.opacity       = '0.35';
-        a.style.pointerEvents = 'none';
-        a.title               = 'Próximamente';
+        const toHide = a.parentElement?.tagName === 'LI' ? a.parentElement : a;
+        toHide.style.display = 'none';
       });
     }
   });

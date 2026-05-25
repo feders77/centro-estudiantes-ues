@@ -516,17 +516,63 @@ async function cargarConfig() {
   document.getElementById('cfg-hero-eyebrow').value     = hero.eyebrow     || '';
   document.getElementById('cfg-hero-titulo').value      = hero.titulo      || '';
   document.getElementById('cfg-hero-descripcion').value = hero.descripcion || '';
+
+  const prevEl    = document.getElementById('cfg-logo-preview');
+  const removeBtn = document.getElementById('cfg-logo-remove');
+  if (hero.logo_url) {
+    prevEl.src = hero.logo_url;
+    prevEl.style.display = 'block';
+    removeBtn.style.display = '';
+  } else {
+    prevEl.style.display = 'none';
+    removeBtn.style.display = 'none';
+  }
 }
 
 async function guardarHeroConfig() {
   const eyebrow     = document.getElementById('cfg-hero-eyebrow').value.trim();
   const titulo      = document.getElementById('cfg-hero-titulo').value.trim();
   const descripcion = document.getElementById('cfg-hero-descripcion').value.trim();
+  // Mantener logo_url existente
+  const { data: existing } = await window._sb.from('config').select('value').eq('key','hero').maybeSingle();
+  const logo_url = existing?.value?.logo_url || '';
   const { error } = await window._sb
     .from('config')
-    .upsert({ key: 'hero', value: { eyebrow, titulo, descripcion } }, { onConflict: 'key' });
+    .upsert({ key: 'hero', value: { eyebrow, titulo, descripcion, logo_url } }, { onConflict: 'key' });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('✓ Portada actualizada', 'success');
+}
+
+async function subirLogoAdmin(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('La imagen no puede superar 2 MB', 'error'); input.value = ''; return; }
+  toast('Subiendo logo...', '');
+  const ext  = file.name.split('.').pop().toLowerCase() || 'png';
+  const path = `logo/main.${ext}`;
+  const { error: upErr } = await window._sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
+  if (upErr) { toast('Error al subir: ' + upErr.message, 'error'); input.value = ''; return; }
+  const { data: urlData } = window._sb.storage.from('avatars').getPublicUrl(path);
+  const logo_url = urlData.publicUrl + '?t=' + Date.now();
+  const { data: existing } = await window._sb.from('config').select('value').eq('key','hero').maybeSingle();
+  const val = { ...(existing?.value || {}), logo_url };
+  await window._sb.from('config').upsert({ key: 'hero', value: val }, { onConflict: 'key' });
+  const prevEl = document.getElementById('cfg-logo-preview');
+  prevEl.src = logo_url;
+  prevEl.style.display = 'block';
+  document.getElementById('cfg-logo-remove').style.display = '';
+  toast('✓ Logo actualizado', 'success');
+  input.value = '';
+}
+
+async function quitarLogo() {
+  if (!confirm('¿Quitar el logo personalizado y volver al logo por defecto?')) return;
+  const { data: existing } = await window._sb.from('config').select('value').eq('key','hero').maybeSingle();
+  const val = { ...(existing?.value || {}), logo_url: '' };
+  await window._sb.from('config').upsert({ key: 'hero', value: val }, { onConflict: 'key' });
+  document.getElementById('cfg-logo-preview').style.display = 'none';
+  document.getElementById('cfg-logo-remove').style.display = 'none';
+  toast('Logo quitado — se usa el logo por defecto', 'success');
 }
 
 async function guardarConfig() {

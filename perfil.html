@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi perfil · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .perfil-layout{
+    max-width:860px;margin:48px auto;padding:0 24px 80px;
+    display:grid;grid-template-columns:240px 1fr;gap:32px;align-items:start;
+  }
+  @media(max-width:680px){.perfil-layout{grid-template-columns:1fr}}
+
+  /* ── Avatar card ── */
+  .avatar-card{
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:28px 24px;text-align:center;position:sticky;top:90px;
+  }
+  .avatar-xl{
+    width:96px;height:96px;border-radius:50%;
+    background:linear-gradient(135deg,var(--coral),var(--accent));
+    color:#fff;font-weight:700;font-size:32px;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 14px;overflow:hidden;position:relative;cursor:pointer;
+  }
+  .avatar-xl img{width:100%;height:100%;object-fit:cover}
+  .avatar-xl .avatar-overlay{
+    position:absolute;inset:0;background:rgba(0,0,0,.45);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .2s;font-size:22px;
+  }
+  .avatar-xl:hover .avatar-overlay{opacity:1}
+  #input-avatar{display:none}
+  .avatar-name{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:4px}
+  .avatar-curso{font-size:13px;color:var(--ink-soft)}
+  .avatar-rol{
+    display:inline-block;margin-top:10px;padding:3px 10px;border-radius:99px;
+    font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  }
+  .rol-alumno{background:#d8ecdc;color:#2d6a3e}
+  .rol-administrador{background:#fde9b4;color:#7a5a00}
+  .rol-pendiente{background:#e0d6c5;color:#5a4a3a}
+
+  .avatar-upload-btn{
+    display:block;width:100%;margin-top:16px;padding:9px;
+    background:transparent;border:1px solid var(--line);border-radius:10px;
+    font-family:inherit;font-size:13px;font-weight:500;color:var(--ink-soft);
+    cursor:pointer;transition:all .15s;
+  }
+  .avatar-upload-btn:hover{border-color:var(--burgundy);color:var(--burgundy)}
+  .avatar-upload-progress{
+    margin-top:10px;font-size:12px;color:var(--ink-soft);
+    display:none;
+  }
+
+  /* ── Metrics ── */
+  .metric-row{
+    display:flex;flex-direction:column;gap:10px;margin-top:20px;
+    padding-top:16px;border-top:1px solid var(--line);
+  }
+  .metric-item{font-size:12px;color:var(--ink-soft);line-height:1.4}
+  .metric-item strong{display:block;font-size:13px;color:var(--ink);font-weight:600}
+
+  /* ── Form card ── */
+  .form-card{
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:32px 36px;
+  }
+  @media(max-width:480px){.form-card{padding:24px 20px}}
+  .form-card h2{
+    font-family:'Fraunces',serif;font-size:24px;font-weight:600;
+    margin-bottom:4px;letter-spacing:-.01em;
+  }
+  .form-card .card-sub{font-size:13px;color:var(--ink-soft);margin-bottom:28px}
+
+  .section-divider{
+    margin:28px 0 20px;padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+    font-size:11px;text-transform:uppercase;letter-spacing:.18em;
+    color:var(--ink-soft);font-weight:600;
+  }
+
+  .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+  .form-group label{font-size:13px;font-weight:600;color:var(--ink)}
+  .form-group input,.form-group select{
+    font-family:inherit;font-size:14px;padding:11px 14px;
+    border:1px solid var(--line);border-radius:10px;
+    background:var(--paper);color:var(--ink);outline:none;
+    transition:border-color .15s;
+  }
+  .form-group input:focus,.form-group select:focus{border-color:var(--burgundy)}
+  .form-group input:read-only{background:#f0ebe4;color:var(--ink-soft);cursor:default}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:480px){.form-row{grid-template-columns:1fr}}
+  .hint{font-size:11px;color:var(--ink-soft);margin-top:3px}
+
+  .alert{
+    padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:20px;display:none;
+  }
+  .alert.error{background:#fad6cd;color:#a73a1f;border:1px solid #f5b8a8;display:block}
+  .alert.success{background:#d8ecdc;color:#2d6a3e;border:1px solid #b0d9b8;display:block}
+
+  .action-row{
+    display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;
+  }
+  .btn-link{
+    background:none;border:none;font-family:inherit;font-size:13px;
+    color:var(--burgundy);cursor:pointer;padding:0;font-weight:500;
+    text-decoration:underline;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand" style="text-decoration:none;color:inherit">
+    <img src="logo-fallback.svg" alt="Sagrado Corazón Rosario" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <div class="user-chip">
+    <div class="avatar">CS</div>
+    <span>Mi perfil</span>
+  </div>
+</header>
+
+<div class="perfil-layout" id="perfil-layout" style="display:none">
+
+  <!-- ── Avatar lateral ── -->
+  <aside>
+    <div class="avatar-card">
+      <div class="avatar-xl" id="avatar-xl" onclick="document.getElementById('input-avatar').click()">
+        <span id="avatar-initials">??</span>
+        <div class="avatar-overlay">📷</div>
+      </div>
+      <input type="file" id="input-avatar" accept="image/*" onchange="subirAvatar(this)">
+      <div class="avatar-name" id="avatar-name">—</div>
+      <div class="avatar-curso" id="avatar-curso"></div>
+      <div id="avatar-rol" class="avatar-rol rol-pendiente">pendiente</div>
+
+      <button class="avatar-upload-btn" onclick="document.getElementById('input-avatar').click()">
+        Cambiar foto de perfil
+      </button>
+      <div class="avatar-upload-progress" id="upload-progress">Subiendo...</div>
+
+      <button class="avatar-upload-btn" style="margin-top:8px;color:#a73a1f;border-color:#f5b8a8" onclick="cerrarSesion()">
+        Cerrar sesión
+      </button>
+
+      <div class="metric-row">
+        <div class="metric-item">
+          <strong id="m-login-count">—</strong>
+          ingresos totales
+        </div>
+        <div class="metric-item">
+          <strong id="m-last-login">—</strong>
+          última vez
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Formulario ── -->
+  <div>
+    <div class="form-card">
+      <h2>Mis datos</h2>
+      <p class="card-sub">Tu información visible en la intranet.</p>
+
+      <div id="alerta" class="alert"></div>
+
+      <div class="section-divider">Datos personales</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre <span style="color:var(--burgundy)">*</span></label>
+          <input type="text" id="f-nombre" required autocomplete="given-name" placeholder="María">
+        </div>
+        <div class="form-group">
+          <label>Apellido <span style="color:var(--burgundy)">*</span></label>
+          <input type="text" id="f-apellido" required autocomplete="family-name" placeholder="García">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Alias / apodo <span style="color:var(--ink-soft);font-weight:400">(opcional)</span></label>
+        <input type="text" id="f-alias" placeholder="¿Cómo querés que te llamen?">
+        <span class="hint">Si lo completás, se muestra este nombre en lugar del tuyo.</span>
+      </div>
+
+      <div class="section-divider">Curso</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nivel</label>
+          <select id="f-nivel" onchange="actualizarAnios()">
+            <option value="">— seleccioná —</option>
+            <option value="Primaria">Primaria</option>
+            <option value="Secundaria">Secundaria</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label id="lbl-anio">Año / grado</label>
+          <select id="f-anio" onchange="actualizarOrientacion()">
+            <option value="">— primero nivel —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" id="grupo-orientacion" style="display:none">
+        <label>Orientación</label>
+        <select id="f-orientacion">
+          <option value="">— seleccioná —</option>
+          <option value="Económico">Económico</option>
+          <option value="Natural">Natural</option>
+          <option value="Social">Social</option>
+          <option value="Comunicación">Comunicación</option>
+        </select>
+      </div>
+
+      <div class="section-divider">Cuenta</div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" readonly>
+        <span class="hint">El email no se puede cambiar desde aquí.</span>
+      </div>
+
+      <div class="action-row" style="margin-bottom:0">
+        <button class="btn btn-primary" onclick="guardar()" id="btn-guardar">
+          Guardar cambios
+        </button>
+        <button class="btn-link" onclick="pedirResetPassword()">
+          Cambiar contraseña
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Pantalla de carga / error de auth -->
+<div id="estado-carga" style="text-align:center;padding:80px 24px;color:var(--ink-soft)">
+  Cargando perfil...
+</div>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li><li><a href="#">Actas</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#">Contacto</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script>
+  /* Helpers */
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function setAlert(msg, tipo) {
+    const el = document.getElementById('alerta');
+    el.textContent = msg;
+    el.className = 'alert ' + tipo;
+  }
+  function clearAlert() {
+    const el = document.getElementById('alerta');
+    el.className = 'alert';
+  }
+
+  function fmtFecha(iso) {
+    if (!iso) return 'nunca';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' })
+      + ' ' + d.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  /* Selectores dinámicos de año / orientación */
+  function actualizarAnios() {
+    const nivel = document.getElementById('f-nivel').value;
+    const sel   = document.getElementById('f-anio');
+    const lbl   = document.getElementById('lbl-anio');
+    sel.innerHTML = '<option value="">— seleccioná —</option>';
+    if (nivel === 'Primaria') {
+      lbl.textContent = 'Grado';
+      for (let i = 1; i <= 7; i++) sel.add(new Option(`${i}° grado`, i));
+    } else if (nivel === 'Secundaria') {
+      lbl.textContent = 'Año';
+      for (let i = 1; i <= 6; i++) sel.add(new Option(`${i}° año`, i));
+    } else {
+      lbl.textContent = 'Año / grado';
+    }
+    document.getElementById('grupo-orientacion').style.display = 'none';
+    document.getElementById('f-orientacion').value = '';
+  }
+
+  function actualizarOrientacion() {
+    const nivel = document.getElementById('f-nivel').value;
+    const anio  = parseInt(document.getElementById('f-anio').value);
+    const show  = nivel === 'Secundaria' && anio >= 4;
+    document.getElementById('grupo-orientacion').style.display = show ? '' : 'none';
+    if (!show) document.getElementById('f-orientacion').value = '';
+  }
+
+  /* Llena el formulario con los datos del perfil */
+  function poblarFormulario(profile, email) {
+    document.getElementById('f-nombre').value   = profile.nombre   || '';
+    document.getElementById('f-apellido').value = profile.apellido || '';
+    document.getElementById('f-alias').value    = profile.alias    || '';
+    document.getElementById('f-email').value    = email            || '';
+
+    if (profile.nivel) {
+      document.getElementById('f-nivel').value = profile.nivel;
+      actualizarAnios();
+    }
+    if (profile.anio) {
+      document.getElementById('f-anio').value = profile.anio;
+      actualizarOrientacion();
+    }
+    if (profile.orientacion) {
+      document.getElementById('f-orientacion').value = profile.orientacion;
+    }
+  }
+
+  /* Actualiza el bloque lateral con datos del perfil */
+  function poblarAvatar(profile) {
+    const initials = ((profile.nombre?.[0] || '') + (profile.apellido?.[0] || '')).toUpperCase() || '??';
+    const xlDiv    = document.getElementById('avatar-xl');
+    const overlayHtml = '<div class="avatar-overlay">📷</div>';
+
+    if (profile.avatar_url) {
+      xlDiv.innerHTML = `<img src="${escapeHtml(profile.avatar_url)}" alt="Avatar"><div class="avatar-overlay">📷</div>`;
+    } else {
+      document.getElementById('avatar-initials').textContent = initials;
+    }
+
+    const display = profile.alias || profile.nombre || '—';
+    const apellido = profile.apellido ? ' ' + profile.apellido : '';
+    document.getElementById('avatar-name').textContent  = display + apellido;
+
+    const curso = profile.nivel
+      ? `${profile.nivel}${profile.anio ? ' · ' + profile.anio + '°' : ''}${profile.orientacion ? ' · ' + profile.orientacion : ''}`
+      : '';
+    document.getElementById('avatar-curso').textContent = curso;
+
+    const rolEl = document.getElementById('avatar-rol');
+    rolEl.textContent = profile.rol || 'pendiente';
+    rolEl.className   = 'avatar-rol rol-' + (profile.rol || 'pendiente');
+
+    document.getElementById('m-login-count').textContent = profile.login_count ?? 0;
+    document.getElementById('m-last-login').textContent  = fmtFecha(profile.last_login);
+  }
+
+  /* ── Guardar cambios ── */
+  async function guardar() {
+    clearAlert();
+    const nombre    = document.getElementById('f-nombre').value.trim();
+    const apellido  = document.getElementById('f-apellido').value.trim();
+    const alias     = document.getElementById('f-alias').value.trim();
+    const nivel     = document.getElementById('f-nivel').value;
+    const anio      = document.getElementById('f-anio').value ? parseInt(document.getElementById('f-anio').value) : null;
+    const orientacion = document.getElementById('f-orientacion').value;
+
+    if (!nombre || !apellido) {
+      setAlert('Nombre y apellido son obligatorios.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-guardar');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    const updates = { nombre, apellido, alias: alias || null, nivel: nivel || null, anio, orientacion: orientacion || null };
+
+    const { error } = await window._sb.from('profiles').update(updates).eq('id', (await window._sb.auth.getUser()).data.user.id);
+
+    if (error) {
+      setAlert('Error al guardar: ' + error.message, 'error');
+    } else {
+      setAlert('Cambios guardados correctamente.', 'success');
+      // Refrescar chip
+      const profile = await Auth.getProfile();
+      Auth.updateChip(profile);
+      poblarAvatar(profile);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Guardar cambios';
+  }
+
+  /* ── Cambiar contraseña ── */
+  async function pedirResetPassword() {
+    const session = await window._sb.auth.getSession();
+    const email   = session.data?.session?.user?.email;
+    if (!email) return;
+    if (!confirm(`¿Mandar un email de restablecimiento de contraseña a ${email}?`)) return;
+    const { error } = await window._sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://feders77.github.io/centro-estudiantes-ues/login.html'
+    });
+    if (error) {
+      setAlert('Error: ' + error.message, 'error');
+    } else {
+      setAlert('Te mandamos un email con el link para cambiar tu contraseña.', 'success');
+    }
+  }
+
+  /* ── Subir avatar ── */
+  async function subirAvatar(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setAlert('La imagen no puede superar 2 MB.', 'error');
+      input.value = '';
+      return;
+    }
+
+    const progress = document.getElementById('upload-progress');
+    progress.style.display = 'block';
+    progress.textContent   = 'Subiendo imagen...';
+    clearAlert();
+
+    const user    = (await window._sb.auth.getUser()).data.user;
+    const ext     = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const path    = `${user.id}/avatar.${ext}`;
+    const bucket  = 'avatars';
+
+    const { error: uploadError } = await window._sb.storage
+      .from(bucket)
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (uploadError) {
+      progress.style.display = 'none';
+      setAlert('Error al subir la imagen: ' + uploadError.message, 'error');
+      input.value = '';
+      return;
+    }
+
+    const { data: urlData } = window._sb.storage.from(bucket).getPublicUrl(path);
+    const publicUrl = urlData.publicUrl + '?t=' + Date.now(); // cache-bust
+
+    const { error: updateError } = await window._sb.from('profiles')
+      .update({ avatar_url: urlData.publicUrl })
+      .eq('id', user.id);
+
+    progress.style.display = 'none';
+
+    if (updateError) {
+      setAlert('Imagen subida pero no se pudo guardar en el perfil: ' + updateError.message, 'error');
+      return;
+    }
+
+    // Mostrar avatar nuevo
+    const xlDiv = document.getElementById('avatar-xl');
+    xlDiv.innerHTML = `<img src="${escapeHtml(publicUrl)}" alt="Avatar"><div class="avatar-overlay">📷</div>`;
+    setAlert('Foto de perfil actualizada.', 'success');
+
+    // Refrescar chip en header
+    const profile = await Auth.getProfile();
+    Auth.updateChip(profile);
+    input.value = '';
+  }
+
+  /* ── Cerrar sesión ── */
+  async function cerrarSesion() {
+    const profile = await Auth.getProfile();
+    const nombre = profile?.alias || profile?.nombre || 'usuario';
+    if (confirm(`¿Cerrar sesión, ${escapeHtml(nombre)}?`)) Auth.logout();
+  }
+
+  /* ── Init ── */
+  document.addEventListener('DOMContentLoaded', async () => {
+    const session = await Auth.init();
+
+    if (!session) {
+      document.getElementById('estado-carga').innerHTML =
+        `<p>Tenés que <a href="login.html?next=perfil.html" style="color:var(--burgundy);font-weight:600">iniciar sesión</a> para ver tu perfil.</p>`;
+      Auth.updateChip(null);
+      return;
+    }
+
+    const profile = await Auth.getProfile();
+    Auth.updateChip(profile);
+
+    if (!profile) {
+      document.getElementById('estado-carga').textContent = 'No se pudo cargar tu perfil.';
+      return;
+    }
+
+    document.getElementById('estado-carga').style.display = 'none';
+    document.getElementById('perfil-layout').style.display = 'grid';
+
+    const email = session.user?.email || '';
+    poblarFormulario(profile, email);
+    poblarAvatar(profile);
+  });
+</script>
+</body>
+</html>

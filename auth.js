@@ -83,15 +83,16 @@ const Auth = {
     const display = profile.alias || profile.nombre;
     const initials = ((profile.nombre?.[0] || '') + (profile.apellido?.[0] || '')).toUpperCase() || '??';
     const curso = profile.anio ? `${profile.anio}°` : '';
+    const avatarInner = profile.avatar_url
+      ? `<img src="${profile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none'">`
+      : initials;
 
     chip.innerHTML = `
-      <div class="avatar">${initials}</div>
+      <div class="avatar">${avatarInner}</div>
       <span>${escapeHtml(display)}${curso ? ' · ' + curso : ''}</span>`;
-    chip.title = 'Clic para cerrar sesión';
+    chip.title = 'Ver / editar mi perfil';
     chip.style.cursor = 'pointer';
-    chip.onclick = () => {
-      if (confirm(`¿Cerrar sesión, ${escapeHtml(display)}?`)) Auth.logout();
-    };
+    chip.onclick = () => { window.location.href = 'perfil.html'; };
 
     // Mostrar/ocultar link admin según rol
     const adminLink = document.querySelector('.topbar a[href="admin.html"]');

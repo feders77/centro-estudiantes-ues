@@ -4,11 +4,12 @@
 
 /* ---------- cache en memoria para no hacer fetch en cada render ---------- */
 let _cache = {
-  novedades:  [],
-  eventos:    [],
-  votaciones: [],
-  apuntes:    [],
-  marketplace: []
+  novedades:   [],
+  eventos:     [],
+  votaciones:  [],
+  apuntes:     [],
+  marketplace: [],
+  buzon_casos: []
 };
 
 async function loadAll() {
@@ -19,7 +20,15 @@ async function loadAll() {
     Store.list('apuntes'),
     Store.list('marketplace')
   ]);
-  _cache = { novedades, eventos, votaciones, apuntes, marketplace };
+  _cache = { novedades, eventos, votaciones, apuntes, marketplace, buzon_casos: [] };
+  await recargarBuzon();
+}
+
+async function recargarBuzon() {
+  try {
+    const r = await _get('/buzon_casos?order=created_at.desc');
+    _cache.buzon_casos = r || [];
+  } catch { _cache.buzon_casos = []; }
 }
 
 async function recargar(coleccion) {
@@ -603,6 +612,101 @@ function renderTodo() {
   renderVotaciones();
   renderApuntes();
   renderMarketplace();
+  renderBuzon();
+}
+
+/* ========================================================================
+   BUZON CASOS
+   ======================================================================== */
+
+function renderBuzon() {
+  const lista = _cache.buzon_casos;
+  const cont  = document.getElementById('tabla-buzon');
+  if (!cont) return;
+
+  const countEl = document.getElementById('count-buzon');
+  if (countEl) countEl.textContent = lista.length;
+
+  if (!lista.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <h3>Sin casos cargados</h3>
+      <p>Creá el primero con el botón "+ Nuevo caso"</p>
+    </div>`;
+    return;
+  }
+
+  const estadoBadge = { resuelto: '✓ Resuelto', gestion: '⚙ En gestión', recibido: '● Recibido' };
+  cont.innerHTML = lista.map(c => `
+    <div class="data-row">
+      <div class="data-info">
+        <h5 class="data-title">${escapeHtml(c.titulo)}</h5>
+        <div class="data-meta">
+          <span class="tag ${c.estado}">${estadoBadge[c.estado] || c.estado}</span>
+          <span>📁 ${escapeHtml(c.categoria || 'Sin categoría')}</span>
+          <span>#${escapeHtml(c.numero)}</span>
+          ${c.dias_gestion > 0 ? `<span>${c.dias_gestion} días en gestión</span>` : ''}
+          <span>👏 ${c.agradecimientos}</span>
+        </div>
+      </div>
+      <div class="data-actions">
+        <button class="icon-btn" onclick="openCasoModal('${c.id}')" title="Editar">✏️</button>
+        <button class="icon-btn danger" onclick="borrarCaso('${c.id}')" title="Borrar">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function openCasoModal(id) {
+  const c = id ? _cache.buzon_casos.find(x => x.id === id) : null;
+  document.getElementById('modal-caso-title').textContent = c ? 'Editar caso' : 'Nuevo caso';
+  document.getElementById('caso-id').value               = c ? c.id : '';
+  document.getElementById('caso-numero').value           = c ? c.numero : '';
+  document.getElementById('caso-estado').value           = c ? c.estado : 'recibido';
+  document.getElementById('caso-titulo').value           = c ? c.titulo : '';
+  document.getElementById('caso-descripcion').value      = c ? c.descripcion : '';
+  document.getElementById('caso-categoria').value        = c ? (c.categoria || '') : '';
+  document.getElementById('caso-dias').value             = c ? (c.dias_gestion || 0) : 0;
+  document.getElementById('caso-agradecimientos').value  = c ? (c.agradecimientos || 0) : 0;
+  openModal('modal-caso');
+}
+
+async function guardarCaso(e) {
+  e.preventDefault();
+  const id = document.getElementById('caso-id').value;
+  const data = {
+    numero:          document.getElementById('caso-numero').value.trim(),
+    estado:          document.getElementById('caso-estado').value,
+    titulo:          document.getElementById('caso-titulo').value.trim(),
+    descripcion:     document.getElementById('caso-descripcion').value.trim(),
+    categoria:       document.getElementById('caso-categoria').value.trim() || 'Otro',
+    dias_gestion:    parseInt(document.getElementById('caso-dias').value) || 0,
+    agradecimientos: parseInt(document.getElementById('caso-agradecimientos').value) || 0
+  };
+  try {
+    if (id) {
+      await _patch(`/buzon_casos?id=eq.${id}`, data);
+      toast('✓ Caso actualizado', 'success');
+    } else {
+      await _post('/buzon_casos', data);
+      toast('✓ Caso publicado', 'success');
+    }
+    closeModal('modal-caso');
+    await recargarBuzon();
+    renderTodo();
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function borrarCaso(id) {
+  if (!confirm('¿Borrar este caso del buzón? No se puede deshacer.')) return;
+  try {
+    await _delete(`/buzon_casos?id=eq.${id}`);
+    await recargarBuzon();
+    renderTodo();
+    toast('Caso eliminado', 'success');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
 }
 
 /* ========================================================================
@@ -714,7 +818,7 @@ function renderInvitar() {
   cont.innerHTML = `
     <div style="padding:16px 0">
       <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">
-        Agregá el email de la persona. Cuando se registre con ese email, su cuenta queda activa de inmediato sin necesitar aprobación manual.
+        Agregá el email y hacé click en <strong>Invitar</strong>. Se va a abrir tu cliente de email con el mensaje ya redactado — solo tenés que enviarlo. Cuando la persona se registre con ese email, su cuenta queda activa de inmediato.
       </p>
       <div style="display:flex;gap:10px;margin-bottom:24px">
         <input type="email" id="inv-email" placeholder="email@ejemplo.com"
@@ -748,15 +852,34 @@ function renderInvitar() {
 }
 
 async function crearInvitacion() {
-  const email = document.getElementById('inv-email')?.value?.trim().toLowerCase();
+  const emailEl = document.getElementById('inv-email');
+  const email = emailEl?.value?.trim().toLowerCase();
   if (!email) return;
-  const { error } = await window._sb.from('invitaciones').insert({ email });
-  if (error) {
-    toast(error.message.includes('unique') ? 'Ese email ya fue invitado' : 'Error: ' + error.message, 'error');
-    return;
+
+  const btn = document.querySelector('button[onclick="crearInvitacion()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  try {
+    const r = await fetch(window.SUPABASE_URL + '/functions/v1/invitar', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + window._authToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al enviar invitación');
+
+    if (emailEl) emailEl.value = '';
+    toast('✓ Invitación enviada a ' + email, 'success');
+    await cargarUsuarios();
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Invitar'; }
   }
-  toast('✓ Invitación creada para ' + email, 'success');
-  await cargarUsuarios();
 }
 
 async function borrarInvitacion(id) {

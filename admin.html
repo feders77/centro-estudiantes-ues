@@ -48,6 +48,10 @@
       <li><a href="#" data-section="apuntes"><span class="icon">📚</span> Apuntes <span class="count" id="count-apuntes">0</span></a></li>
       <li><a href="#" data-section="marketplace"><span class="icon">🔁</span> Marketplace <span class="count" id="count-marketplace">0</span></a></li>
     </ul>
+    <h4>Buzón</h4>
+    <ul class="admin-nav">
+      <li><a href="#" data-section="buzon"><span class="icon">📨</span> Casos públicos <span class="count" id="count-buzon">0</span></a></li>
+    </ul>
     <h4>Configuración</h4>
     <ul class="admin-nav">
       <li><a href="#" data-section="config"><span class="icon">⚙️</span> General</a></li>
@@ -213,6 +217,18 @@
         <button class="btn btn-ghost" id="tab-invitar" onclick="verTab('invitar')" style="font-size:13px">✉ Invitar</button>
       </div>
       <div id="usuarios-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 20px;min-height:80px"></div>
+    </section>
+
+    <!-- ============ BUZON CASOS ============ -->
+    <section class="admin-section" data-section-id="buzon">
+      <div class="admin-section-head">
+        <div>
+          <h2>Casos del Buzón</h2>
+          <p>Casos públicos que se muestran en la página del buzón. Solo el admin los crea y gestiona.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCasoModal()">+ Nuevo caso</button>
+      </div>
+      <div class="data-table" id="tabla-buzon"></div>
     </section>
 
     <!-- ============ DATOS ============ -->
@@ -382,6 +398,58 @@
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end">
         <button type="button" class="btn btn-ghost" onclick="closeModal('modal-votacion')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal caso buzón -->
+<div class="modal-overlay" id="modal-caso">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-caso')">×</button>
+    <h2 id="modal-caso-title">Nuevo caso</h2>
+    <p class="modal-sub">Se muestra en "Casos públicos" del buzón. Solo publicá con autorización del autor.</p>
+    <form onsubmit="guardarCaso(event)">
+      <input type="hidden" id="caso-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Número de caso</label>
+          <input type="text" id="caso-numero" placeholder="Ej: 2026-087" required>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="caso-estado">
+            <option value="recibido">● Recibido</option>
+            <option value="gestion">⚙ En gestión</option>
+            <option value="resuelto">✓ Resuelto</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Título (sin datos que identifiquen)</label>
+        <input type="text" id="caso-titulo" required>
+      </div>
+      <div class="form-group">
+        <label>Descripción / avance</label>
+        <textarea id="caso-descripcion" rows="4" required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Categoría</label>
+          <input type="text" id="caso-categoria" placeholder="Ej: Edilicio, Cantina, Bienestar">
+        </div>
+        <div class="form-group">
+          <label>Días en gestión</label>
+          <input type="number" id="caso-dias" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Agradecimientos / apoyos</label>
+        <input type="number" id="caso-agradecimientos" min="0" value="0">
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-caso')">Cancelar</button>
         <button type="submit" class="btn btn-primary">Guardar</button>
       </div>
     </form>

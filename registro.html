@@ -53,8 +53,58 @@
       </div>
     </a>
 
-    <h1 class="auth-title">Crear cuenta</h1>
-    <p class="auth-sub">Una vez registrado, un administrador va a activar tu cuenta.</p>
+    <!-- Sección para usuarios llegados desde link de invitación -->
+    <div id="seccion-invitado" style="display:none">
+      <h1 class="auth-title">Completar perfil</h1>
+      <p class="auth-sub">Fuiste invitado al Centro de Estudiantes. Completá tu info y ya podés entrar.</p>
+      <div id="alerta-inv" class="auth-alert"></div>
+      <form id="form-invitado" onsubmit="guardarPerfilInvitado(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre <span style="color:var(--burgundy)">*</span></label>
+            <input type="text" id="inv-nombre" required autocomplete="given-name" placeholder="María">
+          </div>
+          <div class="form-group">
+            <label>Apellido <span style="color:var(--burgundy)">*</span></label>
+            <input type="text" id="inv-apellido" required autocomplete="family-name" placeholder="García">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Alias <span style="color:var(--ink-soft);font-weight:400">(opcional)</span></label>
+          <input type="text" id="inv-alias" placeholder="Ej: Maru, Pepe...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nivel <span style="color:var(--burgundy)">*</span></label>
+            <select id="inv-nivel" required onchange="actualizarAniosInv()">
+              <option value="">— elegí —</option>
+              <option value="primaria">Primaria</option>
+              <option value="secundaria">Secundaria</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Año <span style="color:var(--burgundy)">*</span></label>
+            <select id="inv-anio" required onchange="actualizarOrientacionInv()">
+              <option value="">— primero nivel —</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="inv-grupo-orientacion" style="display:none">
+          <label>Orientación <span style="color:var(--burgundy)">*</span></label>
+          <select id="inv-orientacion">
+            <option value="humanidades">Humanidades</option>
+            <option value="naturales">Ciencias Naturales</option>
+            <option value="economia">Economía y Administración</option>
+          </select>
+        </div>
+        <button type="submit" id="btn-inv" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;margin-top:4px">
+          Guardar y entrar →
+        </button>
+      </form>
+    </div>
+
+    <h1 class="auth-title" id="titulo-registro">Crear cuenta</h1>
+    <p class="auth-sub" id="sub-registro">Una vez registrado, un administrador va a activar tu cuenta.</p>
 
     <div id="alerta" class="auth-alert"></div>
     <div id="exito" style="display:none">
@@ -219,8 +269,78 @@
     document.getElementById('exito').style.display = '';
   }
 
+  /* ---- helpers para el form del invitado ---- */
+  function actualizarAniosInv() {
+    const nivel = document.getElementById('inv-nivel').value;
+    const sel   = document.getElementById('inv-anio');
+    sel.innerHTML = '<option value="">— elegí año —</option>';
+    const lista = nivel === 'primaria' ? ANIOS_PRIMARIA : nivel === 'secundaria' ? ANIOS_SECUNDARIA : [];
+    const label = nivel === 'primaria' ? 'grado' : 'año';
+    lista.forEach(a => {
+      const op = document.createElement('option');
+      op.value = a; op.textContent = `${a}° ${label}`;
+      sel.appendChild(op);
+    });
+    actualizarOrientacionInv();
+  }
+
+  function actualizarOrientacionInv() {
+    const nivel = document.getElementById('inv-nivel').value;
+    const anio  = document.getElementById('inv-anio').value;
+    const grp   = document.getElementById('inv-grupo-orientacion');
+    const sel   = document.getElementById('inv-orientacion');
+    const mostrar = nivel === 'secundaria' && CON_ORIENTACION.includes(anio);
+    grp.style.display = mostrar ? '' : 'none';
+    if (mostrar) sel.required = true; else { sel.required = false; sel.value = 'humanidades'; }
+  }
+
+  async function guardarPerfilInvitado(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-inv');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+
+    const nombre    = document.getElementById('inv-nombre').value.trim();
+    const apellido  = document.getElementById('inv-apellido').value.trim();
+    const alias     = document.getElementById('inv-alias').value.trim() || null;
+    const nivel     = document.getElementById('inv-nivel').value;
+    const anio      = document.getElementById('inv-anio').value;
+    const orientacion = document.getElementById('inv-orientacion').value || null;
+
+    if (!nivel || !anio) {
+      const al = document.getElementById('alerta-inv');
+      al.textContent = 'Elegí tu nivel y año.';
+      al.className = 'auth-alert show error';
+      btn.disabled = false; btn.textContent = 'Guardar y entrar →';
+      return;
+    }
+
+    const { data: { user } } = await window._sb.auth.getUser();
+    const { error } = await window._sb.from('profiles').upsert({
+      id: user.id, nombre, apellido, alias, nivel, anio: parseInt(anio), orientacion
+    });
+
+    if (error) {
+      const al = document.getElementById('alerta-inv');
+      al.textContent = 'Error al guardar: ' + error.message;
+      al.className = 'auth-alert show error';
+      btn.disabled = false; btn.textContent = 'Guardar y entrar →';
+      return;
+    }
+
+    window.location.href = 'index.html';
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
-    await Auth.init();
+    const session = await Auth.init();
+
+    if (session) {
+      // Usuario llegó desde el link de invitación — ya tiene sesión activa
+      document.getElementById('seccion-invitado').style.display = '';
+      document.getElementById('titulo-registro').style.display = 'none';
+      document.getElementById('sub-registro').style.display = 'none';
+      document.getElementById('form-registro').style.display = 'none';
+      document.querySelector('.auth-foot').style.display = 'none';
+    }
   });
 </script>
 </body>

@@ -8,6 +8,73 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<style>
+  main{max-width:1280px;margin:0 auto;padding:40px 32px 80px}
+  .buzon-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+  .buzon-form{
+    background:#fff;border:1px solid var(--line);
+    border-radius:18px;padding:32px;
+    position:sticky;top:calc(65px + 20px);
+  }
+  .buzon-form h3{
+    font-family:'Fraunces',serif;font-size:22px;font-weight:600;
+    margin-bottom:8px;
+  }
+  .buzon-form > p{font-size:13px;color:var(--ink-soft);margin-bottom:20px}
+  .anon-toggle{
+    display:flex;align-items:center;gap:10px;
+    padding:14px;background:var(--cream);border-radius:10px;
+    margin-bottom:16px;cursor:pointer;
+  }
+  .anon-toggle input{width:auto;margin:0;cursor:pointer}
+  .anon-toggle label{font-size:13px;font-weight:500;cursor:pointer;flex:1}
+  .privacy-note{
+    font-size:12px;color:var(--ink-soft);
+    background:var(--paper);border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;margin-bottom:16px;line-height:1.6;
+  }
+
+  .ticket{
+    background:#fff;border:1px solid var(--line);
+    border-radius:14px;padding:20px;margin-bottom:12px;
+    transition:border-color .15s;
+  }
+  .ticket:hover{border-color:var(--accent)}
+  .ticket-head{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;
+  }
+  .ticket-id{font-size:11px;font-weight:700;color:var(--ink-soft);font-family:monospace;letter-spacing:.05em}
+  .ticket-status{
+    font-size:11px;font-weight:700;padding:4px 10px;
+    border-radius:999px;text-transform:uppercase;letter-spacing:.05em;
+  }
+  .ticket-status.resuelto{background:#d8ecdc;color:#2d6a3e}
+  .ticket-status.gestion{background:#fde8c8;color:#b56700}
+  .ticket-status.recibido{background:#e0d6c5;color:var(--ink-soft)}
+  .ticket h5{
+    font-family:'Fraunces',serif;font-size:15px;font-weight:600;
+    margin-bottom:6px;
+  }
+  .ticket p{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .ticket-meta{
+    display:flex;justify-content:space-between;
+    font-size:11px;color:var(--ink-soft);margin-top:12px;
+    padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap;gap:6px;
+  }
+
+  .tickets-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .tickets-header h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
+  .tickets-header select{
+    padding:8px 14px;border:1px solid var(--line);border-radius:8px;
+    font-family:inherit;font-size:13px;background:#fff;
+  }
+
+  @media(max-width:980px){
+    .buzon-grid{grid-template-columns:1fr}
+    .buzon-form{position:static}
+  }
+</style>
 </head>
 <body>
 
@@ -17,8 +84,8 @@
 </div>
 
 <header>
-  <a href="index.html" class="brand" style="text-decoration:none;color:inherit">
-    <img src="logo-fallback.svg" alt="Sagrado Corazón Rosario" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
     <div class="brand-text">
       <span class="institution">Sagrado Corazón Rosario</span>
       <span class="division">Centro de Estudiantes</span>
@@ -34,13 +101,13 @@
       <li><a href="marketplace.html">Marketplace</a></li>
     </ul>
   </nav>
-  <div class="user-chip">
-    <div class="avatar">CS</div>
-    <span>Cata · 5° A</span>
+  <div class="user-chip" style="opacity:0">
+    <div class="avatar">·</div>
+    <span></span>
   </div>
 </header>
 
-<main style="max-width:1280px;margin:0 auto;padding:40px 32px 80px">
+<main>
 
   <div class="page-header">
     <div>
@@ -67,7 +134,7 @@
 
       <div class="form-group">
         <label>Categoría</label>
-        <select>
+        <select id="buzon-categoria">
           <option>Convivencia entre alumnos</option>
           <option>Situación con un docente</option>
           <option>Bullying o discriminación</option>
@@ -81,17 +148,17 @@
 
       <div class="form-group">
         <label>Curso / año (opcional)</label>
-        <input type="text" placeholder="Ej: 4° B, 6° A, etc.">
+        <input type="text" id="buzon-curso" placeholder="Ej: 4° B, 6° A, etc.">
       </div>
 
       <div class="form-group">
         <label>Tu mensaje</label>
-        <textarea rows="6" placeholder="Contanos lo que pasa, lo que sentís o la idea que tenés. Sin filtro. Lo lee solo el centro."></textarea>
+        <textarea id="buzon-mensaje" rows="6" placeholder="Contanos lo que pasa, lo que sentís o la idea que tenés. Sin filtro. Lo lee solo el centro."></textarea>
       </div>
 
       <div class="form-group">
         <label>¿Cómo querés que avancemos?</label>
-        <select>
+        <select id="buzon-accion">
           <option>Que el centro lo gestione internamente</option>
           <option>Que lo eleven a dirección/preceptoría</option>
           <option>Solo quería que lo sepan, no hagan nada</option>
@@ -111,13 +178,13 @@
     </div>
 
     <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h3 style="font-family:'Fraunces',serif;font-size:22px;font-weight:600">Casos públicos</h3>
-        <select style="padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">
-          <option>Todos</option>
-          <option>Recibidos</option>
-          <option>En gestión</option>
-          <option>Resueltos</option>
+      <div class="tickets-header">
+        <h3>Casos públicos</h3>
+        <select id="filtro-estado" onchange="cambiarFiltro(this.value)">
+          <option value="todos">Todos</option>
+          <option value="recibido">Recibidos</option>
+          <option value="gestion">En gestión</option>
+          <option value="resuelto">Resueltos</option>
         </select>
       </div>
 
@@ -125,73 +192,8 @@
         Para que se vea qué se está haciendo. Sin exponer a nadie: solo se publica si el autor lo autorizó.
       </p>
 
-      <div class="tickets-list">
-
-        <div class="ticket">
-          <div class="ticket-head">
-            <span class="ticket-id">#2026-087</span>
-            <span class="ticket-status resuelto">✓ Resuelto</span>
-          </div>
-          <h5>Los baños del 2° piso no tenían papel hace 3 semanas</h5>
-          <p>Hablamos con maestranza y con administración. Se asignó un responsable de reposición diaria y se sumó un stock buffer.</p>
-          <div class="ticket-meta">
-            <span>📁 Edilicio · 11 días en gestión</span>
-            <span>👏 23 personas agradecieron</span>
-          </div>
-        </div>
-
-        <div class="ticket">
-          <div class="ticket-head">
-            <span class="ticket-id">#2026-094</span>
-            <span class="ticket-status gestion">⚙ En gestión</span>
-          </div>
-          <h5>Los precios de la cantina subieron mucho</h5>
-          <p>Llevamos el reclamo a la reunión con dirección del martes pasado. Quedamos en pedir el detalle de la última actualización de precios y traer alternativas.</p>
-          <div class="ticket-meta">
-            <span>📁 Cantina · 6 días en gestión</span>
-            <span>👏 47 personas se sumaron al reclamo</span>
-          </div>
-        </div>
-
-        <div class="ticket">
-          <div class="ticket-head">
-            <span class="ticket-id">#2026-101</span>
-            <span class="ticket-status gestion">⚙ En gestión</span>
-          </div>
-          <h5>Más bancos en el patio para los recreos</h5>
-          <p>Sugerencia que vino de 3° año. Estamos cotizando con el área de mantenimiento. Si nos aprueban el presupuesto se instalan 4 bancos antes de las vacaciones.</p>
-          <div class="ticket-meta">
-            <span>📁 Edilicio · 3 días en gestión</span>
-            <span>👏 89 personas la apoyaron</span>
-          </div>
-        </div>
-
-        <div class="ticket">
-          <div class="ticket-head">
-            <span class="ticket-id">#2026-104</span>
-            <span class="ticket-status recibido">● Recibido</span>
-          </div>
-          <h5>Repensar la consigna del simulacro de examen final</h5>
-          <p>Llegó hoy. La leemos en la reunión del jueves y vemos cómo encararlo con el área pedagógica.</p>
-          <div class="ticket-meta">
-            <span>📁 Académico · Hace 4 horas</span>
-            <span>👏 12 personas se sumaron</span>
-          </div>
-        </div>
-
-        <div class="ticket">
-          <div class="ticket-head">
-            <span class="ticket-id">#2026-076</span>
-            <span class="ticket-status resuelto">✓ Resuelto</span>
-          </div>
-          <h5>Taller de orientación vocacional para 5° y 6°</h5>
-          <p>¡Salió! Coordinamos con el gabinete una serie de 4 talleres en julio. Inscripción abierta en la sección de eventos.</p>
-          <div class="ticket-meta">
-            <span>📁 Bienestar · 21 días en gestión</span>
-            <span>👏 134 personas agradecieron</span>
-          </div>
-        </div>
-
+      <div id="tickets-list">
+        <div style="text-align:center;padding:40px;color:var(--ink-soft)">Cargando casos...</div>
       </div>
     </div>
 
@@ -206,8 +208,8 @@
       <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
     </div>
     <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
-    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li><li><a href="#">Actas</a></li></ul></div>
-    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#">Bienestar</a></li><li><a href="#">Gabinete</a></li><li><a href="#">Contacto</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li></ul></div>
   </div>
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
@@ -215,16 +217,69 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="auth.js"></script>
+<script src="store.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    const session = await Auth.init();
-    Auth.updateChip(session ? await Auth.getProfile() : null);
-  });
+  let _todosCasos = [];
+  let _filtroEstado = 'todos';
+
+  const ESTADO_BADGE = {
+    resuelto: '<span class="ticket-status resuelto">✓ Resuelto</span>',
+    gestion:  '<span class="ticket-status gestion">⚙ En gestión</span>',
+    recibido: '<span class="ticket-status recibido">● Recibido</span>'
+  };
+
+  async function cargarCasos() {
+    try {
+      const r = await fetch(window.SUPABASE_URL + '/rest/v1/buzon_casos?order=created_at.desc', {
+        headers: {
+          'apikey':        window.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY
+        }
+      });
+      if (r.ok) {
+        _todosCasos = await r.json();
+      }
+    } catch {}
+    renderCasos();
+  }
+
+  function renderCasos() {
+    const lista = _filtroEstado === 'todos'
+      ? _todosCasos
+      : _todosCasos.filter(c => c.estado === _filtroEstado);
+
+    const cont = document.getElementById('tickets-list');
+    if (!lista.length) {
+      cont.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14px">
+        No hay casos${_filtroEstado !== 'todos' ? ' con ese estado' : ''} por ahora.
+      </div>`;
+      return;
+    }
+
+    cont.innerHTML = lista.map(c => `
+      <div class="ticket">
+        <div class="ticket-head">
+          <span class="ticket-id">#${escapeHtml(c.numero)}</span>
+          ${ESTADO_BADGE[c.estado] || ''}
+        </div>
+        <h5>${escapeHtml(c.titulo)}</h5>
+        <p>${escapeHtml(c.descripcion)}</p>
+        <div class="ticket-meta">
+          <span>📁 ${escapeHtml(c.categoria)}${c.dias_gestion > 0 ? ' · ' + c.dias_gestion + ' días en gestión' : ''}</span>
+          <span>👏 ${c.agradecimientos} ${c.agradecimientos === 1 ? 'persona' : 'personas'} agradecieron</span>
+        </div>
+      </div>`).join('');
+  }
+
+  function cambiarFiltro(valor) {
+    _filtroEstado = valor;
+    renderCasos();
+  }
 
   async function enviarMensaje() {
     if (!window._authToken) { window.location.href = 'login.html?next=buzon.html'; return; }
-    const categoria = document.querySelector('.buzon-form select').value;
-    const mensaje   = document.querySelector('.buzon-form textarea').value.trim();
+    const categoria = document.getElementById('buzon-categoria').value;
+    const mensaje   = document.getElementById('buzon-mensaje').value.trim();
     const btn       = document.getElementById('btn-enviar');
     const feedback  = document.getElementById('buzon-feedback');
 
@@ -253,8 +308,7 @@
 
       if (!r.ok) throw new Error('Error al enviar');
 
-      // éxito
-      document.querySelector('.buzon-form textarea').value = '';
+      document.getElementById('buzon-mensaje').value = '';
       feedback.style.display = 'block';
       feedback.style.background = '#d8ecdc';
       feedback.style.color = '#2d6a3e';
@@ -270,6 +324,12 @@
       btn.textContent = 'Enviar mensaje';
     }
   }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const session = await Auth.init();
+    Auth.updateChip(session ? await Auth.getProfile() : null);
+    await cargarCasos();
+  });
 </script>
 </body>
 </html>

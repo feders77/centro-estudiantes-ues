@@ -12,6 +12,7 @@ const Auth = {
   async init() {
     const { data: { session } } = await _sb.auth.getSession();
     window._authToken = session?.access_token || null;
+    window._userId    = session?.user?.id      || null;
 
     if (session) {
       // Registrar ingreso en background (no bloquea la carga)
@@ -95,10 +96,33 @@ const Auth = {
     chip.innerHTML = `
       <div class="avatar">${avatarInner}</div>
       <span>${escapeHtml(display)}${curso ? ' · ' + curso : ''}</span>`;
-    chip.title = 'Ver / editar mi perfil';
-    chip.style.cursor = 'pointer';
     chip.style.opacity = '1';
-    chip.onclick = () => { window.location.href = 'perfil.html'; };
+    chip.style.cursor = 'pointer';
+
+    if (!chip.parentElement.classList.contains('chip-wrapper')) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chip-wrapper';
+      chip.parentNode.insertBefore(wrapper, chip);
+      wrapper.appendChild(chip);
+
+      const menu = document.createElement('div');
+      menu.className = 'chip-menu';
+      menu.innerHTML = `
+        <a href="perfil.html">👤 Mi perfil</a>
+        <div class="menu-sep"></div>
+        <button type="button">🚪 Cerrar sesión</button>`;
+      wrapper.appendChild(menu);
+
+      menu.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        Auth.logout();
+      });
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('open');
+      });
+      document.addEventListener('click', () => menu.classList.remove('open'));
+    }
 
     _setAdminVisible(profile.rol === 'administrador');
   },
@@ -112,3 +136,52 @@ const Auth = {
     return profile;
   }
 };
+
+/* =========================================================================
+   HAMBURGER MENU — inyecta botón y panel móvil en cualquier página
+   ========================================================================= */
+function _setupHamburger() {
+  const header = document.querySelector('header');
+  const navEl  = header ? header.querySelector('nav ul') : null;
+  if (!header || !navEl || document.getElementById('hamburger')) return;
+
+  const hamburger = document.createElement('button');
+  hamburger.id    = 'hamburger';
+  hamburger.type  = 'button';
+  hamburger.className = 'hamburger';
+  hamburger.setAttribute('aria-label', 'Menú');
+  hamburger.innerHTML = '<span></span><span></span><span></span>';
+  header.insertBefore(hamburger, header.lastElementChild);
+
+  const links = Array.from(navEl.querySelectorAll('a')).map(a => {
+    const href = a.getAttribute('href') || '#';
+    const cls  = a.className;
+    return `<a href="${href}"${cls ? ` class="${cls}"` : ''}>${a.textContent}</a>`;
+  }).join('');
+
+  const panel = document.createElement('div');
+  panel.id        = 'nav-mobile-panel';
+  panel.className = 'nav-mobile-panel';
+  panel.innerHTML = `<div class="nav-mobile-inner">
+    <div class="nav-mobile-close">
+      <button type="button" aria-label="Cerrar menú">✕</button>
+    </div>
+    ${links}
+  </div>`;
+  document.body.appendChild(panel);
+
+  const closePanel = () => {
+    hamburger.classList.remove('open');
+    panel.classList.remove('open');
+  };
+
+  panel.querySelector('.nav-mobile-close button').addEventListener('click', closePanel);
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hamburger.classList.toggle('open');
+    panel.classList.toggle('open');
+  });
+  panel.addEventListener('click', (e) => { if (e.target === panel) closePanel(); });
+}
+
+document.addEventListener('DOMContentLoaded', _setupHamburger);

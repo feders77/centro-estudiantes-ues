@@ -34,9 +34,13 @@ const Auth = {
   /* Devuelve el perfil del usuario logueado (con rol) o null */
   async getProfile() {
     if (!window._authToken) return null;
+    const { data: { session } } = await _sb.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return null;
     const { data, error } = await _sb
       .from('profiles')
       .select('*')
+      .eq('id', userId)
       .single();
     return error ? null : data;
   },

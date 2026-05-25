@@ -13,6 +13,11 @@ const Auth = {
     const { data: { session } } = await _sb.auth.getSession();
     window._authToken = session?.access_token || null;
 
+    if (session) {
+      // Registrar ingreso en background (no bloquea la carga)
+      _sb.rpc('registrar_ingreso').then(() => {});
+    }
+
     _sb.auth.onAuthStateChange((_event, session) => {
       window._authToken = session?.access_token || null;
     });

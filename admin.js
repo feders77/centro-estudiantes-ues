@@ -611,11 +611,16 @@ function renderTodo() {
 
 let _tabUsuarios = 'pendientes';
 let _usuarios = [];
+let _invitaciones = [];
 
 async function cargarUsuarios() {
-  const { data, error } = await window._sb.from('profiles').select('*').order('created_at', { ascending: false });
+  const [{ data: usuarios, error }, { data: invs }] = await Promise.all([
+    window._sb.from('profiles').select('*').order('created_at', { ascending: false }),
+    window._sb.from('invitaciones').select('*').order('created_at', { ascending: false })
+  ]);
   if (error) { toast('Error al cargar usuarios: ' + error.message, 'error'); return; }
-  _usuarios = data || [];
+  _usuarios     = usuarios || [];
+  _invitaciones = invs || [];
 
   const pendientes = _usuarios.filter(u => u.rol === 'pendiente').length;
   document.getElementById('count-pendientes').textContent = pendientes || '0';
@@ -624,16 +629,44 @@ async function cargarUsuarios() {
   verTab(_tabUsuarios);
 }
 
+function _avatarHtml(u, size = 38) {
+  if (u.avatar_url) {
+    return `<img src="${escapeHtml(u.avatar_url)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.outerHTML=this.nextElementSibling.outerHTML">`;
+  }
+  const initials = ((u.nombre?.[0]||'') + (u.apellido?.[0]||'')).toUpperCase() || '?';
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--burgundy);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.34)}px;font-weight:700;flex-shrink:0">${initials}</div>`;
+}
+
+function _cursoLabel(u) {
+  if (!u.anio) return '—';
+  const nivel = u.nivel === 'primaria' ? 'grado' : 'año';
+  const ori   = u.orientacion ? ` · ${u.orientacion.charAt(0).toUpperCase() + u.orientacion.slice(1)}` : '';
+  return `${u.anio}° ${nivel}${ori}`;
+}
+
+function _metricaHtml(u) {
+  const ingreso = u.last_login
+    ? `Último ingreso: <strong>${formatFechaRelativa(u.last_login)}</strong>`
+    : 'Sin ingresos aún';
+  const total = u.login_count ? `${u.login_count} ${u.login_count === 1 ? 'ingreso' : 'ingresos'}` : '';
+  return `${ingreso}${total ? ' · ' + total : ''}`;
+}
+
 function verTab(tab) {
   _tabUsuarios = tab;
-  ['pendientes','alumnos','admins'].forEach(t => {
-    document.getElementById('tab-' + t).style.background = t === tab ? 'var(--burgundy)' : '';
-    document.getElementById('tab-' + t).style.color      = t === tab ? 'var(--cream)' : '';
+  ['pendientes','alumnos','admins','invitar'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (!el) return;
+    el.style.background = t === tab ? 'var(--burgundy)' : '';
+    el.style.color      = t === tab ? 'var(--cream)' : '';
   });
 
+  const cont = document.getElementById('usuarios-lista');
+
+  if (tab === 'invitar') { renderInvitar(); return; }
+
   const rolMap = { pendientes: 'pendiente', alumnos: 'alumno', admins: 'administrador' };
-  const lista = _usuarios.filter(u => u.rol === rolMap[tab]);
-  const cont  = document.getElementById('usuarios-lista');
+  const lista  = _usuarios.filter(u => u.rol === rolMap[tab]);
 
   if (!lista.length) {
     cont.innerHTML = `<p style="text-align:center;padding:32px;color:var(--ink-soft);font-size:14px">Sin usuarios en esta categoría.</p>`;
@@ -641,47 +674,113 @@ function verTab(tab) {
   }
 
   cont.innerHTML = lista.map(u => {
-    const display = u.alias || u.nombre;
-    const curso   = u.anio ? `${u.anio}° ${u.nivel === 'primaria' ? 'gr.' : ''}${u.orientacion ? ' ' + u.orientacion : ''}` : '—';
-    const initials = ((u.nombre?.[0]||'') + (u.apellido?.[0]||'')).toUpperCase();
+    const display = escapeHtml(u.alias || u.nombre || '—');
     let acciones = '';
     if (u.rol === 'pendiente') {
       acciones = `
-        <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="cambiarRol('${u.id}','alumno')">✓ Aprobar</button>
-        <button class="btn btn-ghost"   style="font-size:12px;padding:6px 12px;color:#a73a1f" onclick="eliminarUsuario('${u.id}')">✗ Rechazar</button>`;
+        <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="cambiarRol('${u.id}','alumno')">✓ Aprobar</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:#a73a1f" onclick="eliminarUsuario('${u.id}')">✗ Rechazar</button>`;
     } else if (u.rol === 'alumno') {
       acciones = `
-        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="cambiarRol('${u.id}','administrador')">⬆ Hacer admin</button>
-        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;color:#a73a1f" onclick="cambiarRol('${u.id}','pendiente')">Suspender</button>`;
-    } else if (u.rol === 'administrador') {
-      acciones = `
-        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="cambiarRol('${u.id}','alumno')">⬇ Quitar admin</button>`;
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="cambiarRol('${u.id}','administrador')">⬆ Admin</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:#a73a1f" onclick="cambiarRol('${u.id}','pendiente')">Suspender</button>`;
+    } else {
+      acciones = `<button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="cambiarRol('${u.id}','alumno')">⬇ Quitar admin</button>`;
     }
     return `
-      <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)">
-        <div style="width:38px;height:38px;border-radius:50%;background:var(--burgundy);color:var(--cream);
-             display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">
-          ${initials}
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:14px">${escapeHtml(display)} <span style="font-weight:400;color:var(--ink-soft)">${escapeHtml(u.apellido || '')}</span></div>
-          <div style="font-size:12px;color:var(--ink-soft)">${curso} · ${escapeHtml(u.nombre || '')} · <span style="font-style:italic">registrado ${formatFechaRelativa(u.created_at)}</span></div>
+      <div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)">
+        ${_avatarHtml(u)}
+        <div style="flex:1;min-width:0;overflow:hidden">
+          <div style="font-weight:600;font-size:14px">${display} <span style="font-weight:400">${escapeHtml(u.apellido || '')}</span>
+            <span style="font-size:11px;background:var(--cream);color:var(--burgundy);padding:2px 8px;border-radius:999px;margin-left:6px;font-weight:600">${_cursoLabel(u)}</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:2px">
+            ${escapeHtml(u.nombre || '')} ${escapeHtml(u.apellido || '')}
+            ${u.nivel ? `· ${u.nivel.charAt(0).toUpperCase()+u.nivel.slice(1)}` : ''}
+          </div>
+          <div style="font-size:11px;color:var(--ink-soft);margin-top:3px">${_metricaHtml(u)} · Registro: ${new Date(u.created_at).toLocaleDateString('es-AR')}</div>
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0">${acciones}</div>
       </div>`;
   }).join('');
 }
 
+function renderInvitar() {
+  const cont = document.getElementById('usuarios-lista');
+  const pendInvs = _invitaciones.filter(i => !i.used);
+  const usadas   = _invitaciones.filter(i => i.used);
+  const regUrl   = 'https://feders77.github.io/centro-estudiantes-ues/registro.html';
+
+  cont.innerHTML = `
+    <div style="padding:16px 0">
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">
+        Agregá el email de la persona. Cuando se registre con ese email, su cuenta queda activa de inmediato sin necesitar aprobación manual.
+      </p>
+      <div style="display:flex;gap:10px;margin-bottom:24px">
+        <input type="email" id="inv-email" placeholder="email@ejemplo.com"
+          style="flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px">
+        <button class="btn btn-primary" style="padding:10px 18px" onclick="crearInvitacion()">Invitar</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:12px;font-weight:600;color:var(--ink-soft)">LINK DE REGISTRO PARA COMPARTIR</span>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="copiarLink()">📋 Copiar link</button>
+      </div>
+      <div style="background:var(--cream);border-radius:8px;padding:10px 14px;font-size:12px;font-family:monospace;color:var(--ink-soft);word-break:break-all;margin-bottom:24px">${regUrl}</div>
+
+      ${pendInvs.length ? `
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:8px">INVITACIONES PENDIENTES (${pendInvs.length})</div>
+        ${pendInvs.map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+            <div>
+              <div style="font-size:14px;font-weight:500">${escapeHtml(i.email)}</div>
+              <div style="font-size:11px;color:var(--ink-soft)">Invitado ${formatFechaRelativa(i.created_at)}</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;color:#a73a1f" onclick="borrarInvitacion('${i.id}')">✕</button>
+          </div>`).join('')}
+      ` : ''}
+
+      ${usadas.length ? `
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin:16px 0 8px">YA REGISTRADOS (${usadas.length})</div>
+        ${usadas.map(i => `
+          <div style="font-size:13px;color:var(--ink-soft);padding:6px 0;border-bottom:1px solid var(--line)">✓ ${escapeHtml(i.email)}</div>`).join('')}
+      ` : ''}
+    </div>`;
+}
+
+async function crearInvitacion() {
+  const email = document.getElementById('inv-email')?.value?.trim().toLowerCase();
+  if (!email) return;
+  const { error } = await window._sb.from('invitaciones').insert({ email });
+  if (error) {
+    toast(error.message.includes('unique') ? 'Ese email ya fue invitado' : 'Error: ' + error.message, 'error');
+    return;
+  }
+  toast('✓ Invitación creada para ' + email, 'success');
+  await cargarUsuarios();
+}
+
+async function borrarInvitacion(id) {
+  await window._sb.from('invitaciones').delete().eq('id', id);
+  toast('Invitación eliminada', 'success');
+  await cargarUsuarios();
+}
+
+function copiarLink() {
+  navigator.clipboard.writeText('https://feders77.github.io/centro-estudiantes-ues/registro.html')
+    .then(() => toast('✓ Link copiado', 'success'))
+    .catch(() => toast('No se pudo copiar', 'error'));
+}
+
 async function cambiarRol(id, nuevoRol) {
   const { error } = await window._sb.from('profiles').update({ rol: nuevoRol }).eq('id', id);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  toast(nuevoRol === 'alumno' ? '✓ Usuario aprobado' : nuevoRol === 'administrador' ? '✓ Rol actualizado a admin' : '✓ Rol actualizado', 'success');
+  const msgs = { alumno: '✓ Usuario aprobado', administrador: '✓ Promovido a admin', pendiente: 'Usuario suspendido' };
+  toast(msgs[nuevoRol] || '✓ Rol actualizado', 'success');
   await cargarUsuarios();
 }
 
 async function eliminarUsuario(id) {
   if (!confirm('¿Rechazar y eliminar este usuario? Esta acción no se puede deshacer.')) return;
-  // Eliminar el perfil (auth.users en cascada si está configurado)
   const { error } = await window._sb.from('profiles').delete().eq('id', id);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Usuario eliminado', 'success');

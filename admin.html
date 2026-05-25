@@ -374,10 +374,11 @@
   <div class="modal" style="max-width:700px">
     <button class="modal-close" onclick="closeModal('modal-usuarios')">×</button>
     <h2>Gestión de usuarios</h2>
-    <div style="display:flex;gap:8px;margin:16px 0">
+    <div style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap">
       <button class="btn btn-ghost" id="tab-pendientes" onclick="verTab('pendientes')" style="font-size:13px">⏳ Pendientes <span id="badge-pend" style="background:#fad6cd;color:#a73a1f;padding:2px 8px;border-radius:999px;margin-left:4px;font-size:11px">0</span></button>
       <button class="btn btn-ghost" id="tab-alumnos"    onclick="verTab('alumnos')"    style="font-size:13px">👤 Alumnos</button>
       <button class="btn btn-ghost" id="tab-admins"     onclick="verTab('admins')"     style="font-size:13px">🛠 Admins</button>
+      <button class="btn btn-ghost" id="tab-invitar"    onclick="verTab('invitar')"    style="font-size:13px">✉ Invitar</button>
     </div>
     <div id="usuarios-lista" style="max-height:420px;overflow-y:auto"></div>
   </div>

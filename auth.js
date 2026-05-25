@@ -111,8 +111,10 @@ const Auth = {
 
       const menu = document.createElement('div');
       menu.className = 'chip-menu';
+      const isAdmin = profile.rol === 'administrador';
       menu.innerHTML = `
         <a href="perfil.html">👤 Mi perfil</a>
+        ${isAdmin ? '<a href="admin.html" id="chip-admin-link" style="color:var(--burgundy);font-weight:600">🛠 Panel Admin</a>' : ''}
         <div class="menu-sep"></div>
         <button type="button">🚪 Cerrar sesión</button>`;
       wrapper.appendChild(menu);
@@ -128,7 +130,23 @@ const Auth = {
       document.addEventListener('click', () => menu.classList.remove('open'));
     }
 
-    _setAdminVisible(profile.rol === 'administrador');
+    const esAdmin = profile.rol === 'administrador';
+    _setAdminVisible(esAdmin);
+
+    // Inyectar link Admin en el panel hamburger mobile si el usuario es admin
+    if (esAdmin) {
+      const mobileInner = document.querySelector('#nav-mobile-panel .nav-mobile-inner');
+      if (mobileInner && !mobileInner.querySelector('a[href="admin.html"]')) {
+        const sep = document.createElement('div');
+        sep.style.cssText = 'height:1px;background:var(--line);margin:8px 0';
+        const adminA = document.createElement('a');
+        adminA.href = 'admin.html';
+        adminA.textContent = '🛠 Panel Admin';
+        adminA.style.cssText = 'color:var(--burgundy);font-weight:700;font-size:16px';
+        mobileInner.appendChild(sep);
+        mobileInner.appendChild(adminA);
+      }
+    }
   },
 
   /* Redirige a login.html si no hay sesión o el rol no está en la lista */

@@ -49,6 +49,11 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
     if (section === 'secciones')    cargarSecciones();
     if (section === 'emails')       cargarEmailTemplates();
     if (section === 'comentarios')  cargarTodosComentarios();
+    // En mobile: scroll al contenido (por debajo del sidebar sticky)
+    if (window.innerWidth <= 980) {
+      const main = document.querySelector('.admin-main');
+      if (main) setTimeout(() => main.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
   });
 });
 

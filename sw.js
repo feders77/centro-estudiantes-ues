@@ -1,38 +1,48 @@
-const CACHE = 'ce-v1';
-const PRECACHE = [
-  '/centro-estudiantes-ues/',
-  '/centro-estudiantes-ues/index.html',
-  '/centro-estudiantes-ues/shared.css',
-  '/centro-estudiantes-ues/auth.js',
-  '/centro-estudiantes-ues/store.js',
-  '/centro-estudiantes-ues/supabase-config.js',
-  '/centro-estudiantes-ues/pwa.js',
-  '/centro-estudiantes-ues/icon.svg',
-  '/centro-estudiantes-ues/logo-fallback.svg'
-];
+/* ── Service Worker — Centro de Estudiantes ──
+   Estrategia: HTML siempre de la red (nunca cacheado).
+   Assets (CSS/JS/imágenes): network-first con caché de respaldo.
+   Al activar una versión nueva: notifica a todos los clientes para recargar.
+*/
+const CACHE = 'ce-v2';
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
-  );
+  // Activa inmediatamente, sin esperar a que cierren las tabs viejas
+  e.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+      .then(() => {
+        // Avisar a todos los clientes que hay una versión nueva → ellos recargan
+        self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }));
+        });
+      })
   );
 });
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  // Supabase y CDN: siempre red
-  if (url.hostname.includes('supabase') || url.hostname.includes('jsdelivr') ||
-      url.hostname.includes('googleapis') || url.hostname.includes('gstatic')) {
-    return;
-  }
-  // Estrategia: network-first con fallback a caché
+
+  // Supabase, CDN externas y resend: siempre red, sin interceptar
+  if (
+    url.hostname.includes('supabase') ||
+    url.hostname.includes('jsdelivr') ||
+    url.hostname.includes('googleapis') ||
+    url.hostname.includes('gstatic') ||
+    url.hostname.includes('resend')
+  ) return;
+
+  // HTML: NUNCA cachear — siempre red para que el usuario vea la versión más nueva
+  const esHTML = e.request.headers.get('accept')?.includes('text/html') ||
+                 url.pathname.endsWith('.html') ||
+                 url.pathname.endsWith('/');
+  if (esHTML) return; // el navegador lo maneja solo
+
+  // Assets (CSS, JS, imágenes, fuentes): network-first con fallback a caché
   e.respondWith(
     fetch(e.request)
       .then(res => {

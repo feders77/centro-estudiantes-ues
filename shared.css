@@ -356,17 +356,25 @@ footer a:hover{color:var(--cream)}
   .admin-side{
     position:sticky;top:65px;z-index:40;
     border-right:none;border-bottom:1px solid var(--line);
-    padding:12px;
+    padding:8px 10px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
   }
-  .admin-nav{display:flex;gap:6px;overflow-x:auto;flex-wrap:nowrap}
+  .admin-side::-webkit-scrollbar{display:none}
+  .admin-nav{display:flex;gap:4px;overflow-x:visible;flex-wrap:nowrap;white-space:nowrap}
   .admin-nav li{flex-shrink:0}
+  .admin-nav a{font-size:12px;padding:8px 10px;min-height:40px;gap:6px}
+  .admin-nav .count{font-size:10px;padding:1px 6px}
   .admin-side h4{display:none}
-  .admin-main{padding:24px 18px}
+  .admin-main{padding:20px 16px}
   nav ul{display:none}
   .page-title{font-size:32px}
   .footer-content{grid-template-columns:1fr 1fr}
   .stat-row{grid-template-columns:repeat(2,1fr)}
   .form-row{grid-template-columns:1fr}
+  /* topbar admin: truncate en mobile */
+  .topbar{font-size:11px;padding:6px 14px}
 }
 @media (max-width:560px){
   header{padding:14px 18px}
@@ -375,6 +383,19 @@ footer a:hover{color:var(--cream)}
   .brand-text .division{font-size:10px}
   .modal{padding:24px 20px}
   .stat-row{grid-template-columns:1fr 1fr}
+  /* Admin: section head apila en columna en mobile */
+  .admin-section-head{flex-direction:column;align-items:flex-start;gap:12px}
+  .admin-section-head .btn{width:100%;justify-content:center}
+  .admin-main{padding:14px 12px}
+  /* Datos tabla: acciones debajo del contenido */
+  .data-row{grid-template-columns:1fr;gap:10px}
+  .data-actions{justify-content:flex-start;flex-wrap:wrap}
+  .icon-btn{min-width:40px;min-height:40px}
+  /* Admin nav: iconos más compactos */
+  .admin-nav a{padding:8px 8px;font-size:11px}
+  .admin-nav .icon{font-size:13px}
+  /* Config cards full width */
+  .admin-main > section > div[style*="max-width"]{max-width:100% !important}
 }
 
 /* === CHIP DROPDOWN === */

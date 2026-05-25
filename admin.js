@@ -44,8 +44,10 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
     link.classList.add('active');
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.querySelector(`[data-section-id="${section}"]`).classList.add('active');
-    if (section === 'config') cargarConfig();
-    if (section === 'usuarios') verTab(_tabUsuarios);
+    if (section === 'config')    cargarConfig();
+    if (section === 'usuarios')  verTab(_tabUsuarios);
+    if (section === 'secciones') cargarSecciones();
+    if (section === 'emails')    cargarEmailTemplates();
   });
 });
 
@@ -710,6 +712,132 @@ async function borrarCaso(id) {
 }
 
 /* ========================================================================
+   SECCIONES
+   ======================================================================== */
+
+let _secciones = [];
+
+async function cargarSecciones() {
+  const { data } = await window._sb.from('config_secciones').select('*').order('clave');
+  _secciones = data || [];
+  renderSecciones();
+}
+
+function renderSecciones() {
+  const cont = document.getElementById('secciones-lista');
+  if (!cont || !_secciones.length) return;
+
+  cont.innerHTML = _secciones.map(s => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line)">
+      <div>
+        <div style="font-weight:600;font-size:14px">${escapeHtml(s.label)}</div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${s.habilitada ? '✅ Activa — visible para los alumnos' : '⏸ Desactivada — muestra "Próximamente"'}</div>
+      </div>
+      <label class="toggle-pill" title="${s.habilitada ? 'Desactivar' : 'Activar'}">
+        <input type="checkbox" ${s.habilitada ? 'checked' : ''} onchange="toggleSeccion('${s.clave}', this.checked)">
+        <span></span>
+      </label>
+    </div>`).join('').replace(/<div[^>]*style="[^"]*border-bottom[^"]*"[^>]*>(?=[\s\S]*?$)/, s => s.replace('border-bottom:1px solid var(--line)', 'border-bottom:none'));
+}
+
+async function toggleSeccion(clave, habilitada) {
+  const { error } = await window._sb
+    .from('config_secciones')
+    .update({ habilitada, updated_at: new Date().toISOString() })
+    .eq('clave', clave);
+  if (error) { toast('Error al guardar: ' + error.message, 'error'); await cargarSecciones(); return; }
+  const s = _secciones.find(x => x.clave === clave);
+  toast(`${s?.label || clave} ${habilitada ? 'activada' : 'desactivada'}`, 'success');
+  await cargarSecciones();
+}
+
+/* ========================================================================
+   EMAIL TEMPLATES
+   ======================================================================== */
+
+let _templates = [];
+
+const TPL_LABELS = {
+  invitacion:         'Invitación',
+  confirmacion_email: 'Confirmación de email',
+  recuperar_password: 'Recuperar contraseña'
+};
+
+async function cargarEmailTemplates() {
+  const { data } = await window._sb.from('email_templates').select('*').order('tipo');
+  _templates = data || [];
+  renderEmailTemplatesList();
+}
+
+function renderEmailTemplatesList() {
+  const cont = document.getElementById('email-tpl-lista');
+  if (!cont) return;
+  cont.innerHTML = _templates.map((t, i) => `
+    <div onclick="editarTemplate('${t.tipo}')"
+         style="padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .1s"
+         onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''"
+         id="tpl-item-${t.tipo}">
+      <div style="font-weight:600;font-size:14px">${escapeHtml(TPL_LABELS[t.tipo] || t.tipo)}</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(t.asunto)}</div>
+    </div>`).join('');
+}
+
+function editarTemplate(tipo) {
+  const t = _templates.find(x => x.tipo === tipo);
+  if (!t) return;
+
+  document.getElementById('tpl-tipo').value = tipo;
+  document.getElementById('tpl-editor-titulo').textContent = TPL_LABELS[tipo] || tipo;
+  document.getElementById('tpl-asunto').value = t.asunto;
+  document.getElementById('tpl-cuerpo').value = t.cuerpo_html;
+  document.getElementById('tpl-vars-hint').textContent =
+    t.variables?.length ? 'Variables disponibles: ' + t.variables.join(', ') : '';
+
+  const editor = document.getElementById('email-tpl-editor');
+  editor.style.display = '';
+
+  document.querySelectorAll('[id^="tpl-item-"]').forEach(el => el.style.fontWeight = '');
+  const active = document.getElementById('tpl-item-' + tipo);
+  if (active) active.style.background = 'var(--cream)';
+}
+
+async function guardarTemplate(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-guardar-tpl');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const tipo       = document.getElementById('tpl-tipo').value;
+  const asunto     = document.getElementById('tpl-asunto').value.trim();
+  const cuerpo_html = document.getElementById('tpl-cuerpo').value.trim();
+
+  try {
+    const r = await fetch(window.SUPABASE_URL + '/functions/v1/actualizar-templates', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + window._authToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, asunto, cuerpo_html })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error');
+    if (data.warning) toast('⚠️ ' + data.warning, '');
+    else toast(data.supabase_updated ? '✓ Template guardado y aplicado en Supabase' : '✓ Template guardado', 'success');
+    await cargarEmailTemplates();
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar y aplicar';
+  }
+}
+
+function previewTemplate() {
+  const asunto = document.getElementById('tpl-asunto').value;
+  const cuerpo = document.getElementById('tpl-cuerpo').value;
+  document.getElementById('preview-subject').textContent = 'Asunto: ' + asunto;
+  const iframe = document.getElementById('preview-iframe');
+  iframe.srcdoc = `<!DOCTYPE html><html><body style="font-family:Inter Tight,sans-serif;font-size:14px;color:#1a1310;padding:20px;max-width:560px;margin:auto">${cuerpo}</body></html>`;
+  openModal('modal-tpl-preview');
+}
+
+/* ========================================================================
    USUARIOS
    ======================================================================== */
 
@@ -730,7 +858,87 @@ async function cargarUsuarios() {
   document.getElementById('count-pendientes').textContent = pendientes || '0';
   document.getElementById('badge-pend').textContent = pendientes;
 
+  _renderUserStats();
+  _renderUserChart();
   verTab(_tabUsuarios);
+}
+
+function _renderUserStats() {
+  const cont = document.getElementById('user-stats-row');
+  if (!cont) return;
+  const total    = _usuarios.length;
+  const alumnos  = _usuarios.filter(u => u.rol === 'alumno').length;
+  const admins   = _usuarios.filter(u => u.rol === 'administrador').length;
+  const pend     = _usuarios.filter(u => u.rol === 'pendiente').length;
+
+  // Nuevos en los últimos 30 días
+  const hace30 = new Date(Date.now() - 30 * 86400000).toISOString();
+  const nuevos = _usuarios.filter(u => u.created_at > hace30).length;
+
+  const chip = (label, val, bg = 'var(--cream)', col = 'var(--ink)') =>
+    `<div style="background:${bg};color:${col};border-radius:10px;padding:12px 18px;display:flex;flex-direction:column;gap:2px;min-width:90px">
+      <span style="font-size:22px;font-weight:700;font-family:Fraunces,serif">${val}</span>
+      <span style="font-size:11px;opacity:.75">${label}</span>
+    </div>`;
+
+  cont.innerHTML =
+    chip('Total', total) +
+    chip('Alumnos', alumnos, '#d8ecdc', '#2d6a3e') +
+    chip('Admins', admins, '#e8dff5', '#5a2d8a') +
+    chip('Pendientes', pend, '#fad6cd', '#a73a1f') +
+    chip('Últimos 30 días', nuevos, 'var(--cream)', 'var(--ink)');
+}
+
+function _renderUserChart() {
+  const wrap = document.getElementById('user-chart-wrap');
+  const cont = document.getElementById('user-chart-svg');
+  if (!wrap || !cont) return;
+
+  const aprobados = _usuarios.filter(u => u.rol === 'alumno' || u.rol === 'administrador');
+  if (!aprobados.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  // Agrupar por nivel+año
+  const grupos = {};
+  aprobados.forEach(u => {
+    if (!u.anio) return;
+    const niv = u.nivel === 'primaria' ? 'P' : 'S';
+    const key = `${niv}${u.anio}`;
+    grupos[key] = (grupos[key] || 0) + 1;
+  });
+
+  const ordenSecundaria = ['S1','S2','S3','S4','S5','S6'];
+  const ordenPrimaria   = ['P1','P2','P3','P4','P5','P6','P7'];
+  const orden = [...ordenSecundaria.filter(k => grupos[k]), ...ordenPrimaria.filter(k => grupos[k])];
+  if (!orden.length) { wrap.style.display = 'none'; return; }
+
+  const labelMap = (k) => {
+    const num = k.slice(1);
+    return k[0] === 'S' ? `${num}° sec.` : `${num}° grad.`;
+  };
+
+  const max = Math.max(...orden.map(k => grupos[k]));
+  const barW = 240;
+  const rowH = 28;
+  const gap  = 6;
+  const labelW = 72;
+  const svgH = orden.length * (rowH + gap);
+  const total = aprobados.length;
+
+  document.getElementById('chart-total-label').textContent = `${total} alumnos activos`;
+
+  const bars = orden.map((k, i) => {
+    const val = grupos[k];
+    const w   = Math.max(4, Math.round((val / max) * barW));
+    const y   = i * (rowH + gap);
+    const pct = Math.round((val / total) * 100);
+    return `
+      <text x="0" y="${y + rowH * .72}" font-size="12" fill="#6b5c57" font-family="Inter Tight,sans-serif">${labelMap(k)}</text>
+      <rect x="${labelW}" y="${y + 2}" width="${w}" height="${rowH - 4}" rx="4" fill="#7a1f2b" opacity=".82"/>
+      <text x="${labelW + w + 6}" y="${y + rowH * .72}" font-size="12" fill="#6b5c57" font-family="Inter Tight,sans-serif">${val} <tspan fill="#9e8c87">(${pct}%)</tspan></text>`;
+  }).join('');
+
+  cont.innerHTML = `<svg width="${labelW + barW + 80}" height="${svgH}" overflow="visible">${bars}</svg>`;
 }
 
 function _avatarHtml(u, size = 38) {
@@ -766,14 +974,22 @@ function verTab(tab) {
   });
 
   const cont = document.getElementById('usuarios-lista');
-
   if (tab === 'invitar') { renderInvitar(); return; }
 
   const rolMap = { pendientes: 'pendiente', alumnos: 'alumno', admins: 'administrador' };
-  const lista  = _usuarios.filter(u => u.rol === rolMap[tab]);
+  let lista = _usuarios.filter(u => u.rol === rolMap[tab]);
+
+  // Filtrar por búsqueda
+  const q = (document.getElementById('user-search')?.value || '').trim().toLowerCase();
+  if (q) {
+    lista = lista.filter(u => {
+      const haystack = [u.nombre, u.apellido, u.alias, u.email].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+  }
 
   if (!lista.length) {
-    cont.innerHTML = `<p style="text-align:center;padding:32px;color:var(--ink-soft);font-size:14px">Sin usuarios en esta categoría.</p>`;
+    cont.innerHTML = `<p style="text-align:center;padding:32px;color:var(--ink-soft);font-size:14px">${q ? 'Sin resultados para "' + escapeHtml(q) + '"' : 'Sin usuarios en esta categoría.'}</p>`;
     return;
   }
 
@@ -799,8 +1015,8 @@ function verTab(tab) {
             <span style="font-size:11px;background:var(--cream);color:var(--burgundy);padding:2px 8px;border-radius:999px;margin-left:6px;font-weight:600">${_cursoLabel(u)}</span>
           </div>
           <div style="font-size:12px;color:var(--ink-soft);margin-top:2px">
-            ${escapeHtml(u.nombre || '')} ${escapeHtml(u.apellido || '')}
-            ${u.nivel ? `· ${u.nivel.charAt(0).toUpperCase()+u.nivel.slice(1)}` : ''}
+            ${u.email ? `<span style="font-family:monospace">${escapeHtml(u.email)}</span> ·` : ''}
+            ${u.nivel ? `${u.nivel.charAt(0).toUpperCase()+u.nivel.slice(1)}` : ''}
           </div>
           <div style="font-size:11px;color:var(--ink-soft);margin-top:3px">${_metricaHtml(u)} · Registro: ${new Date(u.created_at).toLocaleDateString('es-AR')}</div>
         </div>

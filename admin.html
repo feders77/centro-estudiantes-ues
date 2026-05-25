@@ -55,6 +55,8 @@
     <h4>Configuración</h4>
     <ul class="admin-nav">
       <li><a href="#" data-section="config"><span class="icon">⚙️</span> General</a></li>
+      <li><a href="#" data-section="secciones"><span class="icon">🔌</span> Secciones</a></li>
+      <li><a href="#" data-section="emails"><span class="icon">📧</span> Emails</a></li>
       <li><a href="#" data-section="datos"><span class="icon">💾</span> Datos</a></li>
     </ul>
     <h4>Usuarios</h4>
@@ -208,6 +210,27 @@
           <p>Aprobá pendientes, administrá roles e invitá nuevos alumnos.</p>
         </div>
       </div>
+
+      <!-- Stats chips -->
+      <div class="user-stat-row" id="user-stats-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px"></div>
+
+      <!-- Chart de inscripción por curso -->
+      <div id="user-chart-wrap" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <span style="font-size:13px;font-weight:600;color:var(--ink-soft)">ALUMNOS POR CURSO</span>
+          <span id="chart-total-label" style="font-size:12px;color:var(--ink-soft)"></span>
+        </div>
+        <div id="user-chart-svg" style="overflow-x:auto"></div>
+      </div>
+
+      <!-- Buscador -->
+      <div style="position:relative;margin-bottom:16px">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-soft);font-size:15px;pointer-events:none">🔍</span>
+        <input type="search" id="user-search" placeholder="Buscar por nombre, apellido o email…"
+          style="width:100%;padding:10px 14px 10px 40px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;box-sizing:border-box"
+          oninput="verTab(_tabUsuarios)">
+      </div>
+
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
         <button class="btn btn-ghost" id="tab-pendientes" onclick="verTab('pendientes')" style="font-size:13px">
           ⏳ Pendientes <span id="badge-pend" style="background:#fad6cd;color:#a73a1f;padding:2px 8px;border-radius:999px;margin-left:4px;font-size:11px">0</span>
@@ -217,6 +240,62 @@
         <button class="btn btn-ghost" id="tab-invitar" onclick="verTab('invitar')" style="font-size:13px">✉ Invitar</button>
       </div>
       <div id="usuarios-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 20px;min-height:80px"></div>
+    </section>
+
+    <!-- ============ SECCIONES ============ -->
+    <section class="admin-section" data-section-id="secciones">
+      <div class="admin-section-head">
+        <div>
+          <h2>Secciones habilitadas</h2>
+          <p>Activá módulos progresivamente. Los desactivados muestran "Próximamente" a los alumnos.</p>
+        </div>
+      </div>
+      <div id="secciones-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 0;max-width:540px"></div>
+    </section>
+
+    <!-- ============ EMAILS ============ -->
+    <section class="admin-section" data-section-id="emails">
+      <div class="admin-section-head">
+        <div>
+          <h2>Templates de email</h2>
+          <p>Personalizá todos los emails que envía la plataforma automáticamente.</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+        <div id="email-tpl-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:220px;flex-shrink:0"></div>
+        <div id="email-tpl-editor" style="flex:1;min-width:340px;display:none">
+          <form onsubmit="guardarTemplate(event)">
+            <input type="hidden" id="tpl-tipo">
+            <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px">
+              <h3 id="tpl-editor-titulo" style="font-family:Fraunces,serif;font-size:18px;font-weight:600;margin-bottom:18px"></h3>
+              <div class="form-group">
+                <label>Asunto</label>
+                <input type="text" id="tpl-asunto" required>
+              </div>
+              <div class="form-group">
+                <label>Cuerpo HTML</label>
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:6px" id="tpl-vars-hint"></div>
+                <textarea id="tpl-cuerpo" rows="14" required style="font-family:monospace;font-size:12px;line-height:1.5"></textarea>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+                <button type="button" class="btn btn-ghost" style="font-size:13px" onclick="previewTemplate()">👁 Preview</button>
+                <button type="submit" class="btn btn-primary" id="btn-guardar-tpl">Guardar y aplicar</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- Modal preview -->
+      <div id="modal-tpl-preview" class="modal-overlay">
+        <div class="modal" style="max-width:640px">
+          <button class="modal-close" onclick="closeModal('modal-tpl-preview')">×</button>
+          <h2 style="margin-bottom:4px">Preview del email</h2>
+          <p class="modal-sub" id="preview-subject"></p>
+          <div style="border:1px solid var(--line);border-radius:10px;padding:20px;margin-top:12px;max-height:60vh;overflow-y:auto">
+            <iframe id="preview-iframe" style="width:100%;border:none;min-height:300px"></iframe>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ============ BUZON CASOS ============ -->

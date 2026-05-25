@@ -26,9 +26,15 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
 
+    // Obtener el user actual del JWT
+    const { data: { user }, error: userErr } = await supabaseUser.auth.getUser()
+    if (userErr || !user) return json({ error: 'No autorizado' }, 401)
+
+    // Verificar rol admin filtrando por id para evitar el bug con múltiples perfiles
     const { data: profile, error: profErr } = await supabaseUser
       .from('profiles')
       .select('rol')
+      .eq('id', user.id)
       .single()
 
     if (profErr || !profile || profile.rol !== 'administrador') {
@@ -48,19 +54,42 @@ serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // 4 — Enviar invitación via Supabase Auth (usa su propio SMTP, gratis)
+    // 4 — Leer template de invitación personalizado (si existe)
+    const { data: tpl } = await supabaseAdmin
+      .from('email_templates')
+      .select('asunto, cuerpo_html')
+      .eq('tipo', 'invitacion')
+      .single()
+
+    const redirectTo = 'https://feders77.github.io/centro-estudiantes-ues/registro.html'
+
+    // 5 — Enviar invitación via Supabase Auth
     const { error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: 'https://feders77.github.io/centro-estudiantes-ues/registro.html',
+      redirectTo,
+      data: { invited: true }
     })
 
     if (inviteErr) {
-      // "User already registered" → re-send is fine for pending invites
       if (!inviteErr.message.includes('already')) {
         return json({ error: inviteErr.message }, 400)
       }
     }
 
-    // 5 — Registrar en tabla invitaciones para tracking
+    // 6 — Actualizar template en Supabase Auth Config si tenemos token de management
+    const mgmtToken = Deno.env.get('MGMT_TOKEN')
+    const projectRef = Deno.env.get('SUPABASE_URL')!.split('//')[1].split('.')[0]
+    if (mgmtToken && tpl) {
+      await fetch(`https://api.supabase.com/v1/projects/${projectRef}/config/auth`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mailer_subjects_invite: tpl.asunto,
+          mailer_templates_invite_content: tpl.cuerpo_html
+        })
+      })
+    }
+
+    // 7 — Registrar en tabla invitaciones para tracking
     await supabaseAdmin
       .from('invitaciones')
       .upsert({ email }, { onConflict: 'email' })

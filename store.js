@@ -281,11 +281,52 @@ const Store = {
     alert('Datos borrados. Recargá la página y el seed inicial se va a cargar desde la próxima vez que agregues contenido desde el admin.');
   },
 
+  /* ---- secciones habilitadas ---- */
+  async getSecciones() {
+    try {
+      const rows = await _get('/config_secciones?select=clave,habilitada');
+      const mapa = {};
+      rows.forEach(r => { mapa[r.clave] = r.habilitada; });
+      return mapa;
+    } catch { return {}; }
+  },
+
   /* métodos legacy sync que ya no aplican — los dejamos como no-op para
      no romper si alguna página los llama sin await por error */
   load()   { return {}; },
   save()   { },
 };
+
+/* ─── Helpers compartidos para chequeo de secciones ───────────────────── */
+
+const _HTML_PROXIMAMENTE = `
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+              min-height:54vh;text-align:center;gap:16px;padding:40px 20px">
+    <span style="font-size:64px">🚧</span>
+    <h2 style="font-family:'Fraunces',serif;font-size:32px;font-weight:600;letter-spacing:-.02em">Próximamente</h2>
+    <p style="color:var(--ink-soft);font-size:15px;max-width:380px;line-height:1.6">
+      Esta sección estará disponible pronto. El Centro de Estudiantes la está preparando.
+    </p>
+    <a href="index.html" class="btn btn-ghost" style="margin-top:4px">← Volver al inicio</a>
+  </div>`;
+
+function aplicarEstadoSecciones(secciones) {
+  const MAPA = {
+    apuntes:     'apuntes.html',
+    votaciones:  'votaciones.html',
+    buzon:       'buzon.html',
+    marketplace: 'marketplace.html',
+  };
+  Object.entries(MAPA).forEach(([clave, href]) => {
+    if (secciones[clave] === false) {
+      document.querySelectorAll(`a[href="${href}"]`).forEach(a => {
+        a.style.opacity       = '0.35';
+        a.style.pointerEvents = 'none';
+        a.title               = 'Próximamente';
+      });
+    }
+  });
+}
 
 /* ---------- HELPERS (sin cambios) ---------- */
 

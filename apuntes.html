@@ -443,6 +443,12 @@
     const session = await Auth.init();
     Auth.updateChip(session ? await Auth.getProfile() : null);
     await Store.init();
+    const secciones = await Store.getSecciones();
+    aplicarEstadoSecciones(secciones);
+    if (secciones.apuntes === false) {
+      document.querySelector('main').innerHTML = _HTML_PROXIMAMENTE;
+      return;
+    }
     document.getElementById('subject-grid').innerHTML =
       `<div class="no-data" style="grid-column:span 2"><p style="color:var(--ink-soft)">Cargando...</p></div>`;
     [_estructura, _apuntes] = await Promise.all([

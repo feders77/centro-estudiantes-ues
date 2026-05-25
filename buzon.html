@@ -328,6 +328,13 @@
   document.addEventListener('DOMContentLoaded', async () => {
     const session = await Auth.init();
     Auth.updateChip(session ? await Auth.getProfile() : null);
+    await Store.init();
+    const secciones = await Store.getSecciones();
+    aplicarEstadoSecciones(secciones);
+    if (secciones.buzon === false) {
+      document.querySelector('main').innerHTML = _HTML_PROXIMAMENTE;
+      return;
+    }
     await cargarCasos();
   });
 </script>

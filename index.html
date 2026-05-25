@@ -670,10 +670,23 @@
         if (hero.descripcion) document.getElementById('hero-descripcion').textContent = hero.descripcion;
       } catch { /* silencioso — el texto hardcodeado queda igual */ }
 
+      // Chequear secciones habilitadas
+      const secciones = await Store.getSecciones();
+      aplicarEstadoSecciones(secciones);
+
       tickCountdown();
       setInterval(tickCountdown, 1000);
-      renderFeed(novedades);
-      cargarMisLikes(novedades);
+
+      if (secciones.novedades === false) {
+        document.getElementById('feed-novedades').innerHTML = `
+          <div class="feed-item" style="cursor:default;text-align:center;padding:48px 24px">
+            <span style="font-size:40px">🚧</span>
+            <p style="font-size:15px;color:var(--ink-soft);margin-top:12px">Las novedades estarán disponibles pronto.</p>
+          </div>`;
+      } else {
+        renderFeed(novedades);
+        cargarMisLikes(novedades);
+      }
       renderEventos(eventos);
       renderVotacionDestacada(votaciones);
       renderQuickSub(votaciones);

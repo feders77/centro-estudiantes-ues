@@ -81,6 +81,82 @@
     .event-card > :last-child{grid-column:span 2}
     .ev-day{font-size:24px}
   }
+
+  /* Botón de comentarios en evento */
+  .ev-com-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:600;color:var(--ink-soft);
+    background:var(--cream);border:1px solid var(--line);
+    border-radius:999px;padding:4px 12px;
+    cursor:pointer;transition:all .15s;margin-top:8px;
+    font-family:inherit;
+  }
+  .ev-com-btn:hover{background:var(--burgundy);color:#fff;border-color:var(--burgundy)}
+
+  /* Modal comentarios de evento */
+  .ev-com-modal-overlay{
+    position:fixed;inset:0;background:rgba(26,19,16,.55);
+    backdrop-filter:blur(4px);z-index:300;
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .ev-com-modal-overlay.open{display:flex}
+  .ev-com-modal{
+    background:#fff;border-radius:20px;width:100%;max-width:560px;
+    max-height:90vh;display:flex;flex-direction:column;
+    box-shadow:0 8px 48px rgba(26,19,16,.2);
+  }
+  .ev-com-head{
+    padding:20px 24px 16px;border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  }
+  .ev-com-head h3{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.3}
+  .ev-com-head p{font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .ev-com-body{flex:1;overflow-y:auto;padding:16px 24px}
+  .ev-com-foot{padding:16px 24px;border-top:1px solid var(--line)}
+
+  /* Policy accordion */
+  .policy-toggle{
+    display:flex;align-items:center;gap:6px;font-size:12px;
+    color:var(--ink-soft);background:none;border:none;cursor:pointer;
+    padding:0;margin-bottom:10px;font-family:inherit;text-decoration:underline;
+  }
+  .policy-content{
+    background:var(--cream);border-radius:10px;padding:14px 16px;
+    font-size:12px;color:var(--ink-soft);line-height:1.6;
+    margin-bottom:12px;display:none;
+  }
+  .policy-content.open{display:block}
+
+  /* Comment items */
+  .com-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .com-item:last-child{border-bottom:none}
+  .com-avatar{
+    width:32px;height:32px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,var(--coral),var(--accent));
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:#fff;overflow:hidden;
+  }
+  .com-autor{font-size:13px;font-weight:600}
+  .com-fecha{font-size:11px;color:var(--ink-soft);margin-left:6px}
+  .com-texto{font-size:13px;color:var(--ink);margin-top:4px;line-height:1.5}
+  .com-del-btn{
+    float:right;background:none;border:none;cursor:pointer;
+    font-size:14px;opacity:.5;padding:2px 4px;border-radius:4px;
+    transition:opacity .15s;
+  }
+  .com-del-btn:hover{opacity:1;background:#fad6cd}
+
+  /* Like button */
+  .like-btn{
+    display:inline-flex;align-items:center;gap:5px;
+    background:none;border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;font-size:13px;cursor:pointer;
+    transition:all .15s;font-family:inherit;color:var(--ink-soft);
+  }
+  .like-btn:hover,.like-btn.liked{
+    background:#fad6cd;border-color:#f5b8a8;color:#a73a1f;
+  }
+  .like-btn:disabled{cursor:default;opacity:.6}
 </style>
 </head>
 <body>
@@ -136,6 +212,67 @@
 
 </main>
 
+<!-- ===== MODAL COMENTARIOS EVENTO ===== -->
+<div class="ev-com-modal-overlay" id="modal-ev-com">
+  <div class="ev-com-modal">
+    <div class="ev-com-head">
+      <div>
+        <h3 id="ev-com-titulo">Evento</h3>
+        <p id="ev-com-fecha"></p>
+      </div>
+      <button onclick="cerrarComentariosEvento()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink-soft);padding:4px 8px;flex-shrink:0">×</button>
+    </div>
+    <div class="ev-com-body" id="ev-com-lista">
+      <p style="text-align:center;color:var(--ink-soft);font-size:13px;padding:20px 0">Cargando comentarios…</p>
+    </div>
+    <div class="ev-com-foot" id="ev-com-foot">
+      <!-- Relleno por JS según auth state -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL ELIMINAR COMENTARIO (ADMIN) ===== -->
+<div class="ev-com-modal-overlay" id="modal-ev-elim">
+  <div class="ev-com-modal" style="max-width:460px">
+    <div class="ev-com-head">
+      <div><h3>Eliminar comentario</h3><p>El usuario recibirá una notificación con el motivo.</p></div>
+      <button onclick="document.getElementById('modal-ev-elim').classList.remove('open')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink-soft);padding:4px 8px">×</button>
+    </div>
+    <div class="ev-com-body">
+      <div id="elim-ev-preview" style="background:var(--cream);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--ink-soft);font-style:italic;margin-bottom:16px"></div>
+      <form id="form-elim-ev" onsubmit="confirmarEliminarEvCom(event)">
+        <input type="hidden" id="elim-ev-com-id">
+        <input type="hidden" id="elim-ev-item-id">
+        <input type="hidden" id="elim-ev-user-id">
+        <input type="hidden" id="elim-ev-user-email">
+        <input type="hidden" id="elim-ev-user-nombre">
+        <input type="hidden" id="elim-ev-item-ref">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">
+            <input type="radio" name="ev-motivo" value="Contenido inapropiado o lenguaje ofensivo" required style="margin-top:2px"> Contenido inapropiado o lenguaje ofensivo
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">
+            <input type="radio" name="ev-motivo" value="No cumple la política de comentarios" style="margin-top:2px"> No cumple la política de comentarios
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">
+            <input type="radio" name="ev-motivo" value="Información personal de terceros" style="margin-top:2px"> Información personal de terceros
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">
+            <input type="radio" name="ev-motivo" value="Spam o contenido no relacionado" style="margin-top:2px"> Spam o contenido no relacionado
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">
+            <input type="radio" name="ev-motivo" value="Información falsa o engañosa" style="margin-top:2px"> Información falsa o engañosa
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" onclick="document.getElementById('modal-ev-elim').classList.remove('open')" style="padding:10px 18px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;font-family:inherit">Cancelar</button>
+          <button type="submit" style="padding:10px 18px;background:#a73a1f;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-family:inherit" id="btn-confirmar-elim-ev">Eliminar y notificar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-content">
     <div class="footer-brand">
@@ -155,22 +292,34 @@
 <script src="store.js"></script>
 <script>
   const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const MESES_CORTOS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 
+  const POLITICA = `<strong>📋 Política de comentarios</strong><br><br>
+Para mantener un espacio de diálogo respetuoso, pedimos que los comentarios:<br><br>
+• <strong>Sean respetuosos</strong>: ningún insulto, agresión ni discriminación de ningún tipo.<br>
+• <strong>Sean relevantes</strong>: comentá sobre el evento en cuestión.<br>
+• <strong>Respeten la privacidad</strong>: no compartás datos personales de otras personas sin su permiso.<br>
+• <strong>Sean verídicos</strong>: no difundas información falsa o engañosa.<br>
+• <strong>No sean spam</strong>: sin publicidad ni links no relacionados con el evento.<br><br>
+El equipo del Centro de Estudiantes puede eliminar comentarios que no cumplan estas pautas y vas a recibir una notificación con el motivo. El incumplimiento reiterado puede resultar en la restricción de tu cuenta.`;
+
+  let _perfilActual  = null;
+  let _evActualId    = null;
+  let _evActualTitulo = '';
+  let _comCache      = {}; // { comId: { texto, userId, userEmail, userNombre } }
+  let _conteos       = {}; // { eventoId: count }
+
+  /* ── Render timeline ── */
   function render(eventos) {
     const cont = document.getElementById('timeline');
-
     if (!eventos.length) {
-      cont.innerHTML = `<div class="empty-evs">
-        <h3>Sin eventos cargados</h3>
-        <p>Cuando el centro agregue eventos, vas a verlos acá.</p>
-      </div>`;
+      cont.innerHTML = `<div class="empty-evs"><h3>Sin eventos cargados</h3><p>Cuando el centro agregue eventos, vas a verlos acá.</p></div>`;
       return;
     }
-
     const grupos = {};
     const ahora = new Date();
     [...eventos].sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).forEach(e => {
-      const d = new Date(e.fecha);
+      const d   = new Date(e.fecha);
       const key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
       const label = MESES[d.getMonth()] + ' ' + d.getFullYear();
       if (!grupos[key]) grupos[key] = { label, items: [] };
@@ -179,44 +328,230 @@
 
     cont.innerHTML = Object.keys(grupos).sort().map(k => {
       const g = grupos[k];
-      return `
-        <div class="month-group">
-          <div class="month-header">${g.label}</div>
-          ${g.items.map(e => {
-            const mesesCortos = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-            const hora = e._date.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-            const dia = e._date.getDate();
-            return `
-              <div class="event-card ${e.destacado ? 'dest' : ''} ${e._past ? 'past' : ''}">
-                <div class="ev-date ${e.destacado ? 'dest' : ''}">
-                  <div class="ev-day">${dia}</div>
-                  <div class="ev-month">${mesesCortos[e._date.getMonth()]}</div>
-                  <div class="ev-time">${hora}</div>
+      return `<div class="month-group">
+        <div class="month-header">${g.label}</div>
+        ${g.items.map(e => {
+          const hora = e._date.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+          const dia  = e._date.getDate();
+          return `
+            <div class="event-card ${e.destacado ? 'dest' : ''} ${e._past ? 'past' : ''}">
+              <div class="ev-date ${e.destacado ? 'dest' : ''}">
+                <div class="ev-day">${dia}</div>
+                <div class="ev-month">${MESES_CORTOS[e._date.getMonth()]}</div>
+                <div class="ev-time">${hora}</div>
+              </div>
+              <div class="ev-info">
+                <h3>${e.destacado ? '⭐ ' : ''}${escapeHtml(e.titulo)}</h3>
+                <div class="ev-meta">
+                  ${e.lugar ? `<span>📍 ${escapeHtml(e.lugar)}</span>` : ''}
                 </div>
-                <div class="ev-info">
-                  <h3>${e.destacado ? '⭐ ' : ''}${escapeHtml(e.titulo)}</h3>
-                  <div class="ev-meta">
-                    ${e.lugar ? `<span>📍 ${escapeHtml(e.lugar)}</span>` : ''}
-                  </div>
-                  ${e.descripcion ? `<p>${escapeHtml(e.descripcion)}</p>` : ''}
-                </div>
-                <div>
-                  <span class="ev-tag ${e.categoria || 'centro'}">${escapeHtml(e.categoria || 'centro')}</span>
-                </div>
-              </div>`;
-          }).join('')}
-        </div>`;
+                ${e.descripcion ? `<p>${escapeHtml(e.descripcion)}</p>` : ''}
+                <button class="ev-com-btn" onclick="abrirComentariosEvento('${e.id}','${escapeHtml(e.titulo.replace(/'/g,"\\'"))}','${e._date.toLocaleDateString('es-AR',{day:'2-digit',month:'long'})}')">
+                  💬 <span id="ev-com-count-${e.id}">${_conteos[e.id] ?? '…'}</span> comentarios
+                </button>
+              </div>
+              <div><span class="ev-tag ${e.categoria || 'centro'}">${escapeHtml(e.categoria || 'centro')}</span></div>
+            </div>`;
+        }).join('')}
+      </div>`;
     }).join('');
   }
 
+  /* ── Cargar conteos ── */
+  async function cargarConteos(eventos) {
+    if (!window._authToken) return;
+    const ids = eventos.map(e => e.id);
+    if (!ids.length) return;
+    const qs = ids.map(id => `evento_id=eq.${id}`).join('&');
+    const r = await fetch(
+      `${window.SUPABASE_URL}/rest/v1/eventos_comentarios?select=evento_id&or=(${ids.map(id=>`evento_id.eq.${id}`).join(',')})`,
+      { headers: { apikey: window.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + window._authToken } }
+    );
+    if (!r.ok) return;
+    const rows = await r.json();
+    _conteos = {};
+    rows.forEach(row => { _conteos[row.evento_id] = (_conteos[row.evento_id] || 0) + 1; });
+    // Update displayed counts
+    ids.forEach(id => {
+      const el = document.getElementById('ev-com-count-' + id);
+      if (el) el.textContent = _conteos[id] || 0;
+    });
+  }
+
+  /* ── Modal comentarios ── */
+  function abrirComentariosEvento(id, titulo, fecha) {
+    if (!window._authToken) {
+      if (confirm('Necesitás iniciar sesión para ver y dejar comentarios.\n¿Querés ir a iniciar sesión?')) {
+        window.location.href = 'login.html?next=eventos.html';
+      }
+      return;
+    }
+    _evActualId    = id;
+    _evActualTitulo = titulo;
+    document.getElementById('ev-com-titulo').textContent = titulo;
+    document.getElementById('ev-com-fecha').textContent  = fecha;
+    document.getElementById('ev-com-lista').innerHTML =
+      '<p style="text-align:center;color:var(--ink-soft);font-size:13px;padding:20px 0">Cargando comentarios…</p>';
+    _renderFooter();
+    document.getElementById('modal-ev-com').classList.add('open');
+    cargarComentariosEvento(id);
+  }
+
+  function cerrarComentariosEvento() {
+    document.getElementById('modal-ev-com').classList.remove('open');
+    _evActualId = null;
+  }
+  document.getElementById('modal-ev-com').addEventListener('click', e => {
+    if (e.target === e.currentTarget) cerrarComentariosEvento();
+  });
+
+  function _renderFooter() {
+    const foot = document.getElementById('ev-com-foot');
+    foot.innerHTML = `
+      <button class="policy-toggle" type="button" onclick="togglePolicy()">📋 Ver política de comentarios</button>
+      <div id="policy-box" class="policy-content">${POLITICA}</div>
+      <div style="display:flex;gap:10px;align-items:flex-end">
+        <textarea id="ev-com-texto" rows="2" maxlength="500"
+          placeholder="Escribí tu comentario (máx. 500 caracteres)…"
+          style="flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;resize:none"></textarea>
+        <button onclick="enviarComentarioEvento()" id="btn-ev-com"
+          style="padding:10px 16px;background:var(--burgundy);color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0">Enviar</button>
+      </div>`;
+  }
+
+  function togglePolicy() {
+    document.getElementById('policy-box').classList.toggle('open');
+  }
+
+  async function cargarComentariosEvento(eventoId) {
+    const cont = document.getElementById('ev-com-lista');
+    try {
+      const r = await fetch(
+        `${window.SUPABASE_URL}/rest/v1/eventos_comentarios?evento_id=eq.${eventoId}&select=*,profiles(nombre,apellido,alias,avatar_url,email)&order=created_at.asc`,
+        { headers: { apikey: window.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + window._authToken } }
+      );
+      const lista = r.ok ? await r.json() : [];
+
+      _conteos[eventoId] = lista.length;
+      const countEl = document.getElementById('ev-com-count-' + eventoId);
+      if (countEl) countEl.textContent = lista.length;
+
+      if (!lista.length) {
+        cont.innerHTML = '<p style="padding:16px 0;color:var(--ink-soft);font-size:13px">Todavía no hay comentarios. ¡Sé el primero!</p>';
+        return;
+      }
+
+      _comCache = {};
+      const esAdmin = _perfilActual?.rol === 'administrador';
+
+      cont.innerHTML = lista.map(c => {
+        const p   = c.profiles || {};
+        const nom = escapeHtml(p.alias || p.nombre || 'Usuario');
+        const ini = ((p.nombre?.[0]||'') + (p.apellido?.[0]||'')).toUpperCase() || '?';
+        const av  = p.avatar_url
+          ? `<img src="${escapeHtml(p.avatar_url)}" style="width:100%;height:100%;object-fit:cover">`
+          : ini;
+        _comCache[c.id] = {
+          texto: c.texto, userId: c.user_id,
+          userEmail: p.email || '', userNombre: p.alias || p.nombre || ''
+        };
+        return `
+          <div class="com-item" id="com-${c.id}">
+            <div class="com-avatar">${av}</div>
+            <div style="flex:1;min-width:0">
+              ${esAdmin ? `<button class="com-del-btn" title="Eliminar (admin)" onclick="abrirEliminarEvCom('${c.id}')">🗑</button>` : ''}
+              <span class="com-autor">${nom}</span>
+              <span class="com-fecha">${formatFechaRelativa(c.created_at)}</span>
+              <div class="com-texto">${escapeHtml(c.texto)}</div>
+            </div>
+          </div>`;
+      }).join('');
+    } catch {
+      cont.innerHTML = '<p style="padding:16px 0;color:#a73a1f;font-size:13px">Error al cargar los comentarios.</p>';
+    }
+  }
+
+  async function enviarComentarioEvento() {
+    if (!window._authToken) return;
+    const texto = document.getElementById('ev-com-texto')?.value.trim();
+    if (!texto || !_evActualId) return;
+    const btn = document.getElementById('btn-ev-com');
+    btn.disabled = true; btn.textContent = '…';
+    const r = await fetch(`${window.SUPABASE_URL}/rest/v1/eventos_comentarios`, {
+      method: 'POST',
+      headers: {
+        apikey: window.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + window._authToken,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({ evento_id: _evActualId, user_id: window._userId, texto })
+    });
+    btn.disabled = false; btn.textContent = 'Enviar';
+    if (!r.ok) { alert('Error al enviar el comentario.'); return; }
+    document.getElementById('ev-com-texto').value = '';
+    await cargarComentariosEvento(_evActualId);
+  }
+
+  /* ── Eliminar comentario (admin) ── */
+  function abrirEliminarEvCom(comId) {
+    const c = _comCache[comId];
+    if (!c) return;
+    document.getElementById('elim-ev-com-id').value      = comId;
+    document.getElementById('elim-ev-item-id').value     = _evActualId || '';
+    document.getElementById('elim-ev-user-id').value     = c.userId;
+    document.getElementById('elim-ev-user-email').value  = c.userEmail;
+    document.getElementById('elim-ev-user-nombre').value = c.userNombre;
+    document.getElementById('elim-ev-item-ref').value    = _evActualTitulo;
+    document.getElementById('elim-ev-preview').textContent = '"' + c.texto.slice(0, 120) + (c.texto.length > 120 ? '…' : '') + '"';
+    document.querySelectorAll('[name="ev-motivo"]').forEach(r => r.checked = false);
+    document.getElementById('modal-ev-elim').classList.add('open');
+  }
+
+  async function confirmarEliminarEvCom(e) {
+    e.preventDefault();
+    const motivo = document.querySelector('[name="ev-motivo"]:checked')?.value;
+    if (!motivo) return;
+    const btn = document.getElementById('btn-confirmar-elim-ev');
+    btn.disabled = true; btn.textContent = 'Eliminando…';
+    try {
+      const r = await fetch(window.SUPABASE_URL + '/functions/v1/notificar-eliminacion', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + window._authToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo:        'evento',
+          com_id:      document.getElementById('elim-ev-com-id').value,
+          item_id:     document.getElementById('elim-ev-item-id').value,
+          item_ref:    document.getElementById('elim-ev-item-ref').value,
+          user_id:     document.getElementById('elim-ev-user-id').value,
+          user_email:  document.getElementById('elim-ev-user-email').value,
+          user_nombre: document.getElementById('elim-ev-user-nombre').value,
+          texto:       _comCache[document.getElementById('elim-ev-com-id').value]?.texto || '',
+          motivo
+        })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Error al eliminar');
+      document.getElementById('modal-ev-elim').classList.remove('open');
+      await cargarComentariosEvento(_evActualId);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Eliminar y notificar';
+    }
+  }
+
+  /* ── Init ── */
   document.addEventListener('DOMContentLoaded', async () => {
-    const session = await Auth.init();
-    Auth.updateChip(session ? await Auth.getProfile() : null);
+    const session    = await Auth.init();
+    _perfilActual    = session ? await Auth.getProfile() : null;
+    Auth.updateChip(_perfilActual);
     await Store.init();
     document.getElementById('timeline').innerHTML =
       `<div class="empty-evs"><p style="color:var(--ink-soft)">Cargando...</p></div>`;
     const eventos = await Store.list('eventos');
     render(eventos);
+    if (session) cargarConteos(eventos);
   });
 </script>
 </body>

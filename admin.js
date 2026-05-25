@@ -44,10 +44,11 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
     link.classList.add('active');
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.querySelector(`[data-section-id="${section}"]`).classList.add('active');
-    if (section === 'config')    cargarConfig();
-    if (section === 'usuarios')  verTab(_tabUsuarios);
-    if (section === 'secciones') cargarSecciones();
-    if (section === 'emails')    cargarEmailTemplates();
+    if (section === 'config')       cargarConfig();
+    if (section === 'usuarios')     verTab(_tabUsuarios);
+    if (section === 'secciones')    cargarSecciones();
+    if (section === 'emails')       cargarEmailTemplates();
+    if (section === 'comentarios')  cargarTodosComentarios();
   });
 });
 
@@ -1124,6 +1125,119 @@ async function eliminarUsuario(id) {
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Usuario eliminado', 'success');
   await cargarUsuarios();
+}
+
+/* ========================================================================
+   MODERACIÓN DE COMENTARIOS
+   ======================================================================== */
+
+let _tabComentarios = 'novedades';
+let _comentariosNov = [];
+let _comentariosEv  = [];
+let _comCacheAdmin  = {};
+let _comAdminElimId = null;
+
+async function cargarTodosComentarios() {
+  const [{ data: comNov }, { data: comEv }] = await Promise.all([
+    window._sb.from('novedades_comentarios')
+      .select('*,profiles(nombre,apellido,alias,email),novedades(titulo)')
+      .order('created_at', { ascending: false }),
+    window._sb.from('eventos_comentarios')
+      .select('*,profiles(nombre,apellido,alias,email),eventos(titulo)')
+      .order('created_at', { ascending: false })
+  ]);
+  _comentariosNov = comNov || [];
+  _comentariosEv  = comEv  || [];
+
+  const total = _comentariosNov.length + _comentariosEv.length;
+  const countEl = document.getElementById('count-comentarios');
+  if (countEl) countEl.textContent = total || '0';
+
+  filtrarComentarios(_tabComentarios);
+}
+
+function filtrarComentarios(tab) {
+  _tabComentarios = tab;
+  ['novedades','eventos'].forEach(t => {
+    const el = document.getElementById('tab-com-' + t);
+    if (!el) return;
+    el.style.background = t === tab ? 'var(--burgundy)' : '';
+    el.style.color      = t === tab ? 'var(--cream)'    : '';
+  });
+  renderComentariosAdmin(tab);
+}
+
+function renderComentariosAdmin(tab) {
+  const lista = tab === 'novedades' ? _comentariosNov : _comentariosEv;
+  const cont  = document.getElementById('comentarios-lista');
+  if (!cont) return;
+
+  if (!lista.length) {
+    cont.innerHTML = `<div class="empty-state"><p>Sin comentarios en ${tab === 'novedades' ? 'novedades' : 'eventos'}.</p></div>`;
+    return;
+  }
+
+  _comCacheAdmin = {};
+  cont.innerHTML = lista.map(c => {
+    const p    = c.profiles || {};
+    const nom  = p.alias || p.nombre || 'Usuario';
+    const ini  = ((p.nombre?.[0]||'') + (p.apellido?.[0]||'')).toUpperCase() || '?';
+    const ref  = tab === 'novedades' ? c.novedades?.titulo : c.eventos?.titulo;
+    const itemId = tab === 'novedades' ? c.novedad_id : c.evento_id;
+    _comCacheAdmin[c.id] = {
+      tipo: tab === 'novedades' ? 'novedad' : 'evento',
+      itemId, itemRef: ref || '—',
+      userId: c.user_id, userEmail: p.email || '', userNombre: nom, texto: c.texto
+    };
+    return `
+      <div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--coral),var(--accent));color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${escapeHtml(ini)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-weight:600;font-size:13px">${escapeHtml(nom)}</span>
+            <span style="font-size:11px;color:var(--ink-soft)">${formatFechaRelativa(c.created_at)}</span>
+            ${ref ? `<span class="tag" style="font-size:10px">${escapeHtml(ref)}</span>` : ''}
+          </div>
+          <div style="font-size:13px;color:var(--ink);line-height:1.5">${escapeHtml(c.texto)}</div>
+        </div>
+        <button onclick="abrirEliminarComAdmin('${c.id}')" class="btn btn-ghost" style="font-size:12px;padding:5px 10px;color:#a73a1f;flex-shrink:0">🗑 Eliminar</button>
+      </div>`;
+  }).join('');
+}
+
+function abrirEliminarComAdmin(comId) {
+  _comAdminElimId = comId;
+  document.querySelectorAll('#modal-com-elim input[type=radio]').forEach(r => r.checked = false);
+  openModal('modal-com-elim');
+}
+
+async function confirmarEliminarComAdmin() {
+  const motivo = document.querySelector('#modal-com-elim input[type=radio]:checked')?.value;
+  if (!motivo) { toast('Elegí un motivo', 'error'); return; }
+  const com = _comCacheAdmin[_comAdminElimId];
+  if (!com) return;
+  const btn = document.getElementById('btn-confirmar-com-elim');
+  btn.disabled = true; btn.textContent = 'Eliminando…';
+  try {
+    const r = await fetch(window.SUPABASE_URL + '/functions/v1/notificar-eliminacion', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + window._authToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo: com.tipo, com_id: _comAdminElimId,
+        item_id: com.itemId, item_ref: com.itemRef,
+        user_id: com.userId, user_email: com.userEmail, user_nombre: com.userNombre,
+        texto: com.texto, motivo
+      })
+    });
+    if (!r.ok) throw new Error((await r.json()).error || 'Error');
+    closeModal('modal-com-elim');
+    toast('Comentario eliminado', 'success');
+    await cargarTodosComentarios();
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Eliminar comentario';
+  }
 }
 
 /* ========================================================================

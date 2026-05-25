@@ -52,6 +52,10 @@
     <ul class="admin-nav">
       <li><a href="#" data-section="buzon"><span class="icon">📨</span> Casos públicos <span class="count" id="count-buzon">0</span></a></li>
     </ul>
+    <h4>Moderación</h4>
+    <ul class="admin-nav">
+      <li><a href="#" data-section="comentarios"><span class="icon">💬</span> Comentarios <span class="count" id="count-comentarios">0</span></a></li>
+    </ul>
     <h4>Configuración</h4>
     <ul class="admin-nav">
       <li><a href="#" data-section="config"><span class="icon">⚙️</span> General</a></li>
@@ -159,6 +163,21 @@
         </div>
       </div>
       <div class="data-table" id="tabla-marketplace"></div>
+    </section>
+
+    <!-- ============ COMENTARIOS (MODERACIÓN) ============ -->
+    <section class="admin-section" data-section-id="comentarios">
+      <div class="admin-section-head">
+        <div>
+          <h2>Moderación de comentarios</h2>
+          <p>Revisá y eliminá los comentarios publicados en novedades y eventos.</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn btn-ghost" id="tab-com-novedades" onclick="filtrarComentarios('novedades')" style="font-size:13px">📢 Novedades</button>
+        <button class="btn btn-ghost" id="tab-com-eventos"   onclick="filtrarComentarios('eventos')"   style="font-size:13px">📅 Eventos</button>
+      </div>
+      <div id="comentarios-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;min-height:80px;overflow:hidden"></div>
     </section>
 
     <!-- ============ CONFIG ============ -->
@@ -532,6 +551,26 @@
         <button type="submit" class="btn btn-primary">Guardar</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal: eliminar comentario (admin) -->
+<div class="modal-overlay" id="modal-com-elim">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('modal-com-elim')">×</button>
+    <h2>Eliminar comentario</h2>
+    <p class="modal-sub">Seleccioná el motivo. El autor recibirá una notificación.</p>
+    <ul style="list-style:none;padding:0;margin:12px 0 0">
+      <li style="border-bottom:1px solid var(--line)"><label style="display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;font-size:13px"><input type="radio" name="adm-elim-motivo" value="Contenido inapropiado o lenguaje ofensivo"> Contenido inapropiado o lenguaje ofensivo</label></li>
+      <li style="border-bottom:1px solid var(--line)"><label style="display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;font-size:13px"><input type="radio" name="adm-elim-motivo" value="No cumple la política de comentarios"> No cumple la política de comentarios</label></li>
+      <li style="border-bottom:1px solid var(--line)"><label style="display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;font-size:13px"><input type="radio" name="adm-elim-motivo" value="Información personal de terceros"> Información personal de terceros</label></li>
+      <li style="border-bottom:1px solid var(--line)"><label style="display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;font-size:13px"><input type="radio" name="adm-elim-motivo" value="Spam o contenido no relacionado"> Spam o contenido no relacionado</label></li>
+      <li><label style="display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;font-size:13px"><input type="radio" name="adm-elim-motivo" value="Información falsa o engañosa"> Información falsa o engañosa</label></li>
+    </ul>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-com-elim')">Cancelar</button>
+      <button id="btn-confirmar-com-elim" class="btn btn-danger" onclick="confirmarEliminarComAdmin()">Eliminar comentario</button>
+    </div>
   </div>
 </div>
 

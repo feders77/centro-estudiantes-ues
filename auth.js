@@ -72,11 +72,16 @@ const Auth = {
     const chip = document.querySelector('.user-chip');
     if (!chip) return;
 
+    // Ocultar/mostrar link admin en topbar Y footer
+    const _setAdminVisible = (visible) => {
+      document.querySelectorAll('a[href="admin.html"]').forEach(el => {
+        el.style.display = visible ? '' : 'none';
+      });
+    };
+
     if (!profile) {
-      chip.outerHTML = `<a href="login.html" class="btn btn-ghost" style="font-size:13px;padding:8px 16px">Iniciar sesión</a>`;
-      // Ocultar link de admin si no está logueado
-      const adminLink = document.querySelector('.topbar a[href="admin.html"]');
-      if (adminLink) adminLink.style.display = 'none';
+      chip.outerHTML = `<a href="login.html" class="btn btn-ghost" style="font-size:13px;padding:8px 16px;opacity:1">Iniciar sesión</a>`;
+      _setAdminVisible(false);
       return;
     }
 
@@ -92,11 +97,10 @@ const Auth = {
       <span>${escapeHtml(display)}${curso ? ' · ' + curso : ''}</span>`;
     chip.title = 'Ver / editar mi perfil';
     chip.style.cursor = 'pointer';
+    chip.style.opacity = '1';
     chip.onclick = () => { window.location.href = 'perfil.html'; };
 
-    // Mostrar/ocultar link admin según rol
-    const adminLink = document.querySelector('.topbar a[href="admin.html"]');
-    if (adminLink) adminLink.style.display = profile.rol === 'administrador' ? '' : 'none';
+    _setAdminVisible(profile.rol === 'administrador');
   },
 
   /* Redirige a login.html si no hay sesión o el rol no está en la lista */

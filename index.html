@@ -22,10 +22,7 @@
     width:360px;height:360px;border-radius:50%;
     background:radial-gradient(circle,rgba(232,169,58,.25) 0%,transparent 70%);
   }
-  .hero h1{
-    font-family:'Fraunces',serif;font-weight:600;
-    font-size:42px;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;
-  }
+  .hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:42px;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px}
   .hero h1 em{font-style:italic;color:var(--accent);font-weight:400}
   .hero p{font-size:16px;opacity:.85;max-width:480px;margin-bottom:28px}
   .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
@@ -33,15 +30,8 @@
   .hero-cta .btn-primary:hover{background:#f5b84a}
   .hero-cta .btn-ghost{color:var(--cream);border:1px solid rgba(245,239,230,.3)}
   .hero-cta .btn-ghost:hover{background:rgba(245,239,230,.1);color:var(--cream)}
-
-  .hero-stats{
-    background:rgba(245,239,230,.08);border:1px solid rgba(245,239,230,.15);
-    border-radius:16px;padding:24px;position:relative;z-index:1;
-  }
-  .hero-stats h3{
-    font-size:11px;text-transform:uppercase;letter-spacing:.2em;
-    color:var(--accent);margin-bottom:6px;font-weight:600;
-  }
+  .hero-stats{background:rgba(245,239,230,.08);border:1px solid rgba(245,239,230,.15);border-radius:16px;padding:24px;position:relative;z-index:1}
+  .hero-stats h3{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);margin-bottom:6px;font-weight:600}
   .hero-stats .nota{font-size:10px;opacity:.6;font-style:italic;margin-bottom:14px}
   .countdown-title{font-size:13px;opacity:.9}
   .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 12px}
@@ -50,28 +40,14 @@
   .countdown-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-top:4px}
 
   main{max-width:1280px;margin:0 auto;padding:0 32px 80px}
-  .section-title{
-    display:flex;align-items:baseline;justify-content:space-between;
-    margin:48px 0 20px;
-  }
-  .section-title h2{
-    font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:-.01em;
-  }
-  .section-title a{color:var(--burgundy);text-decoration:none;font-size:13px;font-weight:500}
+  .section-title{display:flex;align-items:baseline;justify-content:space-between;margin:48px 0 20px}
+  .section-title h2{font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:-.01em}
 
   /* Quick access */
   .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  .quick-card{
-    background:#fff;border:1px solid var(--line);border-radius:16px;
-    padding:22px;text-decoration:none;color:var(--ink);
-    transition:all .2s;display:block;
-  }
+  .quick-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;text-decoration:none;color:var(--ink);transition:all .2s;display:block}
   .quick-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--burgundy)}
-  .quick-icon{
-    width:42px;height:42px;border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    margin-bottom:14px;font-size:20px;
-  }
+  .quick-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:20px}
   .qc-1 .quick-icon{background:#fde8c8;color:#b56700}
   .qc-2 .quick-icon{background:#d8ecdc;color:#2d6a3e}
   .qc-3 .quick-icon{background:#fad6cd;color:#a73a1f}
@@ -79,94 +55,63 @@
   .quick-card h4{font-size:15px;font-weight:600;margin-bottom:4px}
   .quick-card p{font-size:12px;color:var(--ink-soft)}
 
-  /* Feed + side */
+  /* Feed */
   .feed-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:8px}
   .feed-item{
     background:#fff;border:1px solid var(--line);border-radius:16px;
     padding:24px 26px;margin-bottom:16px;transition:border-color .2s;
+    cursor:pointer;
   }
   .feed-item:hover{border-color:var(--burgundy)}
-  .feed-meta{
-    display:flex;align-items:center;gap:10px;
-    font-size:12px;color:var(--ink-soft);margin-bottom:10px;flex-wrap:wrap;
-  }
-  .tag{
-    background:var(--cream);color:var(--burgundy);
-    padding:3px 10px;border-radius:999px;
-    font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  }
+  .feed-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-soft);margin-bottom:10px;flex-wrap:wrap}
+  .tag{background:var(--cream);color:var(--burgundy);padding:3px 10px;border-radius:999px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
   .tag.urgent{background:#fad6cd;color:#a73a1f}
   .tag.vote{background:#d8ecdc;color:#2d6a3e}
-  .feed-item h3{
-    font-family:'Fraunces',serif;font-weight:600;font-size:20px;
-    margin-bottom:6px;letter-spacing:-.01em;
+  .feed-item h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin-bottom:6px;letter-spacing:-.01em}
+  .feed-texto{
+    font-size:14px;color:var(--ink-soft);margin-bottom:14px;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
   }
-  .feed-item p{font-size:14px;color:var(--ink-soft);margin-bottom:14px}
   .feed-actions{display:flex;gap:18px;font-size:12px;color:var(--ink-soft);align-items:center}
-  .feed-action-btn{
-    background:none;border:none;font:inherit;font-size:12px;color:var(--ink-soft);
-    cursor:pointer;padding:0;display:flex;align-items:center;gap:4px;
-  }
-  .feed-action-btn:hover{color:var(--burgundy)}
-  /* Comentarios modal */
-  .com-item{
-    display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);
-  }
-  .com-item:last-child{border-bottom:none}
-  .com-avatar{
-    width:34px;height:34px;border-radius:50%;flex-shrink:0;
-    background:linear-gradient(135deg,var(--coral),var(--accent));
-    color:#fff;font-weight:700;font-size:12px;
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
-  }
-  .com-avatar img{width:100%;height:100%;object-fit:cover}
-  .com-autor{font-size:13px;font-weight:600}
-  .com-fecha{font-size:11px;color:var(--ink-soft);margin-left:8px}
-  .com-texto{font-size:13px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
-  .com-form-row{display:flex;gap:10px;align-items:flex-end;margin-top:16px}
-  .com-form-row textarea{
-    flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;
-    font-family:inherit;font-size:14px;resize:none;outline:none;
-  }
-  .com-form-row textarea:focus{border-color:var(--burgundy)}
+  .feed-leer-mas{color:var(--burgundy);font-weight:600}
 
   /* Sidebar */
-  .side-card{
-    background:#fff;border:1px solid var(--line);border-radius:16px;
-    padding:22px;margin-bottom:16px;
-  }
-  .side-card h4{
-    font-family:'Fraunces',serif;font-size:16px;font-weight:600;
-    margin-bottom:14px;display:flex;align-items:center;gap:8px;
-  }
+  .side-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
+  .side-card h4{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
   .side-card h4::before{content:"";width:4px;height:16px;background:var(--burgundy);border-radius:2px}
   .event{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
   .event:last-child{border-bottom:none}
-  .event-date{
-    flex-shrink:0;width:46px;text-align:center;
-    background:var(--cream);border-radius:8px;padding:6px 4px;border:1px solid var(--line);
-  }
+  .event-date{flex-shrink:0;width:46px;text-align:center;background:var(--cream);border-radius:8px;padding:6px 4px;border:1px solid var(--line)}
   .event-day{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--burgundy);line-height:1}
   .event-month{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-top:2px}
   .event-info h5{font-size:13px;font-weight:600;margin-bottom:2px}
   .event-info p{font-size:11px;color:var(--ink-soft)}
-
-  .poll-option{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:10px 12px;background:var(--cream);border-radius:8px;
-    margin-bottom:6px;position:relative;overflow:hidden;
-  }
+  .poll-option{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--cream);border-radius:8px;margin-bottom:6px;position:relative;overflow:hidden}
   .poll-fill{position:absolute;left:0;top:0;bottom:0;background:rgba(232,169,58,.18);z-index:0}
   .poll-label,.poll-pct{position:relative;z-index:1;font-size:13px;font-weight:500}
   .poll-pct{font-weight:600;color:var(--burgundy)}
 
-  @media (max-width:980px){
+  /* Detalle novedad + comentarios */
+  .nov-det-scroll{overflow-y:auto;max-height:60vh}
+  .com-sep{border:none;border-top:1px solid var(--line);margin:20px 0}
+  .com-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .com-item:last-child{border-bottom:none}
+  .com-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--coral),var(--accent));color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .com-avatar img{width:100%;height:100%;object-fit:cover}
+  .com-autor{font-size:13px;font-weight:600}
+  .com-fecha{font-size:11px;color:var(--ink-soft);margin-left:8px}
+  .com-texto{font-size:13px;color:var(--ink);margin-top:4px;line-height:1.5}
+  .com-form{display:flex;gap:10px;align-items:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .com-form textarea{flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;resize:none;outline:none;min-height:60px}
+  .com-form textarea:focus{border-color:var(--burgundy)}
+
+  @media(max-width:980px){
     .hero-card{grid-template-columns:1fr;padding:32px 28px}
     .hero h1{font-size:32px}
     .feed-grid{grid-template-columns:1fr}
     .quick-grid{grid-template-columns:repeat(2,1fr)}
   }
-  @media (max-width:560px){
+  @media(max-width:560px){
     .hero,main{padding-left:18px;padding-right:18px}
     .hero-card{padding:28px 22px}
     .quick-grid{grid-template-columns:1fr}
@@ -177,7 +122,7 @@
 
 <div class="topbar">
   <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
-  <div><a href="admin.html">🛠 Admin</a></div>
+  <div><a href="admin.html" id="topbar-admin-link">🛠 Admin</a></div>
 </div>
 
 <header>
@@ -198,10 +143,10 @@
       <li><a href="marketplace.html">Marketplace</a></li>
     </ul>
   </nav>
-  <a href="#" class="user-chip">
-    <div class="avatar">CS</div>
-    <span>Cata · 5° A</span>
-  </a>
+  <div class="user-chip" style="opacity:0">
+    <div class="avatar">·</div>
+    <span></span>
+  </div>
 </header>
 
 <section class="hero">
@@ -218,12 +163,12 @@
     <div class="hero-stats">
       <h3>⏱ Viaje de Egresados</h3>
       <div id="hero-nota" class="nota"></div>
-      <div id="hero-destino" class="countdown-title">Bariloche · Salida</div>
+      <div id="hero-destino" class="countdown-title">Cargando…</div>
       <div class="countdown">
-        <div class="countdown-item"><div class="countdown-num" id="cd-d">0</div><div class="countdown-label">días</div></div>
-        <div class="countdown-item"><div class="countdown-num" id="cd-h">0</div><div class="countdown-label">hs</div></div>
-        <div class="countdown-item"><div class="countdown-num" id="cd-m">0</div><div class="countdown-label">min</div></div>
-        <div class="countdown-item"><div class="countdown-num" id="cd-s">0</div><div class="countdown-label">seg</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-d">—</div><div class="countdown-label">días</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-h">—</div><div class="countdown-label">hs</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-m">—</div><div class="countdown-label">min</div></div>
+        <div class="countdown-item"><div class="countdown-num" id="cd-s">—</div><div class="countdown-label">seg</div></div>
       </div>
       <div id="hero-confirmados" style="font-size:11px;opacity:.7;margin-top:6px"></div>
     </div>
@@ -231,10 +176,7 @@
 </section>
 
 <main>
-
-  <div class="section-title">
-    <h2>Accesos rápidos</h2>
-  </div>
+  <div class="section-title"><h2>Accesos rápidos</h2></div>
   <div class="quick-grid">
     <a href="apuntes.html" class="quick-card qc-1">
       <div class="quick-icon">📚</div>
@@ -244,7 +186,7 @@
     <a href="votaciones.html" class="quick-card qc-2">
       <div class="quick-icon">🗳️</div>
       <h4>Votaciones</h4>
-      <p id="qc-votaciones-sub">— abiertas</p>
+      <p id="qc-votaciones-sub">Cargando…</p>
     </a>
     <a href="buzon.html" class="quick-card qc-3">
       <div class="quick-icon">📨</div>
@@ -260,25 +202,21 @@
 
   <div class="section-title">
     <h2>Novedades del centro</h2>
-    <a href="#" id="link-todas">Ver todas →</a>
   </div>
 
   <div class="feed-grid">
     <div id="feed-novedades"></div>
-
     <aside>
       <div class="side-card">
         <h4>Próximos eventos</h4>
         <div id="side-eventos"></div>
       </div>
-
       <div class="side-card">
         <h4>Votación destacada</h4>
         <div id="side-votacion"></div>
       </div>
     </aside>
   </div>
-
 </main>
 
 <footer>
@@ -289,25 +227,37 @@
     </div>
     <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
     <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li><li><a href="#">Actas</a></li></ul></div>
-    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="admin.html">🛠 Admin</a></li><li><a href="#">Contacto</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#">Contacto</a></li></ul></div>
   </div>
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
-<!-- Modal comentarios -->
-<div class="modal-overlay" id="modal-comentarios">
-  <div class="modal" style="max-width:580px">
-    <button class="modal-close" onclick="document.getElementById('modal-comentarios').classList.remove('open')">×</button>
-    <h2 style="font-size:20px;margin-bottom:4px">Comentarios</h2>
-    <p class="modal-sub" id="com-novedad-titulo" style="margin-bottom:16px"></p>
-    <div id="com-lista" style="max-height:320px;overflow-y:auto"></div>
-    <div id="com-form" style="margin-top:4px">
-      <div class="com-form-row">
-        <textarea id="com-texto" rows="2" placeholder="Escribí un comentario..." maxlength="500"></textarea>
-        <button class="btn btn-primary" style="padding:10px 18px;white-space:nowrap" onclick="enviarComentario()">Enviar</button>
+<!-- ── Modal: Detalle de novedad + comentarios ── -->
+<div class="modal-overlay" id="modal-novedad-det">
+  <div class="modal" style="max-width:640px;padding-bottom:0;display:flex;flex-direction:column;max-height:90vh">
+    <button class="modal-close" onclick="cerrarDetalle()">×</button>
+
+    <!-- Contenido scrolleable -->
+    <div class="nov-det-scroll">
+      <div class="feed-meta" id="nov-det-meta" style="margin-bottom:10px"></div>
+      <h2 id="nov-det-titulo" style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:14px;letter-spacing:-.01em"></h2>
+      <p id="nov-det-texto" style="font-size:15px;color:var(--ink-soft);line-height:1.75;white-space:pre-wrap;margin-bottom:0"></p>
+
+      <hr class="com-sep">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:14px">💬 Comentarios</h3>
+      <div id="nov-det-com-lista"></div>
+    </div>
+
+    <!-- Formulario fijo abajo -->
+    <div style="padding:16px 0 20px;margin-top:4px;border-top:1px solid var(--line)">
+      <div id="nov-det-com-form-wrap">
+        <div class="com-form">
+          <textarea id="nov-det-com-texto" rows="2" placeholder="Escribí un comentario…" maxlength="500"></textarea>
+          <button id="nov-det-com-btn" class="btn btn-primary" style="padding:10px 18px;white-space:nowrap" onclick="enviarComentario()">Enviar</button>
+        </div>
       </div>
-      <div id="com-login-aviso" style="display:none;font-size:13px;color:var(--ink-soft);margin-top:10px;text-align:center">
-        <a href="login.html" style="color:var(--burgundy);font-weight:600">Iniciá sesión</a> para comentar.
+      <div id="nov-det-com-login" style="display:none;text-align:center;font-size:13px;color:var(--ink-soft);padding:6px 0">
+        <a href="login.html" style="color:var(--burgundy);font-weight:600">Iniciá sesión</a> para dejar un comentario.
       </div>
     </div>
   </div>
@@ -319,19 +269,16 @@
 <script src="store.js"></script>
 <script>
   let _config = {};
+  let _novedades = {}; // mapa id → novedad completa
 
-  /* COUNTDOWN — usa datos ya cargados en _config */
+  /* ── Countdown ── */
   function tickCountdown() {
     const c = _config;
     document.getElementById('hero-destino').textContent = (c.viajeDestino || '—') + ' · Salida';
     document.getElementById('hero-nota').textContent = c.viajeNota ? '⚠ ' + c.viajeNota : '';
-    document.getElementById('hero-confirmados').innerHTML =
-      `${c.viajeConfirmados || 0} de ${c.viajeTotal || 0} confirmados`;
-
+    document.getElementById('hero-confirmados').innerHTML = `${c.viajeConfirmados || 0} de ${c.viajeTotal || 0} confirmados`;
     if (!c.viajeFecha) return;
-    const target = new Date(c.viajeFecha);
-    const now = new Date();
-    const diff = target - now;
+    const diff = new Date(c.viajeFecha) - new Date();
     if (diff <= 0) {
       ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '0');
       return;
@@ -342,43 +289,180 @@
     document.getElementById('cd-s').textContent = Math.floor((diff%60000)/1000);
   }
 
+  /* ── Feed ── */
   function renderFeed(novedades) {
     const cont = document.getElementById('feed-novedades');
     if (!novedades.length) {
-      cont.innerHTML = `<div class="feed-item"><p style="text-align:center;color:var(--ink-soft)">No hay novedades por ahora.</p></div>`;
+      cont.innerHTML = `<div class="feed-item" style="cursor:default"><p style="text-align:center;color:var(--ink-soft)">No hay novedades por ahora.</p></div>`;
       return;
     }
+    // Indexar por id para acceso rápido desde el modal
+    novedades.forEach(n => { _novedades[n.id] = n; });
+
     cont.innerHTML = novedades.map(n => `
-      <article class="feed-item">
+      <article class="feed-item" onclick="abrirNovedad('${n.id}')">
         <div class="feed-meta">
           ${n.tag ? `<span class="tag ${n.tagTipo || ''}">${escapeHtml(n.tag)}</span>` : ''}
           <span>Por ${escapeHtml(n.autor)} · ${formatFechaRelativa(n.fecha)}</span>
         </div>
         <h3>${escapeHtml(n.titulo)}</h3>
-        <p>${escapeHtml(n.texto)}</p>
+        <p class="feed-texto">${escapeHtml(n.texto)}</p>
         <div class="feed-actions">
           <span>❤️ ${n.likes || 0}</span>
-          <button class="feed-action-btn" onclick="abrirComentarios('${n.id}',${JSON.stringify(escapeHtml(n.titulo))})">
-            💬 <span id="com-count-${n.id}">${n.comentarios || 0}</span> comentarios
-          </button>
+          <span>💬 <span id="com-count-${n.id}">cargando</span> · <span class="feed-leer-mas">Leer más →</span></span>
         </div>
       </article>
     `).join('');
+
+    // Cargar conteos reales en background
+    novedades.forEach(n => cargarConteoComentarios(n.id));
   }
 
+  async function cargarConteoComentarios(novedadId) {
+    try {
+      const r = await fetch(
+        `${window.SUPABASE_URL}/rest/v1/novedades_comentarios?novedad_id=eq.${novedadId}&select=id`,
+        { headers: { apikey: window.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + window.SUPABASE_ANON_KEY } }
+      );
+      if (!r.ok) return;
+      const data = await r.json();
+      const el = document.getElementById('com-count-' + novedadId);
+      if (el) el.textContent = data.length;
+    } catch { /* silencioso */ }
+  }
+
+  /* ── Detalle de novedad ── */
+  let _novedadActualId = null;
+
+  function abrirNovedad(id) {
+    const n = _novedades[id];
+    if (!n) return;
+    _novedadActualId = id;
+
+    // Poblar contenido
+    document.getElementById('nov-det-meta').innerHTML = `
+      ${n.tag ? `<span class="tag ${n.tagTipo || ''}">${escapeHtml(n.tag)}</span>` : ''}
+      <span>Por ${escapeHtml(n.autor)} · ${formatFechaRelativa(n.fecha)}</span>`;
+    document.getElementById('nov-det-titulo').textContent = n.titulo;
+    document.getElementById('nov-det-texto').textContent = n.texto;
+
+    // Auth state
+    const logueado = !!window._authToken;
+    document.getElementById('nov-det-com-form-wrap').style.display = logueado ? '' : 'none';
+    document.getElementById('nov-det-com-login').style.display    = logueado ? 'none' : '';
+    document.getElementById('nov-det-com-texto').value = '';
+
+    // Abrir modal
+    document.getElementById('modal-novedad-det').classList.add('open');
+    document.getElementById('nov-det-com-lista').innerHTML =
+      '<p style="padding:16px 0;text-align:center;color:var(--ink-soft);font-size:13px">Cargando comentarios…</p>';
+
+    cargarComentarios(id);
+  }
+
+  function cerrarDetalle() {
+    document.getElementById('modal-novedad-det').classList.remove('open');
+    _novedadActualId = null;
+  }
+
+  // Cerrar con click fuera del modal
+  document.getElementById('modal-novedad-det').addEventListener('click', e => {
+    if (e.target === e.currentTarget) cerrarDetalle();
+  });
+
+  /* ── Comentarios ── */
+  async function cargarComentarios(novedadId) {
+    const cont = document.getElementById('nov-det-com-lista');
+    try {
+      const r = await fetch(
+        `${window.SUPABASE_URL}/rest/v1/novedades_comentarios?novedad_id=eq.${novedadId}&select=*,profiles(nombre,apellido,alias,avatar_url)&order=created_at.asc`,
+        { headers: { apikey: window.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + (window._authToken || window.SUPABASE_ANON_KEY) } }
+      );
+      const lista = r.ok ? await r.json() : [];
+
+      // Actualizar contador en el feed
+      const el = document.getElementById('com-count-' + novedadId);
+      if (el) el.textContent = lista.length;
+
+      if (!lista.length) {
+        cont.innerHTML = '<p style="padding:16px 0;color:var(--ink-soft);font-size:13px">Todavía no hay comentarios. ¡Sé el primero!</p>';
+        return;
+      }
+
+      cont.innerHTML = lista.map(c => {
+        const p   = c.profiles || {};
+        const nom = escapeHtml(p.alias || p.nombre || 'Usuario');
+        const ini = ((p.nombre?.[0]||'') + (p.apellido?.[0]||'')).toUpperCase() || '?';
+        const av  = p.avatar_url
+          ? `<img src="${escapeHtml(p.avatar_url)}" style="width:100%;height:100%;object-fit:cover">`
+          : ini;
+        return `
+          <div class="com-item">
+            <div class="com-avatar">${av}</div>
+            <div style="flex:1;min-width:0">
+              <span class="com-autor">${nom}</span>
+              <span class="com-fecha">${formatFechaRelativa(c.created_at)}</span>
+              <div class="com-texto">${escapeHtml(c.texto)}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Scroll al final de los comentarios
+      cont.scrollTop = cont.scrollHeight;
+    } catch {
+      cont.innerHTML = '<p style="padding:16px 0;color:#a73a1f;font-size:13px">Error al cargar los comentarios.</p>';
+    }
+  }
+
+  async function enviarComentario() {
+    if (!window._authToken) { window.location.href = 'login.html?next=index.html'; return; }
+    const texto = document.getElementById('nov-det-com-texto').value.trim();
+    if (!texto || !_novedadActualId) return;
+
+    const btn = document.getElementById('nov-det-com-btn');
+    btn.disabled = true; btn.textContent = '…';
+
+    const user = (await window._sb.auth.getUser()).data.user;
+    const r = await fetch(`${window.SUPABASE_URL}/rest/v1/novedades_comentarios`, {
+      method: 'POST',
+      headers: {
+        apikey: window.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + window._authToken,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({ novedad_id: _novedadActualId, user_id: user.id, texto })
+    });
+
+    btn.disabled = false; btn.textContent = 'Enviar';
+
+    if (!r.ok) {
+      const err = await r.text();
+      // Tabla no existe aún
+      if (err.includes('does not exist') || err.includes('relation')) {
+        alert('El sistema de comentarios todavía no está habilitado. Pedile al admin que ejecute el SQL de setup (docs/sql-comentarios-novedades.sql).');
+        return;
+      }
+      alert('Error al enviar el comentario.');
+      return;
+    }
+
+    document.getElementById('nov-det-com-texto').value = '';
+    await cargarComentarios(_novedadActualId);
+  }
+
+  /* ── Eventos ── */
   function renderEventos(eventos) {
     const hoy = new Date();
-    const proximos = eventos
-      .filter(e => new Date(e.fecha) >= hoy)
-      .sort((a,b) => new Date(a.fecha) - new Date(b.fecha))
-      .slice(0,5);
+    const proximos = eventos.filter(e => new Date(e.fecha) >= hoy)
+      .sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).slice(0,5);
     const cont = document.getElementById('side-eventos');
     if (!proximos.length) {
       cont.innerHTML = `<p style="font-size:13px;color:var(--ink-soft)">Sin eventos próximos.</p>`;
       return;
     }
     cont.innerHTML = proximos.map(e => {
-      const f = formatFechaCorta(e.fecha);
+      const f    = formatFechaCorta(e.fecha);
       const hora = new Date(e.fecha).toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
       return `
         <div class="event">
@@ -391,6 +475,7 @@
     }).join('');
   }
 
+  /* ── Votación destacada ── */
   function renderVotacionDestacada(votaciones) {
     const abiertas = votaciones.filter(v => v.estado === 'abierta');
     const cont = document.getElementById('side-votacion');
@@ -405,7 +490,7 @@
     cont.innerHTML = `
       <p style="font-size:13px;margin-bottom:14px;color:var(--ink-soft)">${escapeHtml(v.titulo)}</p>
       ${opciones.map(o => {
-        const pct = Math.round((o.votos / total) * 100);
+        const pct = Math.round((o.votos/total)*100);
         return `<div class="poll-option">
           <div class="poll-fill" style="width:${pct}%"></div>
           <span class="poll-label">${escapeHtml(o.texto)}</span>
@@ -421,106 +506,17 @@
       ab === 0 ? 'Sin votaciones abiertas' : `${ab} ${ab === 1 ? 'abierta' : 'abiertas'}`;
   }
 
-  /* ──────── COMENTARIOS ──────── */
-  let _novedadIdActual = null;
-
-  async function abrirComentarios(novedadId, titulo) {
-    _novedadIdActual = novedadId;
-    document.getElementById('com-novedad-titulo').textContent = titulo;
-    document.getElementById('com-lista').innerHTML = '<p style="text-align:center;padding:20px;color:var(--ink-soft);font-size:13px">Cargando...</p>';
-    document.getElementById('com-texto').value = '';
-
-    const logueado = !!window._authToken;
-    document.getElementById('com-form').querySelector('textarea').style.display = logueado ? '' : 'none';
-    document.getElementById('com-form').querySelector('.btn').style.display = logueado ? '' : 'none';
-    document.getElementById('com-login-aviso').style.display = logueado ? 'none' : '';
-
-    document.getElementById('modal-comentarios').classList.add('open');
-    await cargarComentarios(novedadId);
-  }
-
-  async function cargarComentarios(novedadId) {
-    const cont = document.getElementById('com-lista');
-    try {
-      const r = await fetch(
-        `${window.SUPABASE_URL}/rest/v1/novedades_comentarios?novedad_id=eq.${novedadId}&select=*,profiles(nombre,apellido,alias,avatar_url)&order=created_at.asc`,
-        { headers: { 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + (window._authToken || window.SUPABASE_ANON_KEY) } }
-      );
-      const comentarios = r.ok ? await r.json() : [];
-
-      // Actualizar el contador en el feed
-      const countEl = document.getElementById('com-count-' + novedadId);
-      if (countEl) countEl.textContent = comentarios.length;
-
-      if (!comentarios.length) {
-        cont.innerHTML = '<p style="text-align:center;padding:24px;color:var(--ink-soft);font-size:13px">Todavía no hay comentarios. ¡Sé el primero!</p>';
-        return;
-      }
-
-      cont.innerHTML = comentarios.map(c => {
-        const p   = c.profiles || {};
-        const nom = escapeHtml(p.alias || p.nombre || 'Anónimo');
-        const ini = ((p.nombre?.[0]||'') + (p.apellido?.[0]||'')).toUpperCase() || '?';
-        const avatarInner = p.avatar_url
-          ? `<img src="${escapeHtml(p.avatar_url)}" style="width:100%;height:100%;object-fit:cover">`
-          : ini;
-        return `
-          <div class="com-item">
-            <div class="com-avatar">${avatarInner}</div>
-            <div>
-              <div><span class="com-autor">${nom}</span><span class="com-fecha">${formatFechaRelativa(c.created_at)}</span></div>
-              <div class="com-texto">${escapeHtml(c.texto)}</div>
-            </div>
-          </div>`;
-      }).join('');
-      cont.scrollTop = cont.scrollHeight;
-    } catch (err) {
-      cont.innerHTML = `<p style="text-align:center;padding:20px;color:#a73a1f;font-size:13px">Error al cargar comentarios.</p>`;
-    }
-  }
-
-  async function enviarComentario() {
-    if (!window._authToken) { window.location.href = 'login.html?next=index.html'; return; }
-    const texto = document.getElementById('com-texto').value.trim();
-    if (!texto) return;
-
-    const btn = document.querySelector('#com-form .btn');
-    btn.disabled = true;
-    btn.textContent = '...';
-
-    const user = (await window._sb.auth.getUser()).data.user;
-    const r = await fetch(`${window.SUPABASE_URL}/rest/v1/novedades_comentarios`, {
-      method: 'POST',
-      headers: {
-        'apikey': window.SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + window._authToken,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ novedad_id: _novedadIdActual, user_id: user.id, texto })
-    });
-
-    btn.disabled = false;
-    btn.textContent = 'Enviar';
-
-    if (!r.ok) { alert('Error al enviar comentario.'); return; }
-    document.getElementById('com-texto').value = '';
-    await cargarComentarios(_novedadIdActual);
-  }
-
-  /* loader sutil mientras llega Supabase */
-  function mostrarLoader() {
-    document.getElementById('feed-novedades').innerHTML =
-      `<div class="feed-item"><p style="text-align:center;color:var(--ink-soft)">Cargando novedades...</p></div>`;
-    document.getElementById('side-eventos').innerHTML =
-      `<p style="font-size:13px;color:var(--ink-soft)">Cargando...</p>`;
-    document.getElementById('side-votacion').innerHTML =
-      `<p style="font-size:13px;color:var(--ink-soft)">Cargando...</p>`;
-  }
-
+  /* ── Init ── */
   document.addEventListener('DOMContentLoaded', async () => {
     await Store.init();
-    mostrarLoader();
+
+    // Skeleton loader
+    document.getElementById('feed-novedades').innerHTML =
+      `<div class="feed-item" style="cursor:default"><p style="text-align:center;color:var(--ink-soft)">Cargando novedades…</p></div>`;
+    document.getElementById('side-eventos').innerHTML =
+      `<p style="font-size:13px;color:var(--ink-soft)">Cargando…</p>`;
+    document.getElementById('side-votacion').innerHTML =
+      `<p style="font-size:13px;color:var(--ink-soft)">Cargando…</p>`;
 
     try {
       const session = await Auth.init();
@@ -544,13 +540,12 @@
     } catch (err) {
       console.error('Error cargando datos:', err);
       document.getElementById('feed-novedades').innerHTML =
-        `<div class="feed-item" style="border-color:#e8a93a">
+        `<div class="feed-item" style="cursor:default;border-color:#e8a93a">
           <p style="color:#a73a1f;font-weight:600">⚠ Error al cargar datos</p>
           <p style="font-size:12px;color:var(--ink-soft)">${err.message}</p>
         </div>`;
     }
   });
 </script>
-
 </body>
 </html>

@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#7a1f2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Centro Est.">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
 <title>Mi perfil · Centro de Estudiantes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,9 +55,10 @@
     display:block;width:100%;margin-top:16px;padding:9px;
     background:transparent;border:1px solid var(--line);border-radius:10px;
     font-family:inherit;font-size:13px;font-weight:500;color:var(--ink-soft);
-    cursor:pointer;transition:all .15s;
+    cursor:pointer;transition:all .15s;min-height:44px;
   }
   .avatar-upload-btn:hover{border-color:var(--burgundy);color:var(--burgundy)}
+  .avatar-upload-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
   .avatar-upload-progress{
     margin-top:10px;font-size:12px;color:var(--ink-soft);
     display:none;
@@ -150,18 +157,24 @@
   <!-- ── Avatar lateral ── -->
   <aside>
     <div class="avatar-card">
-      <div class="avatar-xl" id="avatar-xl" onclick="document.getElementById('input-avatar').click()">
+      <div class="avatar-xl" id="avatar-xl" onclick="document.getElementById('input-avatar-gal').click()">
         <span id="avatar-initials">??</span>
         <div class="avatar-overlay">📷</div>
       </div>
-      <input type="file" id="input-avatar" accept="image/*" onchange="subirAvatar(this)">
+      <input type="file" id="input-avatar-cam" accept="image/*" capture="user" onchange="subirAvatar(this)" style="display:none">
+      <input type="file" id="input-avatar-gal" accept="image/*" onchange="subirAvatar(this)" style="display:none">
       <div class="avatar-name" id="avatar-name">—</div>
       <div class="avatar-curso" id="avatar-curso"></div>
       <div id="avatar-rol" class="avatar-rol rol-pendiente">pendiente</div>
 
-      <button class="avatar-upload-btn" onclick="document.getElementById('input-avatar').click()">
-        Cambiar foto de perfil
-      </button>
+      <div class="avatar-upload-btns">
+        <button class="avatar-upload-btn" onclick="document.getElementById('input-avatar-cam').click()">
+          📷 Selfie
+        </button>
+        <button class="avatar-upload-btn" onclick="document.getElementById('input-avatar-gal').click()">
+          🖼 Galería
+        </button>
+      </div>
       <div class="avatar-upload-progress" id="upload-progress">Subiendo...</div>
 
       <button class="avatar-upload-btn" style="margin-top:8px;color:#a73a1f;border-color:#f5b8a8" onclick="cerrarSesion()">
@@ -522,5 +535,6 @@
     poblarAvatar(profile);
   });
 </script>
+<script src="pwa.js"></script>
 </body>
 </html>

@@ -459,3 +459,46 @@ footer a:hover{color:var(--cream)}
 }
 .toggle-pill input:checked + span{background:var(--burgundy)}
 .toggle-pill input:checked + span::after{transform:translateX(20px)}
+
+/* === PWA / MOBILE IMPROVEMENTS === */
+/* Safe area for notch/home bar */
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
+footer{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+
+/* Minimum 44px touch targets */
+.btn{min-height:44px}
+nav a{min-height:44px;display:inline-flex;align-items:center}
+.icon-btn{min-width:44px;min-height:44px}
+.admin-nav a{min-height:44px}
+
+/* Toast: adjust position & center on mobile */
+@media(max-width:560px){
+  .toast{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 80px);
+    right:16px;left:16px;
+    text-align:center;
+  }
+}
+
+/* Modal: slide-up sheet on mobile */
+@media(max-width:600px){
+  .modal-overlay{
+    align-items:flex-end;
+    padding:0;
+    overflow:hidden;
+  }
+  .modal{
+    border-radius:20px 20px 0 0;
+    max-height:92vh;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  }
+}
+
+/* Larger page title on small screens */
+@media(max-width:480px){
+  .page-title{font-size:28px}
+  header{padding:12px 16px}
+  .brand img{height:38px}
+}

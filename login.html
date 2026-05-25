@@ -133,7 +133,7 @@
 
     if (!profile || profile.rol === 'pendiente') {
       alerta('Tu cuenta está pendiente de aprobación por el administrador. Te avisamos cuando esté lista.', 'warning');
-      await Auth._sb?.auth.signOut();
+      await window._sb?.auth.signOut();
       window._authToken = null;
       btn.disabled = false; btn.textContent = 'Ingresar';
       return;

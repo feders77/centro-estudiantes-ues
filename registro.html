@@ -316,8 +316,12 @@
 
     const { data: { user } } = await window._sb.auth.getUser();
     const { error } = await window._sb.from('profiles').upsert({
-      id: user.id, nombre, apellido, alias, nivel, anio: parseInt(anio), orientacion
+      id: user.id, nombre, apellido, alias, nivel, anio: parseInt(anio) || null, orientacion,
+      rol: 'alumno'
     });
+    if (!error && user?.email) {
+      await window._sb.from('invitaciones').update({ used: true }).eq('email', user.email);
+    }
 
     if (error) {
       const al = document.getElementById('alerta-inv');

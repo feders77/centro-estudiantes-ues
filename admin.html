@@ -196,6 +196,25 @@
       </div>
     </section>
 
+    <!-- ============ USUARIOS ============ -->
+    <section class="admin-section" data-section-id="usuarios">
+      <div class="admin-section-head">
+        <div>
+          <h2>Gestión de usuarios</h2>
+          <p>Aprobá pendientes, administrá roles e invitá nuevos alumnos.</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="tab-pendientes" onclick="verTab('pendientes')" style="font-size:13px">
+          ⏳ Pendientes <span id="badge-pend" style="background:#fad6cd;color:#a73a1f;padding:2px 8px;border-radius:999px;margin-left:4px;font-size:11px">0</span>
+        </button>
+        <button class="btn btn-ghost" id="tab-alumnos" onclick="verTab('alumnos')" style="font-size:13px">👤 Alumnos</button>
+        <button class="btn btn-ghost" id="tab-admins"  onclick="verTab('admins')"  style="font-size:13px">🛠 Admins</button>
+        <button class="btn btn-ghost" id="tab-invitar" onclick="verTab('invitar')" style="font-size:13px">✉ Invitar</button>
+      </div>
+      <div id="usuarios-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 20px;min-height:80px"></div>
+    </section>
+
     <!-- ============ DATOS ============ -->
     <section class="admin-section" data-section-id="datos">
       <div class="admin-section-head">
@@ -366,21 +385,6 @@
         <button type="submit" class="btn btn-primary">Guardar</button>
       </div>
     </form>
-  </div>
-</div>
-
-<!-- ============ USUARIOS ============ -->
-<div class="modal-overlay" id="modal-usuarios" style="z-index:200">
-  <div class="modal" style="max-width:700px">
-    <button class="modal-close" onclick="closeModal('modal-usuarios')">×</button>
-    <h2>Gestión de usuarios</h2>
-    <div style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap">
-      <button class="btn btn-ghost" id="tab-pendientes" onclick="verTab('pendientes')" style="font-size:13px">⏳ Pendientes <span id="badge-pend" style="background:#fad6cd;color:#a73a1f;padding:2px 8px;border-radius:999px;margin-left:4px;font-size:11px">0</span></button>
-      <button class="btn btn-ghost" id="tab-alumnos"    onclick="verTab('alumnos')"    style="font-size:13px">👤 Alumnos</button>
-      <button class="btn btn-ghost" id="tab-admins"     onclick="verTab('admins')"     style="font-size:13px">🛠 Admins</button>
-      <button class="btn btn-ghost" id="tab-invitar"    onclick="verTab('invitar')"    style="font-size:13px">✉ Invitar</button>
-    </div>
-    <div id="usuarios-lista" style="max-height:420px;overflow-y:auto"></div>
   </div>
 </div>
 

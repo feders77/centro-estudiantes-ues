@@ -36,7 +36,7 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.querySelector(`[data-section-id="${section}"]`).classList.add('active');
     if (section === 'config') cargarConfig();
-    if (section === 'usuarios') openModal('modal-usuarios');
+    if (section === 'usuarios') verTab(_tabUsuarios);
   });
 });
 

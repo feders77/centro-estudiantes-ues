@@ -102,7 +102,33 @@
     margin-bottom:6px;letter-spacing:-.01em;
   }
   .feed-item p{font-size:14px;color:var(--ink-soft);margin-bottom:14px}
-  .feed-actions{display:flex;gap:18px;font-size:12px;color:var(--ink-soft)}
+  .feed-actions{display:flex;gap:18px;font-size:12px;color:var(--ink-soft);align-items:center}
+  .feed-action-btn{
+    background:none;border:none;font:inherit;font-size:12px;color:var(--ink-soft);
+    cursor:pointer;padding:0;display:flex;align-items:center;gap:4px;
+  }
+  .feed-action-btn:hover{color:var(--burgundy)}
+  /* Comentarios modal */
+  .com-item{
+    display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);
+  }
+  .com-item:last-child{border-bottom:none}
+  .com-avatar{
+    width:34px;height:34px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,var(--coral),var(--accent));
+    color:#fff;font-weight:700;font-size:12px;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  .com-avatar img{width:100%;height:100%;object-fit:cover}
+  .com-autor{font-size:13px;font-weight:600}
+  .com-fecha{font-size:11px;color:var(--ink-soft);margin-left:8px}
+  .com-texto{font-size:13px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+  .com-form-row{display:flex;gap:10px;align-items:flex-end;margin-top:16px}
+  .com-form-row textarea{
+    flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;
+    font-family:inherit;font-size:14px;resize:none;outline:none;
+  }
+  .com-form-row textarea:focus{border-color:var(--burgundy)}
 
   /* Sidebar */
   .side-card{
@@ -268,6 +294,25 @@
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
 </footer>
 
+<!-- Modal comentarios -->
+<div class="modal-overlay" id="modal-comentarios">
+  <div class="modal" style="max-width:580px">
+    <button class="modal-close" onclick="document.getElementById('modal-comentarios').classList.remove('open')">×</button>
+    <h2 style="font-size:20px;margin-bottom:4px">Comentarios</h2>
+    <p class="modal-sub" id="com-novedad-titulo" style="margin-bottom:16px"></p>
+    <div id="com-lista" style="max-height:320px;overflow-y:auto"></div>
+    <div id="com-form" style="margin-top:4px">
+      <div class="com-form-row">
+        <textarea id="com-texto" rows="2" placeholder="Escribí un comentario..." maxlength="500"></textarea>
+        <button class="btn btn-primary" style="padding:10px 18px;white-space:nowrap" onclick="enviarComentario()">Enviar</button>
+      </div>
+      <div id="com-login-aviso" style="display:none;font-size:13px;color:var(--ink-soft);margin-top:10px;text-align:center">
+        <a href="login.html" style="color:var(--burgundy);font-weight:600">Iniciá sesión</a> para comentar.
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="auth.js"></script>
@@ -313,7 +358,9 @@
         <p>${escapeHtml(n.texto)}</p>
         <div class="feed-actions">
           <span>❤️ ${n.likes || 0}</span>
-          <span>💬 ${n.comentarios || 0} comentarios</span>
+          <button class="feed-action-btn" onclick="abrirComentarios('${n.id}',${JSON.stringify(escapeHtml(n.titulo))})">
+            💬 <span id="com-count-${n.id}">${n.comentarios || 0}</span> comentarios
+          </button>
         </div>
       </article>
     `).join('');
@@ -372,6 +419,93 @@
     const ab = votaciones.filter(v => v.estado === 'abierta').length;
     document.getElementById('qc-votaciones-sub').textContent =
       ab === 0 ? 'Sin votaciones abiertas' : `${ab} ${ab === 1 ? 'abierta' : 'abiertas'}`;
+  }
+
+  /* ──────── COMENTARIOS ──────── */
+  let _novedadIdActual = null;
+
+  async function abrirComentarios(novedadId, titulo) {
+    _novedadIdActual = novedadId;
+    document.getElementById('com-novedad-titulo').textContent = titulo;
+    document.getElementById('com-lista').innerHTML = '<p style="text-align:center;padding:20px;color:var(--ink-soft);font-size:13px">Cargando...</p>';
+    document.getElementById('com-texto').value = '';
+
+    const logueado = !!window._authToken;
+    document.getElementById('com-form').querySelector('textarea').style.display = logueado ? '' : 'none';
+    document.getElementById('com-form').querySelector('.btn').style.display = logueado ? '' : 'none';
+    document.getElementById('com-login-aviso').style.display = logueado ? 'none' : '';
+
+    document.getElementById('modal-comentarios').classList.add('open');
+    await cargarComentarios(novedadId);
+  }
+
+  async function cargarComentarios(novedadId) {
+    const cont = document.getElementById('com-lista');
+    try {
+      const r = await fetch(
+        `${window.SUPABASE_URL}/rest/v1/novedades_comentarios?novedad_id=eq.${novedadId}&select=*,profiles(nombre,apellido,alias,avatar_url)&order=created_at.asc`,
+        { headers: { 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + (window._authToken || window.SUPABASE_ANON_KEY) } }
+      );
+      const comentarios = r.ok ? await r.json() : [];
+
+      // Actualizar el contador en el feed
+      const countEl = document.getElementById('com-count-' + novedadId);
+      if (countEl) countEl.textContent = comentarios.length;
+
+      if (!comentarios.length) {
+        cont.innerHTML = '<p style="text-align:center;padding:24px;color:var(--ink-soft);font-size:13px">Todavía no hay comentarios. ¡Sé el primero!</p>';
+        return;
+      }
+
+      cont.innerHTML = comentarios.map(c => {
+        const p   = c.profiles || {};
+        const nom = escapeHtml(p.alias || p.nombre || 'Anónimo');
+        const ini = ((p.nombre?.[0]||'') + (p.apellido?.[0]||'')).toUpperCase() || '?';
+        const avatarInner = p.avatar_url
+          ? `<img src="${escapeHtml(p.avatar_url)}" style="width:100%;height:100%;object-fit:cover">`
+          : ini;
+        return `
+          <div class="com-item">
+            <div class="com-avatar">${avatarInner}</div>
+            <div>
+              <div><span class="com-autor">${nom}</span><span class="com-fecha">${formatFechaRelativa(c.created_at)}</span></div>
+              <div class="com-texto">${escapeHtml(c.texto)}</div>
+            </div>
+          </div>`;
+      }).join('');
+      cont.scrollTop = cont.scrollHeight;
+    } catch (err) {
+      cont.innerHTML = `<p style="text-align:center;padding:20px;color:#a73a1f;font-size:13px">Error al cargar comentarios.</p>`;
+    }
+  }
+
+  async function enviarComentario() {
+    if (!window._authToken) { window.location.href = 'login.html?next=index.html'; return; }
+    const texto = document.getElementById('com-texto').value.trim();
+    if (!texto) return;
+
+    const btn = document.querySelector('#com-form .btn');
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    const user = (await window._sb.auth.getUser()).data.user;
+    const r = await fetch(`${window.SUPABASE_URL}/rest/v1/novedades_comentarios`, {
+      method: 'POST',
+      headers: {
+        'apikey': window.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + window._authToken,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ novedad_id: _novedadIdActual, user_id: user.id, texto })
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Enviar';
+
+    if (!r.ok) { alert('Error al enviar comentario.'); return; }
+    document.getElementById('com-texto').value = '';
+    await cargarComentarios(_novedadIdActual);
   }
 
   /* loader sutil mientras llega Supabase */

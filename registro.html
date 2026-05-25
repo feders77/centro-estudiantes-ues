@@ -316,11 +316,12 @@
 
     const { data: { user } } = await window._sb.auth.getUser();
     const { error } = await window._sb.from('profiles').upsert({
-      id: user.id, nombre, apellido, alias, nivel, anio: parseInt(anio) || null, orientacion,
-      rol: 'alumno'
+      id: user.id, nombre, apellido, alias, nivel, anio: parseInt(anio) || null, orientacion
     });
-    if (!error && user?.email) {
-      await window._sb.from('invitaciones').update({ used: true }).eq('email', user.email);
+    if (!error) {
+      // Approves invited user (sets rol='alumno') and marks invitation as used
+      // Uses SECURITY DEFINER to bypass RLS rol restriction
+      await window._sb.rpc('completar_registro_invitado');
     }
 
     if (error) {

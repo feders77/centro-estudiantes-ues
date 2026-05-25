@@ -1207,10 +1207,18 @@ function copiarLink() {
 }
 
 async function cambiarRol(id, nuevoRol) {
+  const rolAnterior = _usuarios.find(u => u.id === id)?.rol;
   const { error } = await window._sb.from('profiles').update({ rol: nuevoRol }).eq('id', id);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  const msgs = { alumno: '✓ Usuario aprobado', administrador: '✓ Promovido a admin', pendiente: 'Usuario suspendido' };
-  toast(msgs[nuevoRol] || '✓ Rol actualizado', 'success');
+
+  let msg;
+  if      (nuevoRol === 'alumno' && rolAnterior === 'administrador') msg = '✓ Rol admin quitado — quedó como alumno (lo encontrás en la pestaña Alumnos)';
+  else if (nuevoRol === 'alumno')        msg = '✓ Usuario aprobado';
+  else if (nuevoRol === 'administrador') msg = '✓ Promovido a administrador';
+  else if (nuevoRol === 'pendiente')     msg = '⚠ Usuario suspendido';
+  else                                   msg = '✓ Rol actualizado';
+
+  toast(msg, 'success');
   await cargarUsuarios();
 }
 

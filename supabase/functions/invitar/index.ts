@@ -54,7 +54,23 @@ serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // 4 — Leer template de invitación personalizado (si existe)
+    // 4 — Verificar que el email no esté ya registrado
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('email, rol')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingProfile) {
+      const estado = existingProfile.rol === 'pendiente'
+        ? 'pendiente de aprobación'
+        : existingProfile.rol === 'administrador'
+          ? 'administrador'
+          : 'alumno registrado'
+      return json({ error: `El email ${email} ya está en el sistema (${estado}). No es posible volver a invitarlo.` }, 409)
+    }
+
+    // 5 — Leer template de invitación personalizado (si existe)
     const { data: tpl } = await supabaseAdmin
       .from('email_templates')
       .select('asunto, cuerpo_html')
@@ -63,19 +79,20 @@ serve(async (req) => {
 
     const redirectTo = 'https://feders77.github.io/centro-estudiantes-ues/registro.html'
 
-    // 5 — Enviar invitación via Supabase Auth
+    // 6 — Enviar invitación via Supabase Auth
     const { error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       redirectTo,
       data: { invited: true }
     })
 
     if (inviteErr) {
-      if (!inviteErr.message.includes('already')) {
-        return json({ error: inviteErr.message }, 400)
+      if (inviteErr.message.toLowerCase().includes('already') || inviteErr.message.toLowerCase().includes('registered')) {
+        return json({ error: `El email ${email} ya está registrado en el sistema. No es posible volver a invitarlo.` }, 409)
       }
+      return json({ error: inviteErr.message }, 400)
     }
 
-    // 6 — Actualizar template en Supabase Auth Config si tenemos token de management
+    // 7 — Actualizar template en Supabase Auth Config si tenemos token de management
     const mgmtToken = Deno.env.get('MGMT_TOKEN')
     const projectRef = Deno.env.get('SUPABASE_URL')!.split('//')[1].split('.')[0]
     if (mgmtToken && tpl) {
@@ -89,7 +106,7 @@ serve(async (req) => {
       })
     }
 
-    // 7 — Registrar en tabla invitaciones para tracking
+    // 8 — Registrar en tabla invitaciones para tracking
     await supabaseAdmin
       .from('invitaciones')
       .upsert({ email }, { onConflict: 'email' })

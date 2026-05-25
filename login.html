@@ -159,7 +159,9 @@
     // Llegó desde el link de confirmación de email
     const hash = new URLSearchParams(window.location.hash.slice(1));
     if (hash.get('type') === 'signup') {
-      alerta('✓ Email confirmado. Ya podés ingresar con tu cuenta.', 'success');
+      // Cerrar sesión inmediata: la cuenta necesita aprobación del admin
+      await window._sb?.auth.signOut();
+      alerta('✓ Email confirmado. Tu cuenta quedará activa una vez que el administrador la apruebe.', 'success');
       return;
     }
 

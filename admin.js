@@ -1220,14 +1220,19 @@ async function crearInvitacion() {
     toast('✓ Invitación enviada a ' + email, 'success');
     await cargarUsuarios();
   } catch (err) {
-    toast('Error: ' + err.message, 'error');
+    let msg = err.message;
+    if (msg.toLowerCase().includes('rate') || msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('ratelimit')) {
+      msg = 'Límite de emails alcanzado (máx. 2/hora). Esperá unos minutos e intentá de nuevo.';
+    }
+    toast('Error: ' + msg, 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Invitar'; }
   }
 }
 
 async function borrarInvitacion(id) {
-  await window._sb.from('invitaciones').delete().eq('id', id);
+  const { error } = await window._sb.from('invitaciones').delete().eq('id', id);
+  if (error) { toast('Error al eliminar: ' + error.message, 'error'); return; }
   toast('Invitación eliminada', 'success');
   await cargarUsuarios();
 }

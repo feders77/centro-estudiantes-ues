@@ -315,22 +315,20 @@
     }
 
     const { data: { user } } = await window._sb.auth.getUser();
-    const { error } = await window._sb.from('profiles').upsert({
+    const { error: upsertErr } = await window._sb.from('profiles').upsert({
       id: user.id, nombre, apellido, alias, nivel, anio: parseInt(anio) || null, orientacion
     });
-    if (!error) {
-      // Approves invited user (sets rol='alumno') and marks invitation as used
-      // Uses SECURITY DEFINER to bypass RLS rol restriction
-      await window._sb.rpc('completar_registro_invitado');
-    }
 
-    if (error) {
+    if (upsertErr) {
       const al = document.getElementById('alerta-inv');
-      al.textContent = 'Error al guardar: ' + error.message;
+      al.textContent = 'Error al guardar: ' + upsertErr.message;
       al.className = 'auth-alert show error';
       btn.disabled = false; btn.textContent = 'Guardar y entrar →';
       return;
     }
+
+    // Sets rol='alumno' and marks invitation as used — SECURITY DEFINER bypasses RLS
+    await window._sb.rpc('completar_registro_invitado');
 
     window.location.href = 'index.html';
   }

@@ -45,6 +45,11 @@
 <div class="admin-shell">
 
   <aside class="admin-side">
+    <!-- Mobile: botón que abre el drawer (solo visible en ≤600px) -->
+    <button class="admin-mob-toggle" onclick="abrirMenuAdmin()">
+      <span id="admin-mob-label">📊 Resumen</span>
+      <span class="mob-chevron">▾</span>
+    </button>
     <h4>Contenido</h4>
     <ul class="admin-nav">
       <li><a href="#" data-section="resumen" class="active"><span class="icon">📊</span> Resumen</a></li>
@@ -616,6 +621,43 @@
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
       <button class="btn btn-ghost" onclick="closeModal('modal-com-elim')">Cancelar</button>
       <button id="btn-confirmar-com-elim" class="btn btn-danger" onclick="confirmarEliminarComAdmin()">Eliminar comentario</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========= MOBILE ADMIN DRAWER ========= -->
+<div class="admin-mobile-drawer" id="admin-drawer" onclick="cerrarMenuAdminBack(event)">
+  <div class="admin-drawer-sheet">
+    <div class="admin-drawer-handle"></div>
+    <div class="admin-drawer-group">Contenido</div>
+    <button class="admin-drawer-btn active" data-section="resumen"    onclick="irSeccionAdmin('resumen')">📊 Resumen</button>
+    <button class="admin-drawer-btn"        data-section="novedades"  onclick="irSeccionAdmin('novedades')">📢 Novedades <span class="d-count" id="dc-novedades"></span></button>
+    <button class="admin-drawer-btn"        data-section="eventos"    onclick="irSeccionAdmin('eventos')">📅 Eventos <span class="d-count" id="dc-eventos"></span></button>
+    <button class="admin-drawer-btn"        data-section="votaciones" onclick="irSeccionAdmin('votaciones')">🗳️ Votaciones <span class="d-count" id="dc-votaciones"></span></button>
+    <button class="admin-drawer-btn"        data-section="apuntes"    onclick="irSeccionAdmin('apuntes')">📚 Apuntes <span class="d-count" id="dc-apuntes"></span></button>
+    <button class="admin-drawer-btn"        data-section="marketplace" onclick="irSeccionAdmin('marketplace')">🔁 Marketplace <span class="d-count" id="dc-marketplace"></span></button>
+    <div class="admin-drawer-group">Buzón y Moderación</div>
+    <button class="admin-drawer-btn"        data-section="buzon"      onclick="irSeccionAdmin('buzon')">📨 Casos Buzón <span class="d-count" id="dc-buzon"></span></button>
+    <button class="admin-drawer-btn"        data-section="comentarios" onclick="irSeccionAdmin('comentarios')">💬 Comentarios <span class="d-count" id="dc-comentarios"></span></button>
+    <div class="admin-drawer-group">Usuarios</div>
+    <button class="admin-drawer-btn"        data-section="usuarios"   onclick="irSeccionAdmin('usuarios')">👥 Gestión de usuarios <span class="d-count red" id="dc-pendientes"></span></button>
+    <div class="admin-drawer-group">Configuración</div>
+    <button class="admin-drawer-btn"        data-section="config"     onclick="irSeccionAdmin('config')">⚙️ General</button>
+    <button class="admin-drawer-btn"        data-section="secciones"  onclick="irSeccionAdmin('secciones')">🔌 Secciones</button>
+    <button class="admin-drawer-btn"        data-section="emails"     onclick="irSeccionAdmin('emails')">📧 Emails</button>
+    <button class="admin-drawer-btn"        data-section="datos"      onclick="irSeccionAdmin('datos')">💾 Datos</button>
+  </div>
+</div>
+
+<!-- Modal: confirmar rechazo de usuario pendiente -->
+<div class="modal-overlay" id="modal-rechazar">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('modal-rechazar')">×</button>
+    <h2>Rechazar usuario</h2>
+    <p class="modal-sub" id="rechazar-detalle">El usuario será eliminado del sistema. Podrás volver a invitar ese email.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-rechazar')">Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirmar-rechazo" onclick="confirmarRechazo()">✗ Rechazar y eliminar</button>
     </div>
   </div>
 </div>

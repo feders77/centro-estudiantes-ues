@@ -36,26 +36,58 @@ async function recargar(coleccion) {
 }
 
 /* ---------- NAVEGACIÓN ENTRE SECCIONES ---------- */
+const _SECTION_LABELS = {
+  resumen:'📊 Resumen', novedades:'📢 Novedades', eventos:'📅 Eventos',
+  votaciones:'🗳️ Votaciones', apuntes:'📚 Apuntes', marketplace:'🔁 Marketplace',
+  buzon:'📨 Buzón', comentarios:'💬 Comentarios', usuarios:'👥 Usuarios',
+  config:'⚙️ General', secciones:'🔌 Secciones', emails:'📧 Emails', datos:'💾 Datos'
+};
+
+function activarSeccion(section) {
+  document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+  document.querySelector(`.admin-nav a[data-section="${section}"]`)?.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelector(`[data-section-id="${section}"]`)?.classList.add('active');
+  document.querySelectorAll('.admin-drawer-btn').forEach(b => b.classList.toggle('active', b.dataset.section === section));
+  const lbl = document.getElementById('admin-mob-label');
+  if (lbl) lbl.textContent = _SECTION_LABELS[section] || section;
+  if (section === 'config')       cargarConfig();
+  if (section === 'usuarios')     verTab(_tabUsuarios);
+  if (section === 'secciones')    cargarSecciones();
+  if (section === 'emails')       cargarEmailTemplates();
+  if (section === 'comentarios')  cargarTodosComentarios();
+  if (window.innerWidth <= 600) window.scrollTo({ top: 0, behavior: 'smooth' });
+  else if (window.innerWidth <= 980) {
+    const main = document.querySelector('.admin-main');
+    if (main) setTimeout(() => main.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
 document.querySelectorAll('.admin-nav a').forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    const section = link.dataset.section;
-    document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
-    link.classList.add('active');
-    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-    document.querySelector(`[data-section-id="${section}"]`).classList.add('active');
-    if (section === 'config')       cargarConfig();
-    if (section === 'usuarios')     verTab(_tabUsuarios);
-    if (section === 'secciones')    cargarSecciones();
-    if (section === 'emails')       cargarEmailTemplates();
-    if (section === 'comentarios')  cargarTodosComentarios();
-    // En mobile: scroll al contenido (por debajo del sidebar sticky)
-    if (window.innerWidth <= 980) {
-      const main = document.querySelector('.admin-main');
-      if (main) setTimeout(() => main.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-    }
-  });
+  link.addEventListener('click', e => { e.preventDefault(); activarSeccion(link.dataset.section); });
 });
+
+/* --- Mobile drawer --- */
+function abrirMenuAdmin() {
+  const drawer = document.getElementById('admin-drawer');
+  if (!drawer) return;
+  // Sync counts from sidebar counts
+  [['novedades','count-novedades'],['eventos','count-eventos'],['votaciones','count-votaciones'],
+   ['apuntes','count-apuntes'],['marketplace','count-marketplace'],['buzon','count-buzon'],
+   ['comentarios','count-comentarios'],['pendientes','count-pendientes']].forEach(([key, sideId]) => {
+    const dc = document.getElementById('dc-' + key);
+    const src = document.getElementById(sideId);
+    if (dc && src) { const v = src.textContent?.trim(); dc.textContent = v && v !== '0' ? v : ''; }
+  });
+  drawer.classList.add('open');
+}
+function cerrarMenuAdminBack(e) {
+  if (e.target === document.getElementById('admin-drawer')) document.getElementById('admin-drawer').classList.remove('open');
+}
+function irSeccionAdmin(section) {
+  document.getElementById('admin-drawer')?.classList.remove('open');
+  activarSeccion(section);
+}
 
 /* ---------- TOAST ---------- */
 function toast(msg, tipo = '') {
@@ -1222,11 +1254,27 @@ async function cambiarRol(id, nuevoRol) {
   await cargarUsuarios();
 }
 
-async function eliminarUsuario(id) {
-  if (!confirm('¿Rechazar y eliminar este usuario? Esta acción no se puede deshacer.')) return;
-  const { error } = await window._sb.from('profiles').delete().eq('id', id);
+let _rechazarUserId = null;
+
+function eliminarUsuario(id) {
+  const u = _usuarios.find(u => u.id === id);
+  _rechazarUserId = id;
+  const nombre = [u?.nombre, u?.apellido].filter(Boolean).join(' ') || '—';
+  document.getElementById('rechazar-detalle').textContent =
+    `¿Rechazar a ${nombre}${u?.email ? ' (' + u.email + ')' : ''}? Se eliminará del sistema y ese email podrá ser invitado nuevamente.`;
+  openModal('modal-rechazar');
+}
+
+async function confirmarRechazo() {
+  if (!_rechazarUserId) return;
+  const btn = document.getElementById('btn-confirmar-rechazo');
+  btn.disabled = true; btn.textContent = 'Eliminando...';
+  const { error } = await window._sb.rpc('rechazar_usuario', { user_id: _rechazarUserId });
+  btn.disabled = false; btn.textContent = '✗ Rechazar y eliminar';
+  closeModal('modal-rechazar');
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  toast('Usuario eliminado', 'success');
+  toast('Usuario rechazado y eliminado del sistema', 'success');
+  _rechazarUserId = null;
   await cargarUsuarios();
 }
 

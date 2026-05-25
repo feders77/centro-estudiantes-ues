@@ -167,9 +167,9 @@
 <section class="hero">
   <div class="hero-card">
     <div>
-      <div class="hero-eyebrow" style="color:var(--accent)">Centro de Estudiantes · 2026</div>
-      <h1>Acá no se decide <em>por nosotros</em>.<br>Se decide <em>con nosotros</em>.</h1>
-      <p>Apuntes, votaciones, eventos y un buzón anónimo. Todo lo que pasa en el cole, en un solo lugar.</p>
+      <div id="hero-eyebrow" class="hero-eyebrow" style="color:var(--accent)">Centro de Estudiantes · 2026</div>
+      <h1 id="hero-titulo">Acá no se decide <em>por nosotros</em>.<br>Se decide <em>con nosotros</em>.</h1>
+      <p id="hero-descripcion">Apuntes, votaciones, eventos y un buzón anónimo. Todo lo que pasa en el cole, en un solo lugar.</p>
       <div class="hero-cta">
         <a href="votaciones.html" class="btn btn-primary">→ Ver votaciones</a>
         <a href="buzon.html" class="btn btn-ghost">Buzón anónimo</a>
@@ -650,14 +650,26 @@
       _userId  = session?.user?.id || null;
       _esAdmin = profile?.rol === 'administrador';
 
-      const [novedades, eventos, votaciones, config] = await Promise.all([
+      const [novedades, eventos, votaciones, config, heroResp] = await Promise.all([
         Store.list('novedades', true),
         Store.list('eventos'),
         Store.list('votaciones'),
-        Store.getConfig()
+        Store.getConfig(),
+        fetch(`${window.SUPABASE_URL}/rest/v1/config?key=eq.hero&select=value`,
+          { headers: { apikey: window.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + window.SUPABASE_ANON_KEY } })
       ]);
 
       _config = config;
+
+      // Aplicar texto hero personalizado (si existe en DB)
+      try {
+        const heroRows = heroResp.ok ? await heroResp.json() : [];
+        const hero = heroRows[0]?.value || {};
+        if (hero.eyebrow)     document.getElementById('hero-eyebrow').textContent = hero.eyebrow;
+        if (hero.titulo)      document.getElementById('hero-titulo').innerHTML = escapeHtml(hero.titulo).replace(/\n/g, '<br>');
+        if (hero.descripcion) document.getElementById('hero-descripcion').textContent = hero.descripcion;
+      } catch { /* silencioso — el texto hardcodeado queda igual */ }
+
       tickCountdown();
       setInterval(tickCountdown, 1000);
       renderFeed(novedades);

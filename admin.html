@@ -219,6 +219,26 @@
 
         <button class="btn btn-primary" onclick="guardarConfig()">Guardar cambios</button>
       </div>
+
+      <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;max-width:640px;margin-top:16px">
+        <h3 style="font-family:Fraunces,serif;font-size:18px;font-weight:600;margin-bottom:6px">Portada (Hero)</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:18px">Texto del banner principal de la home. Dejá vacío para usar el texto por defecto.</p>
+        <div class="form-group">
+          <label>Subtítulo superior</label>
+          <input type="text" id="cfg-hero-eyebrow" placeholder="Centro de Estudiantes · 2026">
+        </div>
+        <div class="form-group">
+          <label>Título (Enter para salto de línea)</label>
+          <textarea id="cfg-hero-titulo" rows="2" style="resize:vertical"
+            placeholder="Acá no se decide por nosotros.&#10;Se decide con nosotros."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="cfg-hero-descripcion" rows="2" style="resize:vertical"
+            placeholder="Apuntes, votaciones, eventos y un buzón anónimo. Todo lo que pasa en el cole, en un solo lugar."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="guardarHeroConfig()">Guardar portada</button>
+      </div>
     </section>
 
     <!-- ============ USUARIOS ============ -->
@@ -292,12 +312,21 @@
                 <input type="text" id="tpl-asunto" required>
               </div>
               <div class="form-group">
-                <label>Cuerpo HTML</label>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:6px" id="tpl-vars-hint"></div>
-                <textarea id="tpl-cuerpo" rows="14" required style="font-family:monospace;font-size:12px;line-height:1.5"></textarea>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <label style="margin:0">Cuerpo HTML</label>
+                  <div style="display:flex;gap:3px;background:var(--cream);border-radius:8px;padding:3px">
+                    <button type="button" id="tpl-tab-code" onclick="switchTemplateTab('code')"
+                            style="font-size:12px;padding:4px 12px;border:none;border-radius:6px;cursor:pointer;background:var(--burgundy);color:var(--cream);font-family:inherit;font-weight:500">✏️ Código</button>
+                    <button type="button" id="tpl-tab-view" onclick="switchTemplateTab('view')"
+                            style="font-size:12px;padding:4px 12px;border:none;border-radius:6px;cursor:pointer;background:transparent;color:var(--ink-soft);font-family:inherit">👁 Vista previa</button>
+                  </div>
+                </div>
+                <div id="tpl-vars-hint" style="font-size:11px;color:var(--ink-soft);margin-bottom:6px"></div>
+                <textarea id="tpl-cuerpo" rows="14" style="font-family:monospace;font-size:12px;line-height:1.5;width:100%;box-sizing:border-box;display:block"></textarea>
+                <iframe id="tpl-iframe-inline" frameborder="0"
+                        style="display:none;width:100%;border:1px solid var(--line);border-radius:8px;min-height:300px;box-sizing:border-box"></iframe>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-                <button type="button" class="btn btn-ghost" style="font-size:13px" onclick="previewTemplate()">👁 Preview</button>
+              <div style="display:flex;justify-content:flex-end;margin-top:4px">
                 <button type="submit" class="btn btn-primary" id="btn-guardar-tpl">Guardar y aplicar</button>
               </div>
             </div>

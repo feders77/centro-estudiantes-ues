@@ -502,12 +502,31 @@ async function borrarMP(id) {
    ======================================================================== */
 
 async function cargarConfig() {
-  const c = await Store.getConfig();
-  document.getElementById('cfg-destino').value = c.viajeDestino || '';
-  document.getElementById('cfg-fecha').value = (c.viajeFecha || '').slice(0,16);
+  const [c, { data: heroRow }] = await Promise.all([
+    Store.getConfig(),
+    window._sb.from('config').select('value').eq('key', 'hero').maybeSingle()
+  ]);
+  document.getElementById('cfg-destino').value    = c.viajeDestino     || '';
+  document.getElementById('cfg-fecha').value      = (c.viajeFecha||'').slice(0,16);
   document.getElementById('cfg-confirmados').value = c.viajeConfirmados || 0;
-  document.getElementById('cfg-total').value = c.viajeTotal || 0;
-  document.getElementById('cfg-nota').value = c.viajeNota || '';
+  document.getElementById('cfg-total').value      = c.viajeTotal       || 0;
+  document.getElementById('cfg-nota').value       = c.viajeNota        || '';
+
+  const hero = heroRow?.value || {};
+  document.getElementById('cfg-hero-eyebrow').value     = hero.eyebrow     || '';
+  document.getElementById('cfg-hero-titulo').value      = hero.titulo      || '';
+  document.getElementById('cfg-hero-descripcion').value = hero.descripcion || '';
+}
+
+async function guardarHeroConfig() {
+  const eyebrow     = document.getElementById('cfg-hero-eyebrow').value.trim();
+  const titulo      = document.getElementById('cfg-hero-titulo').value.trim();
+  const descripcion = document.getElementById('cfg-hero-descripcion').value.trim();
+  const { error } = await window._sb
+    .from('config')
+    .upsert({ key: 'hero', value: { eyebrow, titulo, descripcion } }, { onConflict: 'key' });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('✓ Portada actualizada', 'success');
 }
 
 async function guardarConfig() {
@@ -800,6 +819,8 @@ function editarTemplate(tipo) {
   document.querySelectorAll('[id^="tpl-item-"]').forEach(el => el.style.fontWeight = '');
   const active = document.getElementById('tpl-item-' + tipo);
   if (active) active.style.background = 'var(--cream)';
+
+  switchTemplateTab('code');
 }
 
 async function guardarTemplate(e) {
@@ -807,9 +828,10 @@ async function guardarTemplate(e) {
   const btn = document.getElementById('btn-guardar-tpl');
   btn.disabled = true; btn.textContent = 'Guardando…';
 
-  const tipo       = document.getElementById('tpl-tipo').value;
-  const asunto     = document.getElementById('tpl-asunto').value.trim();
+  const tipo        = document.getElementById('tpl-tipo').value;
+  const asunto      = document.getElementById('tpl-asunto').value.trim();
   const cuerpo_html = document.getElementById('tpl-cuerpo').value.trim();
+  if (!cuerpo_html) { toast('El cuerpo del email no puede estar vacío', 'error'); btn.disabled = false; btn.textContent = 'Guardar y aplicar'; return; }
 
   try {
     const r = await fetch(window.SUPABASE_URL + '/functions/v1/actualizar-templates', {
@@ -836,6 +858,28 @@ function previewTemplate() {
   const iframe = document.getElementById('preview-iframe');
   iframe.srcdoc = `<!DOCTYPE html><html><body style="font-family:Inter Tight,sans-serif;font-size:14px;color:#1a1310;padding:20px;max-width:560px;margin:auto">${cuerpo}</body></html>`;
   openModal('modal-tpl-preview');
+}
+
+function switchTemplateTab(tab) {
+  const textarea = document.getElementById('tpl-cuerpo');
+  const iframe   = document.getElementById('tpl-iframe-inline');
+  const tabCode  = document.getElementById('tpl-tab-code');
+  const tabView  = document.getElementById('tpl-tab-view');
+  if (!textarea) return;
+  if (tab === 'code') {
+    textarea.style.display = '';
+    if (iframe)   iframe.style.display   = 'none';
+    if (tabCode) { tabCode.style.background = 'var(--burgundy)'; tabCode.style.color = 'var(--cream)'; }
+    if (tabView) { tabView.style.background = 'transparent';     tabView.style.color = 'var(--ink-soft)'; }
+  } else {
+    if (iframe) {
+      iframe.srcdoc = `<!DOCTYPE html><html><body style="font-family:'Inter Tight',sans-serif;font-size:14px;color:#1a1310;padding:20px 24px;max-width:560px;margin:auto;line-height:1.6">${textarea.value}</body></html>`;
+      iframe.style.display = '';
+    }
+    textarea.style.display = 'none';
+    if (tabView) { tabView.style.background = 'var(--burgundy)'; tabView.style.color = 'var(--cream)'; }
+    if (tabCode) { tabCode.style.background = 'transparent';     tabCode.style.color = 'var(--ink-soft)'; }
+  }
 }
 
 /* ========================================================================

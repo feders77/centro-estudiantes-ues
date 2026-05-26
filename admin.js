@@ -581,15 +581,68 @@ async function guardarHeroConfig() {
   toast('✓ Portada actualizada', 'success');
 }
 
+function _compressImage(file, maxMB = 1.5) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const maxDim = 1400;
+      if (w > maxDim || h > maxDim) {
+        const r = Math.min(maxDim / w, maxDim / h);
+        w = Math.round(w * r); h = Math.round(h * r);
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const maxBytes = maxMB * 1024 * 1024;
+      let q = 0.85;
+      const next = () => canvas.toBlob(blob => {
+        if (blob.size <= maxBytes || q <= 0.25) {
+          resolve(new File([blob], 'logo.jpg', { type: 'image/jpeg' }));
+        } else { q -= 0.1; next(); }
+      }, 'image/jpeg', q);
+      next();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 async function subirLogoAdmin(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { toast('La imagen no puede superar 2 MB', 'error'); input.value = ''; return; }
-  toast('Subiendo logo...', '');
-  const ext  = file.name.split('.').pop().toLowerCase() || 'png';
+
+  const btn    = document.getElementById('cfg-logo-btn');
+  const status = document.getElementById('cfg-logo-status');
+  const msgEl  = document.getElementById('cfg-logo-msg');
+
+  const setStatus = (msg) => {
+    if (btn) btn.disabled = true;
+    if (status) { status.style.display = 'inline-flex'; msgEl.textContent = msg; }
+  };
+  const clearStatus = () => {
+    if (btn) btn.disabled = false;
+    if (status) status.style.display = 'none';
+  };
+
+  setStatus('Preparando imagen...');
+
+  let uploadFile = file;
+  if (file.size > 1.5 * 1024 * 1024) {
+    setStatus('Comprimiendo imagen...');
+    uploadFile = await _compressImage(file);
+  }
+
+  const ext  = uploadFile.type === 'image/svg+xml' ? 'svg' : 'jpg';
   const path = `logo/main.${ext}`;
-  const { error: upErr } = await window._sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
-  if (upErr) { toast('Error al subir: ' + upErr.message, 'error'); input.value = ''; return; }
+  setStatus('Subiendo...');
+  const { error: upErr } = await window._sb.storage.from('avatars').upload(path, uploadFile, { upsert: true, contentType: uploadFile.type });
+
+  clearStatus();
+  if (upErr) { toast('Error al subir logo: ' + upErr.message, 'error'); input.value = ''; return; }
+
   const { data: urlData } = window._sb.storage.from('avatars').getPublicUrl(path);
   const logo_url = urlData.publicUrl + '?t=' + Date.now();
   const { data: existing } = await window._sb.from('config').select('value').eq('key','hero').maybeSingle();

@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<style>@keyframes ce-spin{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
 
@@ -259,10 +260,14 @@
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px">
             <img id="cfg-logo-preview" src="" alt="preview" style="height:54px;width:auto;display:none;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff">
             <input type="file" id="cfg-logo-file" accept="image/*" style="display:none" onchange="subirLogoAdmin(this)">
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('cfg-logo-file').click()">Subir imagen</button>
+            <button type="button" id="cfg-logo-btn" class="btn btn-ghost btn-sm" onclick="document.getElementById('cfg-logo-file').click()">📁 Subir imagen</button>
             <button type="button" class="btn btn-danger btn-sm" id="cfg-logo-remove" style="display:none" onclick="quitarLogo()">Quitar logo</button>
+            <span id="cfg-logo-status" style="font-size:12px;color:var(--ink-soft);display:none;align-items:center;gap:6px">
+              <span style="display:inline-block;width:12px;height:12px;border:2px solid #e0d6c5;border-top-color:var(--burgundy);border-radius:50%;animation:ce-spin .7s linear infinite"></span>
+              <span id="cfg-logo-msg">Subiendo...</span>
+            </span>
           </div>
-          <span style="font-size:11px;color:var(--ink-soft);margin-top:6px;display:block">Altura recomendada: 54px. Formatos: PNG, SVG, WebP. Deja vacío para usar el logo por defecto.</span>
+          <span style="font-size:11px;color:var(--ink-soft);margin-top:6px;display:block">Formatos: PNG, JPG, SVG, WebP. Si es muy grande se comprime automáticamente.</span>
         </div>
         <button class="btn btn-primary" onclick="guardarHeroConfig()">Guardar portada</button>
       </div>

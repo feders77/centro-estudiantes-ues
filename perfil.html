@@ -61,8 +61,16 @@
   .avatar-upload-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
   .avatar-upload-progress{
     margin-top:10px;font-size:12px;color:var(--ink-soft);
-    display:none;
+    display:none;align-items:center;justify-content:center;gap:8px;
   }
+  .avatar-spin{
+    width:14px;height:14px;flex-shrink:0;border-radius:50%;
+    border:2px solid #e0d6c5;border-top-color:var(--burgundy);
+    animation:ce-spin .7s linear infinite;
+  }
+  @keyframes ce-spin{to{transform:rotate(360deg)}}
+  .avatar-xl.uploading{pointer-events:none}
+  .avatar-xl.uploading .avatar-overlay{opacity:1 !important;font-size:14px}
 
   /* ── Metrics ── */
   .metric-row{
@@ -175,7 +183,10 @@
           🖼 Galería
         </button>
       </div>
-      <div class="avatar-upload-progress" id="upload-progress">Subiendo...</div>
+      <div class="avatar-upload-progress" id="upload-progress">
+        <span class="avatar-spin"></span>
+        <span id="upload-msg">Subiendo...</span>
+      </div>
 
       <button class="avatar-upload-btn" style="margin-top:8px;color:#a73a1f;border-color:#f5b8a8" onclick="cerrarSesion()">
         Cerrar sesión
@@ -445,57 +456,104 @@
     }
   }
 
+  /* ── Comprimir imagen antes de subir ── */
+  function compressImage(file, maxMB = 1.5) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const maxDim = 1400;
+        if (w > maxDim || h > maxDim) {
+          const r = Math.min(maxDim / w, maxDim / h);
+          w = Math.round(w * r); h = Math.round(h * r);
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const maxBytes = maxMB * 1024 * 1024;
+        let q = 0.85;
+        const next = () => canvas.toBlob(blob => {
+          if (blob.size <= maxBytes || q <= 0.25) {
+            resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
+          } else { q -= 0.1; next(); }
+        }, 'image/jpeg', q);
+        next();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
   /* ── Subir avatar ── */
   async function subirAvatar(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      setAlert('La imagen no puede superar 2 MB.', 'error');
-      input.value = '';
-      return;
+
+    const xlDiv    = document.getElementById('avatar-xl');
+    const progress = document.getElementById('upload-progress');
+    const msgEl    = document.getElementById('upload-msg');
+    const btns     = document.querySelectorAll('.avatar-upload-btn');
+
+    const setProgress = (msg, overlayIcon) => {
+      progress.style.display = 'flex';
+      msgEl.textContent = msg;
+      xlDiv.classList.add('uploading');
+      const ov = xlDiv.querySelector('.avatar-overlay');
+      if (ov) ov.textContent = overlayIcon || '⏳';
+      btns.forEach(b => b.disabled = true);
+    };
+    const clearProgress = () => {
+      progress.style.display = 'none';
+      xlDiv.classList.remove('uploading');
+      const ov = xlDiv.querySelector('.avatar-overlay');
+      if (ov) ov.textContent = '📷';
+      btns.forEach(b => b.disabled = false);
+    };
+
+    clearAlert();
+    setProgress('Preparando imagen...', '⏳');
+
+    let uploadFile = file;
+    if (file.size > 1.5 * 1024 * 1024) {
+      setProgress('Comprimiendo imagen...', '🔄');
+      uploadFile = await compressImage(file);
     }
 
-    const progress = document.getElementById('upload-progress');
-    progress.style.display = 'block';
-    progress.textContent   = 'Subiendo imagen...';
-    clearAlert();
+    const user   = (await window._sb.auth.getUser()).data.user;
+    const ext    = uploadFile.name.split('.').pop().toLowerCase() || 'jpg';
+    const path   = `${user.id}/avatar.${ext}`;
 
-    const user    = (await window._sb.auth.getUser()).data.user;
-    const ext     = file.name.split('.').pop().toLowerCase() || 'jpg';
-    const path    = `${user.id}/avatar.${ext}`;
-    const bucket  = 'avatars';
-
+    setProgress('Subiendo...', '⬆️');
     const { error: uploadError } = await window._sb.storage
-      .from(bucket)
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .from('avatars')
+      .upload(path, uploadFile, { upsert: true, contentType: uploadFile.type });
 
     if (uploadError) {
-      progress.style.display = 'none';
-      setAlert('Error al subir la imagen: ' + uploadError.message, 'error');
+      clearProgress();
+      setAlert('Error al subir: ' + uploadError.message, 'error');
       input.value = '';
       return;
     }
 
-    const { data: urlData } = window._sb.storage.from(bucket).getPublicUrl(path);
-    const publicUrl = urlData.publicUrl + '?t=' + Date.now(); // cache-bust
+    setProgress('Guardando perfil...', '💾');
+    const { data: urlData } = window._sb.storage.from('avatars').getPublicUrl(path);
+    const publicUrl = urlData.publicUrl + '?t=' + Date.now();
 
     const { error: updateError } = await window._sb.from('profiles')
       .update({ avatar_url: urlData.publicUrl })
       .eq('id', user.id);
 
-    progress.style.display = 'none';
+    clearProgress();
 
     if (updateError) {
-      setAlert('Imagen subida pero no se pudo guardar en el perfil: ' + updateError.message, 'error');
+      setAlert('Imagen subida pero no se pudo guardar: ' + updateError.message, 'error');
       return;
     }
 
-    // Mostrar avatar nuevo
-    const xlDiv = document.getElementById('avatar-xl');
     xlDiv.innerHTML = `<img src="${escapeHtml(publicUrl)}" alt="Avatar"><div class="avatar-overlay">📷</div>`;
     setAlert('Foto de perfil actualizada.', 'success');
-
-    // Refrescar chip en header
     const profile = await Auth.getProfile();
     Auth.updateChip(profile);
     input.value = '';

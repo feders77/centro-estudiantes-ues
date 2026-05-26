@@ -247,7 +247,7 @@
       <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
     </div>
     <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
-    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li><li><a href="#">Comisiones</a></li><li><a href="#">Presupuesto</a></li><li><a href="#">Actas</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="#">Quiénes somos</a></li></ul></div>
     <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#" data-action="colaborar">Quiero ayudar</a></li></ul></div>
   </div>
   <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
@@ -569,7 +569,7 @@
   async function cargarMisLikes(novedades) {
     if (!_userId) return;
     const ids = novedades.map(n => n.id);
-    const { data } = await window._sb.from('novedades_likes').select('novedad_id').in('novedad_id', ids);
+    const { data } = await window._sb.from('novedades_likes').select('novedad_id').in('novedad_id', ids).eq('user_id', _userId);
     if (!data) return;
     data.forEach(row => {
       _misLikes.add(row.novedad_id);

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#7a1f2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Centro Est.">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<title>Quiénes Somos · Centro de Estudiantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main{max-width:860px;margin:0 auto;padding:40px 32px 80px}
+
+  .qs-intro{
+    background:var(--burgundy);color:var(--cream);
+    border-radius:20px;padding:40px 44px;margin-bottom:48px;
+  }
+  .qs-intro h1{font-family:'Fraunces',serif;font-size:36px;font-weight:600;line-height:1.1;letter-spacing:-.02em;margin-bottom:10px}
+  .qs-intro p{font-size:15px;opacity:.85;max-width:520px;line-height:1.6}
+
+  .qs-bloque{margin-bottom:40px}
+  .qs-bloque-titulo{
+    font-size:11px;text-transform:uppercase;letter-spacing:.18em;
+    color:var(--burgundy);font-weight:700;margin-bottom:16px;
+    padding-bottom:8px;border-bottom:2px solid var(--burgundy);display:inline-block;
+  }
+
+  .qs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .qs-card{
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;display:flex;flex-direction:column;gap:4px;
+  }
+  .qs-card-rol{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:600}
+  .qs-card-nombre{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--ink)}
+
+  .qs-grid-vocales{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .qs-card-vocal .qs-card-rol{color:var(--ink-soft)}
+
+  @media(max-width:600px){
+    main{padding:24px 18px 60px}
+    .qs-intro{padding:28px 24px}
+    .qs-intro h1{font-size:28px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>📍 Mendoza 1951, Rosario · ☎ (0341) 7925378</div>
+  <div><a href="admin.html" id="topbar-admin-link">🛠 Admin</a></div>
+</div>
+
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo-fallback.svg" alt="SC" onerror="this.onerror=null;this.src='https://sagradorosario.edu.ar/wp-content/uploads/2023/05/logo-sc-sf.png'">
+    <div class="brand-text">
+      <span class="institution">Sagrado Corazón Rosario</span>
+      <span class="division">Centro de Estudiantes</span>
+    </div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="apuntes.html">Apuntes</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="buzon.html">Buzón</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+    </ul>
+  </nav>
+  <div class="user-chip" style="opacity:0">
+    <div class="avatar">·</div>
+    <span></span>
+  </div>
+</header>
+
+<main>
+
+  <div class="qs-intro">
+    <div class="hero-eyebrow" style="font-size:12px;text-transform:uppercase;letter-spacing:.18em;opacity:.7;margin-bottom:10px">Centro de Estudiantes · 2026</div>
+    <h1>Quiénes Somos</h1>
+    <p>El Centro de Estudiantes del Sagrado Corazón de Rosario es el órgano de representación estudiantil del colegio. Estas son las personas que lo integran este año.</p>
+  </div>
+
+  <!-- Directivos -->
+  <div class="qs-bloque">
+    <div class="qs-bloque-titulo">Directivos</div>
+    <div class="qs-grid">
+      <div class="qs-card">
+        <div class="qs-card-rol">Presidenta</div>
+        <div class="qs-card-nombre">Emilia Bolatti</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Vicepresidenta</div>
+        <div class="qs-card-nombre">Lucía Lequi</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Secretaria General</div>
+        <div class="qs-card-nombre">Milagros Fior</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secretarías -->
+  <div class="qs-bloque">
+    <div class="qs-bloque-titulo">Secretarías</div>
+    <div class="qs-grid">
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. de Asuntos y Derechos Estudiantiles</div>
+        <div class="qs-card-nombre">Paz Almirón</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. de Relaciones Exteriores</div>
+        <div class="qs-card-nombre">Sofía Rela</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. de Finanzas</div>
+        <div class="qs-card-nombre">Facundo Quaiotti</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. de Infraestructura</div>
+        <div class="qs-card-nombre">Martina Prieto</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. de Deportes</div>
+        <div class="qs-card-nombre">Facundo González</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. Pastoral</div>
+        <div class="qs-card-nombre">Martina Brex</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-card-rol">Sec. de Prensa</div>
+        <div class="qs-card-nombre">Catalina Melgar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vocales -->
+  <div class="qs-bloque">
+    <div class="qs-bloque-titulo">Vocales</div>
+    <div class="qs-grid qs-grid-vocales">
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 1</div>
+        <div class="qs-card-nombre">Félix Di Prinzio</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 2</div>
+        <div class="qs-card-nombre">Luciano Loria</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 3</div>
+        <div class="qs-card-nombre">María Luz Almirón</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 4</div>
+        <div class="qs-card-nombre">Nicolás Alabart</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 5</div>
+        <div class="qs-card-nombre">Lucía Osorio</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 6</div>
+        <div class="qs-card-nombre">Malena Samaniego</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 7</div>
+        <div class="qs-card-nombre">Eugenia Ghione</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 8</div>
+        <div class="qs-card-nombre">Agustina Liberatti</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 9</div>
+        <div class="qs-card-nombre">Santiago Prieto</div>
+      </div>
+      <div class="qs-card qs-card-vocal">
+        <div class="qs-card-rol">Vocal 10</div>
+        <div class="qs-card-nombre">María Liberatti</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-brand">
+      <h5>Centro de Estudiantes</h5>
+      <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
+    </div>
+    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Centro</h5><ul><li><a href="quienes-somos.html" class="active">Quiénes Somos</a></li></ul></div>
+    <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#" data-action="colaborar">Quiero ayudar</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">Prototipo · No oficial · Sagrado Corazón Rosario · 2026</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const session = await Auth.init();
+    Auth.updateChip(session ? await Auth.getProfile() : null);
+    const adminLink = document.getElementById('topbar-admin-link');
+    if (adminLink) adminLink.style.display = 'none';
+  });
+</script>
+<script src="colaborar.js"></script>
+<script src="pwa.js"></script>
+</body>
+</html>

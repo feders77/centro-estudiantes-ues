@@ -183,11 +183,11 @@
   <nav>
     <ul>
       <li><a href="index.html">Inicio</a></li>
-      <li><a href="apuntes.html">Apuntes</a></li>
-      <li><a href="eventos.html" class="active">Eventos</a></li>
-      <li><a href="votaciones.html">Votaciones</a></li>
-      <li><a href="buzon.html">Buzón</a></li>
-      <li><a href="marketplace.html">Marketplace</a></li>
+      <li data-seccion="apuntes"><a href="apuntes.html">Apuntes</a></li>
+      <li data-seccion="eventos"><a href="eventos.html" class="active">Eventos</a></li>
+      <li data-seccion="votaciones"><a href="votaciones.html">Votaciones</a></li>
+      <li data-seccion="buzon"><a href="buzon.html">Buzón</a></li>
+      <li data-seccion="marketplace"><a href="marketplace.html">Marketplace</a></li>
     </ul>
   </nav>
   <div class="user-chip" style="opacity:0">
@@ -285,7 +285,7 @@
       <h5>Centro de Estudiantes</h5>
       <p>Hecho por alumnos, para alumnos. Plataforma de gestión y participación del Colegio del Sagrado Corazón de Rosario.</p>
     </div>
-    <div><h5>Plataforma</h5><ul><li><a href="apuntes.html">Apuntes</a></li><li><a href="eventos.html">Eventos</a></li><li><a href="votaciones.html">Votaciones</a></li><li><a href="marketplace.html">Marketplace</a></li></ul></div>
+    <div><h5>Plataforma</h5><ul><li data-seccion="apuntes"><a href="apuntes.html">Apuntes</a></li><li data-seccion="eventos"><a href="eventos.html">Eventos</a></li><li data-seccion="votaciones"><a href="votaciones.html">Votaciones</a></li><li data-seccion="marketplace"><a href="marketplace.html">Marketplace</a></li></ul></div>
     <div><h5>Centro</h5><ul><li><a href="quienes-somos.html">Quiénes Somos</a></li></ul></div>
     <div><h5>Ayuda</h5><ul><li><a href="buzon.html">Buzón anónimo</a></li><li><a href="#" data-action="colaborar">Quiero ayudar</a></li><li><a href="admin.html">🛠 Admin</a></li></ul></div>
   </div>
@@ -553,6 +553,8 @@ El equipo del Centro de Estudiantes puede eliminar comentarios que no cumplan es
     _perfilActual    = session ? await Auth.getProfile() : null;
     Auth.updateChip(_perfilActual);
     await Store.init();
+    const secciones = await Store.getSecciones();
+    aplicarEstadoSecciones(secciones);
     document.getElementById('timeline').innerHTML =
       `<div class="empty-evs"><p style="color:var(--ink-soft)">Cargando...</p></div>`;
     const eventos = await Store.list('eventos');

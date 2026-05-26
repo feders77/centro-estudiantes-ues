@@ -297,8 +297,14 @@ const Store = {
       const rows = await _get('/config_secciones?select=clave,habilitada');
       const mapa = {};
       rows.forEach(r => { mapa[r.clave] = r.habilitada; });
+      try { sessionStorage.setItem('ce_secciones', JSON.stringify(mapa)); } catch {}
       return mapa;
-    } catch { return {}; }
+    } catch {
+      try {
+        const cached = sessionStorage.getItem('ce_secciones');
+        return cached ? JSON.parse(cached) : {};
+      } catch { return {}; }
+    }
   },
 
   /* métodos legacy sync que ya no aplican — los dejamos como no-op para
@@ -323,19 +329,36 @@ const _HTML_PROXIMAMENTE = `
 function aplicarEstadoSecciones(secciones) {
   const MAPA = {
     apuntes:     'apuntes.html',
+    eventos:     'eventos.html',
     votaciones:  'votaciones.html',
     buzon:       'buzon.html',
     marketplace: 'marketplace.html',
   };
+
+  // Nav: data-seccion atribute + CSS default-hidden → JS muestra los habilitados
+  document.querySelectorAll('nav li[data-seccion]').forEach(li => {
+    const habilitada = secciones[li.dataset.seccion] !== false;
+    li.style.display = habilitada ? 'list-item' : '';
+  });
+
+  // Footer y otros links (no nav): ocultar los deshabilitados
   Object.entries(MAPA).forEach(([clave, href]) => {
-    if (secciones[clave] === false) {
-      document.querySelectorAll(`a[href="${href}"]`).forEach(a => {
-        const toHide = a.parentElement?.tagName === 'LI' ? a.parentElement : a;
-        toHide.style.display = 'none';
-      });
-    }
+    const habilitada = secciones[clave] !== false;
+    document.querySelectorAll(`a[href="${href}"]`).forEach(a => {
+      if (a.closest('nav')) return;
+      const target = a.closest('li') || a;
+      target.style.display = habilitada ? '' : 'none';
+    });
   });
 }
+
+// Aplicar desde sessionStorage al cargar store.js (antes de cualquier DOMContentLoaded)
+;(function() {
+  try {
+    const cached = sessionStorage.getItem('ce_secciones');
+    if (cached) aplicarEstadoSecciones(JSON.parse(cached));
+  } catch {}
+})();
 
 /* ---------- HELPERS (sin cambios) ---------- */
 

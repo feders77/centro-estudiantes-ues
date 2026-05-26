@@ -3,7 +3,7 @@
    Assets (CSS/JS/imágenes): network-first con caché de respaldo.
    Al activar una versión nueva: notifica a todos los clientes para recargar.
 */
-const CACHE = 'ce-v6';
+const CACHE = 'ce-v7';
 
 self.addEventListener('install', e => {
   // Activa inmediatamente, sin esperar a que cierren las tabs viejas

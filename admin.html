@@ -61,6 +61,7 @@
     </ul>
     <h4>Buzón</h4>
     <ul class="admin-nav">
+      <li><a href="#" data-section="mensajes"><span class="icon">📩</span> Mensajes <span class="count" id="count-mensajes" style="background:#fad6cd;color:#a73a1f">0</span></a></li>
       <li><a href="#" data-section="buzon"><span class="icon">📨</span> Casos públicos <span class="count" id="count-buzon">0</span></a></li>
     </ul>
     <h4>Moderación</h4>
@@ -107,6 +108,10 @@
         <div class="stat-card">
           <div class="stat-label">📚 Apuntes publicados</div>
           <div class="stat-value" id="stat-apuntes">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="activarSeccion('mensajes')">
+          <div class="stat-label">📩 Mensajes sin leer</div>
+          <div class="stat-value" id="stat-mensajes" style="color:var(--burgundy)">0</div>
         </div>
       </div>
 
@@ -366,6 +371,41 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- ============ BUZÓN MENSAJES (INBOX) ============ -->
+    <section class="admin-section" data-section-id="mensajes">
+      <div class="admin-section-head">
+        <div>
+          <h2>Mensajes del Buzón</h2>
+          <p>Mensajes recibidos de alumnos. Los anónimos no revelan quién los envió.</p>
+        </div>
+        <button class="btn btn-ghost" onclick="cargarMensajes()" title="Actualizar">↻ Actualizar</button>
+      </div>
+
+      <!-- Filtros y búsqueda -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-ghost" id="tab-msg-todos"      onclick="filtrarMensajes('todos')"      style="font-size:13px;background:var(--burgundy);color:var(--cream)">Todos</button>
+        <button class="btn btn-ghost" id="tab-msg-noleidos"   onclick="filtrarMensajes('noleidos')"   style="font-size:13px">No leídos <span id="badge-msg-noleidos" style="background:#fad6cd;color:#a73a1f;padding:2px 7px;border-radius:999px;margin-left:4px;font-size:11px;display:none"></span></button>
+        <button class="btn btn-ghost" id="tab-msg-archivados" onclick="filtrarMensajes('archivados')" style="font-size:13px">Archivados</button>
+        <div style="flex:1;min-width:120px">
+          <input type="search" id="msg-search" placeholder="🔍 Buscar en mensajes…" oninput="renderMensajes()"
+            style="width:100%;padding:9px 14px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;box-sizing:border-box">
+        </div>
+        <select id="msg-cat-filtro" onchange="renderMensajes()" style="padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px">
+          <option value="">Todas las categorías</option>
+          <option>Convivencia entre alumnos</option>
+          <option>Situación con un docente</option>
+          <option>Bullying o discriminación</option>
+          <option>Salud mental / bienestar</option>
+          <option>Sugerencia / idea</option>
+          <option>Edilicio (baños, aulas, etc)</option>
+          <option>Comedor / cantina</option>
+          <option>Otro</option>
+        </select>
+      </div>
+
+      <div id="mensajes-lista" style="background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:80px"></div>
     </section>
 
     <!-- ============ BUZON CASOS ============ -->
@@ -637,6 +677,7 @@
     <button class="admin-drawer-btn"        data-section="apuntes"    onclick="irSeccionAdmin('apuntes')">📚 Apuntes <span class="d-count" id="dc-apuntes"></span></button>
     <button class="admin-drawer-btn"        data-section="marketplace" onclick="irSeccionAdmin('marketplace')">🔁 Marketplace <span class="d-count" id="dc-marketplace"></span></button>
     <div class="admin-drawer-group">Buzón y Moderación</div>
+    <button class="admin-drawer-btn"        data-section="mensajes"   onclick="irSeccionAdmin('mensajes')">📩 Mensajes <span class="d-count red" id="dc-mensajes"></span></button>
     <button class="admin-drawer-btn"        data-section="buzon"      onclick="irSeccionAdmin('buzon')">📨 Casos Buzón <span class="d-count" id="dc-buzon"></span></button>
     <button class="admin-drawer-btn"        data-section="comentarios" onclick="irSeccionAdmin('comentarios')">💬 Comentarios <span class="d-count" id="dc-comentarios"></span></button>
     <div class="admin-drawer-group">Usuarios</div>
@@ -646,6 +687,22 @@
     <button class="admin-drawer-btn"        data-section="secciones"  onclick="irSeccionAdmin('secciones')">🔌 Secciones</button>
     <button class="admin-drawer-btn"        data-section="emails"     onclick="irSeccionAdmin('emails')">📧 Emails</button>
     <button class="admin-drawer-btn"        data-section="datos"      onclick="irSeccionAdmin('datos')">💾 Datos</button>
+  </div>
+</div>
+
+<!-- Modal: nota interna de mensaje -->
+<div class="modal-overlay" id="modal-nota-admin">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('modal-nota-admin')">×</button>
+    <h2>Nota interna</h2>
+    <p class="modal-sub">Solo la ven los administradores. Sirve para registrar seguimiento o acciones tomadas.</p>
+    <div class="form-group">
+      <textarea id="nota-admin-input" rows="5" placeholder="Ej: Se elevó a preceptoría el 24/5. En seguimiento."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-nota-admin')">Cancelar</button>
+      <button id="btn-guardar-nota" class="btn btn-primary" onclick="guardarNotaAdmin()">Guardar nota</button>
+    </div>
   </div>
 </div>
 

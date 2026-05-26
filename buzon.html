@@ -130,8 +130,12 @@
       <p>Si elegís el modo anónimo, ni siquiera el centro va a saber quién lo mandó.</p>
 
       <div class="anon-toggle">
-        <input type="checkbox" id="anon" checked>
+        <input type="checkbox" id="anon" checked onchange="toggleAnonimo(this.checked)">
         <label for="anon">🕶️ Enviar de forma totalmente anónima</label>
+      </div>
+
+      <div id="login-hint" style="display:none;font-size:12px;color:#a73a1f;background:#fad6cd;border:1px solid #f5b8a8;border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.5">
+        Para enviar con tu nombre necesitás <a href="login.html?next=buzon.html" style="color:#a73a1f;font-weight:600">iniciar sesión primero</a>. El botón "Enviar" te va a redirigir automáticamente.
       </div>
 
       <div class="privacy-note">
@@ -242,9 +246,7 @@
           'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY
         }
       });
-      if (r.ok) {
-        _todosCasos = await r.json();
-      }
+      if (r.ok) _todosCasos = await r.json();
     } catch {}
     renderCasos();
   }
@@ -282,50 +284,79 @@
     renderCasos();
   }
 
+  /* ---- Anónimo toggle ---- */
+  function toggleAnonimo(esAnon) {
+    const hint = document.getElementById('login-hint');
+    const btn  = document.getElementById('btn-enviar');
+    if (!esAnon && !window._authToken) {
+      hint.style.display = 'block';
+      btn.textContent = 'Iniciar sesión y enviar →';
+    } else {
+      hint.style.display = 'none';
+      btn.textContent = 'Enviar mensaje';
+    }
+  }
+
+  /* ---- Envío principal ---- */
   async function enviarMensaje() {
-    if (!window._authToken) { window.location.href = 'login.html?next=buzon.html'; return; }
+    const anon     = document.getElementById('anon').checked;
     const categoria = document.getElementById('buzon-categoria').value;
     const mensaje   = document.getElementById('buzon-mensaje').value.trim();
+    const curso     = document.getElementById('buzon-curso')?.value?.trim() || null;
+    const accion    = document.getElementById('buzon-accion').value;
     const btn       = document.getElementById('btn-enviar');
     const feedback  = document.getElementById('buzon-feedback');
 
-    if (!mensaje) {
+    // Si no es anónimo y no hay sesión → redirigir al login
+    if (!anon && !window._authToken) {
+      sessionStorage.setItem('buzon_draft', JSON.stringify({ categoria, mensaje, curso, accion }));
+      window.location.href = 'login.html?next=buzon.html';
+      return;
+    }
+
+    if (!mensaje || mensaje.length < 5) {
       feedback.style.display = 'block';
       feedback.style.background = '#fad6cd';
       feedback.style.color = '#a73a1f';
-      feedback.textContent = 'Escribí algo antes de enviar.';
+      feedback.textContent = 'Escribí algo antes de enviar (mínimo 5 caracteres).';
       return;
     }
 
     btn.disabled = true;
     btn.textContent = 'Enviando...';
+    feedback.style.display = 'none';
 
     try {
-      const r = await fetch(window.SUPABASE_URL + '/rest/v1/buzon_mensajes', {
-        method:  'POST',
-        headers: {
-          'apikey':        window.SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY,
-          'Content-Type':  'application/json',
-          'Prefer':        'return=minimal'
-        },
-        body: JSON.stringify({ categoria, mensaje })
+      const headers = { 'Content-Type': 'application/json' };
+      if (!anon && window._authToken) headers['Authorization'] = 'Bearer ' + window._authToken;
+
+      const r = await fetch(window.SUPABASE_URL + '/functions/v1/enviar-buzon', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ categoria, mensaje, curso, accion, anonimo: anon })
       });
 
-      if (!r.ok) throw new Error('Error al enviar');
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Error al enviar');
 
       document.getElementById('buzon-mensaje').value = '';
       feedback.style.display = 'block';
       feedback.style.background = '#d8ecdc';
       feedback.style.color = '#2d6a3e';
-      feedback.textContent = '✓ Mensaje enviado. El centro lo recibe de forma anónima y va a responder.';
-      btn.textContent = 'Mensaje enviado';
+      feedback.textContent = anon
+        ? '✓ Mensaje enviado de forma anónima. El centro lo recibe y lo va a atender.'
+        : '✓ Mensaje enviado con tu nombre. El centro lo recibe y lo va a atender.';
+      btn.textContent = '✓ Enviado';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Enviar mensaje';
+      }, 5000);
 
-    } catch {
+    } catch (err) {
       feedback.style.display = 'block';
       feedback.style.background = '#fad6cd';
       feedback.style.color = '#a73a1f';
-      feedback.textContent = 'Hubo un error al enviar. Intentá de nuevo en un momento.';
+      feedback.textContent = err.message || 'Hubo un error al enviar. Intentá de nuevo.';
       btn.disabled = false;
       btn.textContent = 'Enviar mensaje';
     }
@@ -341,6 +372,21 @@
       document.querySelector('main').innerHTML = _HTML_PROXIMAMENTE;
       return;
     }
+
+    // Restaurar borrador si volvió del login
+    const draft = sessionStorage.getItem('buzon_draft');
+    if (draft && session) {
+      try {
+        const d = JSON.parse(draft);
+        if (d.categoria) document.getElementById('buzon-categoria').value = d.categoria;
+        if (d.mensaje)   document.getElementById('buzon-mensaje').value   = d.mensaje;
+        if (d.accion)    document.getElementById('buzon-accion').value    = d.accion;
+        document.getElementById('anon').checked = false;
+        toggleAnonimo(false);
+        sessionStorage.removeItem('buzon_draft');
+      } catch {}
+    }
+
     await cargarCasos();
   });
 </script>

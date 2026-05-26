@@ -39,7 +39,7 @@ async function recargar(coleccion) {
 const _SECTION_LABELS = {
   resumen:'📊 Resumen', novedades:'📢 Novedades', eventos:'📅 Eventos',
   votaciones:'🗳️ Votaciones', apuntes:'📚 Apuntes', marketplace:'🔁 Marketplace',
-  buzon:'📨 Buzón', comentarios:'💬 Comentarios', usuarios:'👥 Usuarios',
+  mensajes:'📩 Mensajes', buzon:'📨 Buzón', comentarios:'💬 Comentarios', usuarios:'👥 Usuarios',
   config:'⚙️ General', secciones:'🔌 Secciones', emails:'📧 Emails', datos:'💾 Datos'
 };
 
@@ -56,6 +56,7 @@ function activarSeccion(section) {
   if (section === 'secciones')    cargarSecciones();
   if (section === 'emails')       cargarEmailTemplates();
   if (section === 'comentarios')  cargarTodosComentarios();
+  if (section === 'mensajes')     cargarMensajes();
   if (window.innerWidth <= 600) window.scrollTo({ top: 0, behavior: 'smooth' });
   else if (window.innerWidth <= 980) {
     const main = document.querySelector('.admin-main');
@@ -73,8 +74,8 @@ function abrirMenuAdmin() {
   if (!drawer) return;
   // Sync counts from sidebar counts
   [['novedades','count-novedades'],['eventos','count-eventos'],['votaciones','count-votaciones'],
-   ['apuntes','count-apuntes'],['marketplace','count-marketplace'],['buzon','count-buzon'],
-   ['comentarios','count-comentarios'],['pendientes','count-pendientes']].forEach(([key, sideId]) => {
+   ['apuntes','count-apuntes'],['marketplace','count-marketplace'],['mensajes','count-mensajes'],
+   ['buzon','count-buzon'],['comentarios','count-comentarios'],['pendientes','count-pendientes']].forEach(([key, sideId]) => {
     const dc = document.getElementById('dc-' + key);
     const src = document.getElementById(sideId);
     if (dc && src) { const v = src.textContent?.trim(); dc.textContent = v && v !== '0' ? v : ''; }
@@ -1397,6 +1398,200 @@ async function confirmarEliminarComAdmin() {
 }
 
 /* ========================================================================
+   BUZÓN MENSAJES — Inbox de mensajes recibidos (admin)
+   ======================================================================== */
+
+let _cacheMensajes  = [];
+let _filtroMensajes = 'todos';
+
+const _CAT_ICON = {
+  'Convivencia entre alumnos': '👥',
+  'Situación con un docente':  '👩‍🏫',
+  'Bullying o discriminación': '🛑',
+  'Salud mental / bienestar':  '💚',
+  'Sugerencia / idea':         '💡',
+  'Edilicio (baños, aulas, etc)': '🏫',
+  'Comedor / cantina':         '🍽️',
+  'Otro':                      '📋',
+};
+
+async function cargarMensajes() {
+  try {
+    const data = await _get('/buzon_mensajes?order=created_at.desc&select=*,profiles(nombre,apellido,alias)');
+    _cacheMensajes = data || [];
+  } catch (e) {
+    console.error('cargarMensajes:', e);
+    _cacheMensajes = [];
+  }
+  renderMensajes();
+  _actualizarContadorMensajes();
+}
+
+function _actualizarContadorMensajes() {
+  const noleidos = _cacheMensajes.filter(m => !m.leido && !m.archivado).length;
+  const el = document.getElementById('count-mensajes');
+  if (el) el.textContent = noleidos;
+  const dc = document.getElementById('dc-mensajes');
+  if (dc) dc.textContent = noleidos > 0 ? noleidos : '';
+  const stat = document.getElementById('stat-mensajes');
+  if (stat) stat.textContent = noleidos;
+  const badge = document.getElementById('badge-msg-noleidos');
+  if (badge) { badge.textContent = noleidos; badge.style.display = noleidos > 0 ? '' : 'none'; }
+}
+
+function filtrarMensajes(filtro) {
+  _filtroMensajes = filtro;
+  ['todos','noleidos','archivados'].forEach(t => {
+    const el = document.getElementById('tab-msg-' + t);
+    if (!el) return;
+    el.style.background = t === filtro ? 'var(--burgundy)' : '';
+    el.style.color      = t === filtro ? 'var(--cream)'    : '';
+  });
+  renderMensajes();
+}
+
+function renderMensajes() {
+  const search    = (document.getElementById('msg-search')?.value || '').toLowerCase();
+  const catFiltro = document.getElementById('msg-cat-filtro')?.value || '';
+  const cont      = document.getElementById('mensajes-lista');
+  if (!cont) return;
+
+  let lista = [..._cacheMensajes];
+  if      (_filtroMensajes === 'noleidos')   lista = lista.filter(m => !m.leido && !m.archivado);
+  else if (_filtroMensajes === 'archivados') lista = lista.filter(m => m.archivado);
+  else                                       lista = lista.filter(m => !m.archivado);
+
+  if (catFiltro) lista = lista.filter(m => m.categoria === catFiltro);
+  if (search)    lista = lista.filter(m =>
+    m.mensaje.toLowerCase().includes(search) ||
+    m.categoria.toLowerCase().includes(search) ||
+    (m.curso && m.curso.toLowerCase().includes(search)) ||
+    (m.nota_admin && m.nota_admin.toLowerCase().includes(search))
+  );
+
+  if (!lista.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <h3>Sin mensajes${_filtroMensajes !== 'todos' ? ' en esta vista' : ''}</h3>
+      <p>Cuando los alumnos envíen mensajes por el buzón, van a aparecer acá.</p>
+    </div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(m => {
+    const fecha   = new Date(m.created_at).toLocaleString('es-AR',
+      { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const icono   = _CAT_ICON[m.categoria] || '📋';
+    const perfil  = m.profiles;
+    const noLeido = !m.leido;
+
+    const quien = m.anonimo
+      ? '<span style="color:var(--ink-soft);font-size:12px">🕶️ Anónimo</span>'
+      : perfil
+        ? `<span style="font-size:12px">👤 ${escapeHtml(perfil.nombre + ' ' + perfil.apellido + (perfil.alias ? ' · ' + perfil.alias : ''))}</span>`
+        : '<span style="font-size:12px;color:var(--ink-soft)">👤 Usuario registrado</span>';
+
+    return `
+    <div class="data-row" id="msg-row-${m.id}" style="${noLeido ? 'border-left:3px solid var(--burgundy);background:#fffaf8' : ''}">
+      <div class="data-info" style="cursor:pointer" onclick="toggleMsgDetalle('${m.id}')">
+        <h5 class="data-title" style="${noLeido ? 'font-weight:700' : 'font-weight:500'}">
+          ${icono} ${escapeHtml(m.categoria)}
+          ${noLeido ? '<span style="background:var(--burgundy);color:white;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle">NUEVO</span>' : ''}
+        </h5>
+        <div class="data-meta">
+          ${quien}
+          ${m.curso ? `<span>📚 ${escapeHtml(m.curso)}</span>` : ''}
+          <span>📅 ${fecha}</span>
+          ${m.accion ? `<span style="color:var(--ink-soft)">→ ${escapeHtml(m.accion)}</span>` : ''}
+        </div>
+        <div id="msg-detalle-${m.id}" style="display:none;margin-top:10px">
+          <p style="font-size:13px;line-height:1.6;white-space:pre-wrap;border-top:1px solid var(--line);padding-top:10px">${escapeHtml(m.mensaje)}</p>
+          ${m.nota_admin ? `<div style="font-size:12px;background:var(--cream);border-radius:6px;padding:8px 12px;margin-top:8px">📝 <strong>Nota:</strong> ${escapeHtml(m.nota_admin)}</div>` : '<div id="msg-nota-wrap-' + m.id + '"></div>'}
+        </div>
+      </div>
+      <div class="data-actions" style="flex-shrink:0">
+        ${noLeido
+          ? `<button class="icon-btn" onclick="event.stopPropagation();marcarLeidoMensaje('${m.id}',true)"  title="Marcar leído">✓</button>`
+          : `<button class="icon-btn" onclick="event.stopPropagation();marcarLeidoMensaje('${m.id}',false)" title="Marcar no leído" style="opacity:.45">○</button>`}
+        <button class="icon-btn" onclick="event.stopPropagation();abrirNotaMensaje('${m.id}')" title="Nota interna">📝</button>
+        ${!m.archivado
+          ? `<button class="icon-btn" onclick="event.stopPropagation();archivarMensaje('${m.id}',true)"  title="Archivar">🗂</button>`
+          : `<button class="icon-btn" onclick="event.stopPropagation();archivarMensaje('${m.id}',false)" title="Restaurar">↩</button>`}
+        <button class="icon-btn danger" onclick="event.stopPropagation();eliminarMensaje('${m.id}')" title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMsgDetalle(id) {
+  const det = document.getElementById('msg-detalle-' + id);
+  if (!det) return;
+  const visible = det.style.display !== 'none';
+  det.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    const msg = _cacheMensajes.find(m => m.id === id);
+    if (msg && !msg.leido) marcarLeidoMensaje(id, true);
+  }
+}
+
+async function marcarLeidoMensaje(id, leido) {
+  try {
+    await _patch('/buzon_mensajes?id=eq.' + id, { leido });
+    const msg = _cacheMensajes.find(m => m.id === id);
+    if (msg) msg.leido = leido;
+    renderMensajes();
+    _actualizarContadorMensajes();
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function archivarMensaje(id, archivar) {
+  try {
+    await _patch('/buzon_mensajes?id=eq.' + id, { archivado: archivar });
+    const msg = _cacheMensajes.find(m => m.id === id);
+    if (msg) { msg.archivado = archivar; if (archivar) msg.leido = true; }
+    renderMensajes();
+    _actualizarContadorMensajes();
+    toast(archivar ? 'Mensaje archivado' : 'Mensaje restaurado', 'success');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function eliminarMensaje(id) {
+  if (!confirm('¿Eliminar este mensaje? No se puede deshacer.')) return;
+  try {
+    await _delete('/buzon_mensajes?id=eq.' + id);
+    _cacheMensajes = _cacheMensajes.filter(m => m.id !== id);
+    renderMensajes();
+    _actualizarContadorMensajes();
+    toast('Mensaje eliminado', 'success');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+let _notaMensajeId = null;
+function abrirNotaMensaje(id) {
+  _notaMensajeId = id;
+  const msg = _cacheMensajes.find(m => m.id === id);
+  document.getElementById('nota-admin-input').value = msg?.nota_admin || '';
+  openModal('modal-nota-admin');
+}
+
+async function guardarNotaAdmin() {
+  const nota = document.getElementById('nota-admin-input').value.trim();
+  const btn  = document.getElementById('btn-guardar-nota');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try {
+    await _patch('/buzon_mensajes?id=eq.' + _notaMensajeId, { nota_admin: nota || null });
+    const msg = _cacheMensajes.find(m => m.id === _notaMensajeId);
+    if (msg) msg.nota_admin = nota || null;
+    closeModal('modal-nota-admin');
+    renderMensajes();
+    toast('Nota guardada', 'success');
+  } catch (e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar nota';
+  }
+}
+
+/* ========================================================================
    INIT
    ======================================================================== */
 
@@ -1422,4 +1617,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderTodo();
   cargarConfig();
   await cargarUsuarios();
+  cargarMensajes();
 });

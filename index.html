@@ -184,7 +184,7 @@
       </div>
     </div>
     <div class="hero-stats">
-      <h3 id="hero-titulo">⏱ Viaje de Egresados</h3>
+      <h3 id="viaje-titulo">⏱ Viaje de Egresados</h3>
       <div id="hero-nota" class="nota"></div>
       <div id="hero-destino" class="countdown-title">Cargando…</div>
       <div class="countdown">
@@ -322,7 +322,7 @@
   /* ── Countdown ── */
   function tickCountdown() {
     const c = _config;
-    document.getElementById('hero-titulo').textContent = c.viajeTitulo || '⏱ Viaje de Egresados';
+    document.getElementById('viaje-titulo').textContent = c.viajeTitulo || '⏱ Viaje de Egresados';
     document.getElementById('hero-destino').textContent = (c.viajeDestino || '—') + ' · Salida';
     document.getElementById('hero-nota').textContent = c.viajeNota ? '⚠ ' + c.viajeNota : '';
     const confEl = document.getElementById('hero-confirmados');

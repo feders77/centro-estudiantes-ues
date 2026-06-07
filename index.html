@@ -323,7 +323,7 @@
   function tickCountdown() {
     const c = _config;
     document.getElementById('viaje-titulo').textContent = c.viajeTitulo || '⏱ Viaje de Egresados';
-    document.getElementById('hero-destino').textContent = 'Falta' + (c.viajeDestino ? ' · ' + c.viajeDestino : '');
+    document.getElementById('hero-destino').textContent = 'Falta';
     document.getElementById('hero-nota').textContent = c.viajeNota ? '⚠ ' + c.viajeNota : '';
     const confEl = document.getElementById('hero-confirmados');
     if (c.viajeMostrarConfirmados) {

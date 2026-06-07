@@ -184,7 +184,7 @@
       </div>
     </div>
     <div class="hero-stats">
-      <h3>⏱ Viaje de Egresados</h3>
+      <h3 id="hero-titulo">⏱ Viaje de Egresados</h3>
       <div id="hero-nota" class="nota"></div>
       <div id="hero-destino" class="countdown-title">Cargando…</div>
       <div class="countdown">
@@ -193,7 +193,7 @@
         <div class="countdown-item"><div class="countdown-num" id="cd-m">—</div><div class="countdown-label">min</div></div>
         <div class="countdown-item"><div class="countdown-num" id="cd-s">—</div><div class="countdown-label">seg</div></div>
       </div>
-      <div id="hero-confirmados" style="font-size:11px;opacity:.7;margin-top:6px"></div>
+      <div id="hero-confirmados" style="font-size:11px;opacity:.7;margin-top:6px;display:none"></div>
     </div>
   </div>
 </section>
@@ -322,9 +322,16 @@
   /* ── Countdown ── */
   function tickCountdown() {
     const c = _config;
+    document.getElementById('hero-titulo').textContent = c.viajeTitulo || '⏱ Viaje de Egresados';
     document.getElementById('hero-destino').textContent = (c.viajeDestino || '—') + ' · Salida';
     document.getElementById('hero-nota').textContent = c.viajeNota ? '⚠ ' + c.viajeNota : '';
-    document.getElementById('hero-confirmados').innerHTML = `${c.viajeConfirmados || 0} de ${c.viajeTotal || 0} confirmados`;
+    const confEl = document.getElementById('hero-confirmados');
+    if (c.viajeMostrarConfirmados) {
+      confEl.style.display = '';
+      confEl.innerHTML = `${c.viajeConfirmados || 0} de ${c.viajeTotal || 0} confirmados`;
+    } else {
+      confEl.style.display = 'none';
+    }
     if (!c.viajeFecha) return;
     const diff = new Date(c.viajeFecha) - new Date();
     if (diff <= 0) {

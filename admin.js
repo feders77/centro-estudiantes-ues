@@ -544,11 +544,13 @@ async function cargarConfig() {
     Store.getConfig(),
     window._sb.from('config').select('value').eq('key', 'hero').maybeSingle()
   ]);
+  document.getElementById('cfg-titulo').value     = c.viajeTitulo      || '';
   document.getElementById('cfg-destino').value    = c.viajeDestino     || '';
   document.getElementById('cfg-fecha').value      = (c.viajeFecha||'').slice(0,16);
   document.getElementById('cfg-confirmados').value = c.viajeConfirmados || 0;
   document.getElementById('cfg-total').value      = c.viajeTotal       || 0;
   document.getElementById('cfg-nota').value       = c.viajeNota        || '';
+  document.getElementById('cfg-mostrar-confirmados').checked = c.viajeMostrarConfirmados === true;
 
   const hero = heroRow?.value || {};
   document.getElementById('cfg-hero-eyebrow').value     = hero.eyebrow     || '';
@@ -668,11 +670,13 @@ async function quitarLogo() {
 
 async function guardarConfig() {
   await Store.setConfig({
+    viajeTitulo:      document.getElementById('cfg-titulo').value.trim(),
     viajeDestino:     document.getElementById('cfg-destino').value.trim(),
     viajeFecha:       document.getElementById('cfg-fecha').value + ':00',
     viajeConfirmados: parseInt(document.getElementById('cfg-confirmados').value || 0),
     viajeTotal:       parseInt(document.getElementById('cfg-total').value || 0),
-    viajeNota:        document.getElementById('cfg-nota').value.trim()
+    viajeNota:        document.getElementById('cfg-nota').value.trim(),
+    viajeMostrarConfirmados: document.getElementById('cfg-mostrar-confirmados').checked
   });
   toast('✓ Configuración guardada', 'success');
 }

@@ -191,11 +191,13 @@ const Store = {
     const v = rows[0].value;
     // mapeo al formato que usan las páginas
     return {
+      viajeTitulo:      v.titulo    || '',
       viajeDestino:     v.destino   || '',
       viajeFecha:       v.fecha     || '',
       viajeConfirmados: v.confirmados || 0,
       viajeTotal:       v.total     || 0,
-      viajeNota:        v.nota      || ''
+      viajeNota:        v.nota      || '',
+      viajeMostrarConfirmados: v.mostrarConfirmados === true
     };
   },
 
@@ -206,11 +208,13 @@ const Store = {
 
     // mapeo inverso: de claves del frontend a claves del JSON guardado
     const mapaInverso = {
+      viajeTitulo:      'titulo',
       viajeDestino:     'destino',
       viajeFecha:       'fecha',
       viajeConfirmados: 'confirmados',
       viajeTotal:       'total',
-      viajeNota:        'nota'
+      viajeNota:        'nota',
+      viajeMostrarConfirmados: 'mostrarConfirmados'
     };
     const nuevo = { ...actual };
     for (const [k, v] of Object.entries(cambios)) {
@@ -221,11 +225,13 @@ const Store = {
     await _patch('/config?key=eq.viaje', { value: nuevo });
     // devuelve en formato frontend
     return {
+      viajeTitulo:      nuevo.titulo       || '',
       viajeDestino:     nuevo.destino      || '',
       viajeFecha:       nuevo.fecha        || '',
       viajeConfirmados: nuevo.confirmados  || 0,
       viajeTotal:       nuevo.total        || 0,
-      viajeNota:        nuevo.nota         || ''
+      viajeNota:        nuevo.nota         || '',
+      viajeMostrarConfirmados: nuevo.mostrarConfirmados === true
     };
   },
 
